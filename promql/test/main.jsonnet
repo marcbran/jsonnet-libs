@@ -1,11 +1,8 @@
 local p = import '../main.libsonnet';
+local prometheus = import 'prometheus.libsonnet';
 
 local instance = {
   memory_limit_bytes: p.metric('instance_memory_limit_bytes'),
-};
-
-local node = {
-  cpu_seconds_total: p.metric('node_cpu_seconds_total'),
 };
 
 local metricTests = {
@@ -13,8 +10,8 @@ local metricTests = {
   tests: [
     {
       name: 'simple metric',
-      input:: instance.memory_limit_bytes,
-      expected: 'instance_memory_limit_bytes',
+      input:: prometheus.http_requests_total,
+      expected: 'prometheus_http_requests_total',
     },
   ],
 };
@@ -24,28 +21,28 @@ local matcherTests = {
   tests: [
     {
       name: 'default',
-      input:: instance.memory_limit_bytes { pod: '$pod' },
-      expected: 'instance_memory_limit_bytes{pod="$pod"}',
+      input:: prometheus.http_requests_total { code: '$code' },
+      expected: 'prometheus_http_requests_total{code="$code"}',
     },
     {
       name: 'eq',
-      input:: instance.memory_limit_bytes { pod: p.eq('$pod') },
-      expected: 'instance_memory_limit_bytes{pod="$pod"}',
+      input:: prometheus.http_requests_total { code: p.eq('$code') },
+      expected: 'prometheus_http_requests_total{code="$code"}',
     },
     {
       name: 'regex',
-      input:: instance.memory_limit_bytes { pod: p.regex('$pod') },
-      expected: 'instance_memory_limit_bytes{pod=~"$pod"}',
+      input:: prometheus.http_requests_total { code: p.regex('$code') },
+      expected: 'prometheus_http_requests_total{code=~"$code"}',
     },
     {
       name: 'regexNot',
-      input:: instance.memory_limit_bytes { pod: p.regexNot('$pod') },
-      expected: 'instance_memory_limit_bytes{pod!~"$pod"}',
+      input:: prometheus.http_requests_total { code: p.regexNot('$code') },
+      expected: 'prometheus_http_requests_total{code!~"$code"}',
     },
     {
       name: 'multiple',
-      input:: instance.memory_limit_bytes { pod: '$pod', namespace: '$namespace' },
-      expected: 'instance_memory_limit_bytes{namespace="$namespace", pod="$pod"}',
+      input:: prometheus.http_requests_total { code: '$code', handler: '$handler' },
+      expected: 'prometheus_http_requests_total{code="$code", handler="$handler"}',
     },
   ],
 };
@@ -55,33 +52,33 @@ local arithmeticOperatorTests = {
   tests: [
     {
       name: 'add',
-      input:: p.add(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes + instance_memory_limit_bytes',
+      input:: p.add(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total + prometheus_http_requests_total',
     },
     {
       name: 'sub',
-      input:: p.sub(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes - instance_memory_limit_bytes',
+      input:: p.sub(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total - prometheus_http_requests_total',
     },
     {
       name: 'mul',
-      input:: p.mul(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes * instance_memory_limit_bytes',
+      input:: p.mul(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total * prometheus_http_requests_total',
     },
     {
       name: 'div',
-      input:: p.div(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes / instance_memory_limit_bytes',
+      input:: p.div(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total / prometheus_http_requests_total',
     },
     {
       name: 'mod',
-      input:: p.mod(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes % instance_memory_limit_bytes',
+      input:: p.mod(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total % prometheus_http_requests_total',
     },
     {
       name: 'pow',
-      input:: p.pow(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes ^ instance_memory_limit_bytes',
+      input:: p.pow(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total ^ prometheus_http_requests_total',
     },
   ],
 };
@@ -91,33 +88,33 @@ local comparisonOperatorTests = {
   tests: [
     {
       name: 'equal',
-      input:: p.equal(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes == instance_memory_limit_bytes',
+      input:: p.equal(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total == prometheus_http_requests_total',
     },
     {
       name: 'notEqual',
-      input:: p.notEqual(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes != instance_memory_limit_bytes',
+      input:: p.notEqual(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total != prometheus_http_requests_total',
     },
     {
       name: 'greaterThan',
-      input:: p.greaterThan(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes > instance_memory_limit_bytes',
+      input:: p.greaterThan(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total > prometheus_http_requests_total',
     },
     {
       name: 'lessThan',
-      input:: p.lessThan(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes < instance_memory_limit_bytes',
+      input:: p.lessThan(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total < prometheus_http_requests_total',
     },
     {
       name: 'greaterOrEqual',
-      input:: p.greaterOrEqual(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes >= instance_memory_limit_bytes',
+      input:: p.greaterOrEqual(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total >= prometheus_http_requests_total',
     },
     {
       name: 'lessOrEqual',
-      input:: p.lessOrEqual(instance.memory_limit_bytes, instance.memory_limit_bytes),
-      expected: 'instance_memory_limit_bytes <= instance_memory_limit_bytes',
+      input:: p.lessOrEqual(prometheus.http_requests_total, prometheus.http_requests_total),
+      expected: 'prometheus_http_requests_total <= prometheus_http_requests_total',
     },
   ],
 };
@@ -127,63 +124,63 @@ local aggregationOperatorTests = {
   tests: [
     {
       name: 'sum',
-      input:: p.sum(instance.memory_limit_bytes, by=['instance']),
-      expected: 'sum by(instance) (instance_memory_limit_bytes)',
+      input:: p.sum(prometheus.http_requests_total, by=['instance']),
+      expected: 'sum by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'min',
-      input:: p.min(instance.memory_limit_bytes, by=['instance']),
-      expected: 'min by(instance) (instance_memory_limit_bytes)',
+      input:: p.min(prometheus.http_requests_total, by=['instance']),
+      expected: 'min by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'max',
-      input:: p.max(instance.memory_limit_bytes, by=['instance']),
-      expected: 'max by(instance) (instance_memory_limit_bytes)',
+      input:: p.max(prometheus.http_requests_total, by=['instance']),
+      expected: 'max by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'avg',
-      input:: p.avg(instance.memory_limit_bytes, by=['instance']),
-      expected: 'avg by(instance) (instance_memory_limit_bytes)',
+      input:: p.avg(prometheus.http_requests_total, by=['instance']),
+      expected: 'avg by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'count',
-      input:: p.group(instance.memory_limit_bytes, by=['instance']),
-      expected: 'group by(instance) (instance_memory_limit_bytes)',
+      input:: p.group(prometheus.http_requests_total, by=['instance']),
+      expected: 'group by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'stddev',
-      input:: p.stddev(instance.memory_limit_bytes, by=['instance']),
-      expected: 'stddev by(instance) (instance_memory_limit_bytes)',
+      input:: p.stddev(prometheus.http_requests_total, by=['instance']),
+      expected: 'stddev by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'stdvar',
-      input:: p.stdvar(instance.memory_limit_bytes, by=['instance']),
-      expected: 'stdvar by(instance) (instance_memory_limit_bytes)',
+      input:: p.stdvar(prometheus.http_requests_total, by=['instance']),
+      expected: 'stdvar by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'count',
-      input:: p.count(instance.memory_limit_bytes, by=['instance']),
-      expected: 'count by(instance) (instance_memory_limit_bytes)',
+      input:: p.count(prometheus.http_requests_total, by=['instance']),
+      expected: 'count by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'count_values',
-      input:: p.count_values(instance.memory_limit_bytes, by=['instance']),
-      expected: 'count_values by(instance) (instance_memory_limit_bytes)',
+      input:: p.count_values(prometheus.http_requests_total, by=['instance']),
+      expected: 'count_values by(instance) (prometheus_http_requests_total)',
     },
     {
       name: 'bottomk',
-      input:: p.bottomk(10, instance.memory_limit_bytes, by=['instance']),
-      expected: 'bottomk by(instance) (10, instance_memory_limit_bytes)',
+      input:: p.bottomk(10, prometheus.http_requests_total, by=['instance']),
+      expected: 'bottomk by(instance) (10, prometheus_http_requests_total)',
     },
     {
       name: 'topk',
-      input:: p.topk(10, instance.memory_limit_bytes, by=['instance']),
-      expected: 'topk by(instance) (10, instance_memory_limit_bytes)',
+      input:: p.topk(10, prometheus.http_requests_total, by=['instance']),
+      expected: 'topk by(instance) (10, prometheus_http_requests_total)',
     },
     {
       name: 'quantile',
-      input:: p.quantile(0.9, instance.memory_limit_bytes, by=['instance']),
-      expected: 'quantile by(instance) (0.90000000000000002, instance_memory_limit_bytes)',
+      input:: p.quantile(0.9, prometheus.http_requests_total, by=['instance']),
+      expected: 'quantile by(instance) (0.90000000000000002, prometheus_http_requests_total)',
     },
   ],
 };
