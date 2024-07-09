@@ -30,16 +30,31 @@ func main() {
 }
 
 func run(prefix, url, output string) error {
-	resp, err := http.Get(url)
+	families, err := readJsonnet(url)
 	if err != nil {
 		return err
+	}
+
+	jsonnet := formatJsonnet(prefix, families)
+
+	err = writeJsonnet(prefix, output, jsonnet)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func readJsonnet(url string) ([]*io_prometheus_client.MetricFamily, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	parser := expfmt.TextParser{}
 	familyMap, err := parser.TextToMetricFamilies(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var families []*io_prometheus_client.MetricFamily
 	for _, family := range familyMap {
@@ -48,7 +63,10 @@ func run(prefix, url, output string) error {
 	sort.Slice(families, func(i, j int) bool {
 		return families[i].GetName() < families[j].GetName()
 	})
+	return families, nil
+}
 
+func formatJsonnet(prefix string, families []*io_prometheus_client.MetricFamily) string {
 	var builder strings.Builder
 	builder.WriteString(removeExport(metric))
 	builder.WriteString(fmt.Sprintf("\n"))
@@ -73,17 +91,8 @@ func run(prefix, url, output string) error {
 	builder.WriteString(fmt.Sprintf("\n"))
 
 	builder.WriteString(fmt.Sprintf("%s\n", prefix))
-
-	file, err := os.Create(fmt.Sprintf("%s/%s.libsonnet", output, prefix))
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	_, err = file.WriteString(builder.String())
-	if err != nil {
-		return err
-	}
-	return nil
+	jsonnet := builder.String()
+	return jsonnet
 }
 
 func removeExport(jsonnet string) string {
@@ -93,4 +102,17 @@ func removeExport(jsonnet string) string {
 	}
 	lines = lines[:len(lines)-2]
 	return strings.Join(lines, "\n")
+}
+
+func writeJsonnet(prefix string, output string, jsonnet string) error {
+	file, err := os.Create(fmt.Sprintf("%s/%s.libsonnet", output, prefix))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(jsonnet)
+	if err != nil {
+		return err
+	}
+	return nil
 }
