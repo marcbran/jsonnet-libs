@@ -29,6 +29,7 @@ function run() {
       local error
       error="$(echo "${response}" | jq -r '.error')"
       echo "${error}"
+      echo ""
       exit_code=1
     fi
   done < <(jsonnet '../test/main.jsonnet' | jq -r 'map(.actual) | .[]')

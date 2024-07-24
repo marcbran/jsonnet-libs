@@ -1,4 +1,4 @@
-local range(vector, range) = {
+local rangeVector(vector, range) = {
   output: '%s[%s]' % [vector.output, range],
 };
 
@@ -75,48 +75,12 @@ local aggregationOperators = {
   quantile(parameter, expression, by=[], without=[]): aggregationOperator('quantile', parameter, expression, by, without),
 };
 
-local func(name) = {
-  output: '%s()' % [name],
-};
-
-local funcInstant(name, vector) = {
-  output: '%s(%s)' % [name, vector.output],
-};
-
-local funcInstantScalar(name, vector, scalarA) = {
-  output: '%s(%s, %d)' % [name, vector.output, scalarA],
-};
-
-local funcInstantScalarScalar(name, vector, scalarA, scalarB) = {
-  output: '%s(%s, %d, %d)' % [name, vector.output, scalarA, scalarB],
-};
-
-local funcRange(name, vector, range) = {
-  output: '%s(%s[%s])' % [name, vector.output, range],
-};
-
-local funcRangeScalar(name, vector, range, scalar) = {
-  output: '%s(%s[%s], %d)' % [name, vector.output, range, scalar],
-};
-
-local funcRangeScalarScalar(name, vector, range, scalarA, scalarB) = {
-  output: '%s(%s[%s], %d, %d)' % [name, vector.output, range, scalarA, scalarB],
-};
-
-local funcScalar(name, scalar) = {
-  output: '%s(%d)' % [name, scalar],
-};
-
-local funcScalarInstant(name, scalar, vector) = {
-  output: '%s(%d, %s)' % [name, scalar, vector.output],
-};
-
-local funcScalarScalarInstant(name, scalarA, scalarB, vector) = {
-  output: '%s(%d, %d, %s)' % [name, scalarA, scalarB, vector.output],
-};
-
-local funcScalarRange(name, scalar, vector, range) = {
-  output: '%s(%d, %s[%s])' % [name, scalar, vector.output, range],
+local func(name, parameters=[]) = {
+  local parameterString = if (std.length(parameters) > 0) then std.join(', ', [
+    if (std.type(parameter) == 'object') then parameter.output else std.manifestJson(parameter)
+    for parameter in parameters
+  ]) else '',
+  output: '%s(%s)' % [name, parameterString],
 };
 
 /*
@@ -127,78 +91,78 @@ sort_by_label(v instant-vector, label string, ...)
 sort_by_label_desc(v instant-vector, label string, ...)
 */
 local functions = {
-  abs(vector): funcInstant('abs', vector),
-  absent(vector): funcInstant('absent', vector),
-  absent_over_time(vector, range): funcRange('absent_over_time', vector, range),
-  ceil(vector): funcInstant('ceil', vector),
-  changes(vector, range): funcRange('changes', vector, range),
-  clamp(vector, min, max): funcInstantScalarScalar('clamp', vector, min, max),
-  clamp_max(vector, max): funcInstantScalar('clamp_max', vector, max),
-  clamp_min(vector, min): funcInstantScalar('clamp_min', vector, min),
-  day_of_month(vector): funcInstant('day_of_month', vector),
-  day_of_week(vector): funcInstant('day_of_week', vector),
-  day_of_year(vector): funcInstant('day_of_year', vector),
-  days_in_month(vector): funcInstant('days_in_month', vector),
-  delta(vector, range): funcRange('delta', vector, range),
-  deriv(vector, range): funcRange('deriv', vector, range),
-  exp(vector): funcInstant('exp', vector),
-  floor(vector): funcInstant('floor', vector),
-  histogram_avg(vector): funcInstant('histogram_avg', vector),
-  histogram_count(vector): funcInstant('histogram_count', vector),
-  histogram_sum(vector): funcInstant('histogram_sum', vector),
-  histogram_fraction(lower, upper, vector): funcScalarScalarInstant('histogram_sum', lower, upper, vector),
-  histogram_quantile(phi, vector): funcScalarScalarInstant('histogram_quantile', phi, vector),
-  histogram_stddev(vector): funcInstant('histogram_stddev', vector),
-  histogram_stdvar(vector): funcInstant('histogram_stdvar', vector),
-  holt_winters(vector, sf, tf): funcRangeScalarScalar('holt_winters', vector, sf, tf),
-  hour(vector): funcInstant('hour', vector),
-  idelta(vector, range): funcRange('idelta', vector, range),
-  increase(vector, range): funcRange('increase', vector, range),
-  irate(vector, range): funcRange('irate', vector, range),
-  ln(vector): funcInstant('ln', vector),
-  log2(vector): funcInstant('log2', vector),
-  log10(vector): funcInstant('log10', vector),
-  minute(vector): funcInstant('minute', vector),
-  month(vector): funcInstant('month', vector),
-  predict_linear(vector, range, t): funcRangeScalar('predict_linear', vector, range, t),
-  rate(vector, range): funcRange('rate', vector, range),
-  resets(vector, range): funcRange('resets', vector, range),
-  round(vector, to_nearest): funcInstantScalar('round', vector, to_nearest),
-  scalar(vector): funcInstant('scalar', vector),
-  sgn(vector): funcInstant('sgn', vector),
-  sort(vector): funcInstant('sort', vector),
-  sort_desc(vector): funcInstant('sort_desc', vector),
-  sqrt(vector): funcInstant('sqrt', vector),
+  abs(vector): func('abs', [vector]),
+  absent(vector): func('absent', [vector]),
+  absent_over_time(vector, range): func('absent_over_time', [rangeVector(vector, range)]),
+  ceil(vector): func('ceil', [vector]),
+  changes(vector, range): func('changes', [rangeVector(vector, range)]),
+  clamp(vector, min, max): func('clamp', [vector, min, max]),
+  clamp_max(vector, max): func('clamp_max', [vector, max]),
+  clamp_min(vector, min): func('clamp_min', [vector, min]),
+  day_of_month(vector): func('day_of_month', [vector]),
+  day_of_week(vector): func('day_of_week', [vector]),
+  day_of_year(vector): func('day_of_year', [vector]),
+  days_in_month(vector): func('days_in_month', [vector]),
+  delta(vector, range): func('delta', [rangeVector(vector, range)]),
+  deriv(vector, range): func('deriv', [rangeVector(vector, range)]),
+  exp(vector): func('exp', [vector]),
+  floor(vector): func('floor', [vector]),
+  histogram_avg(vector): func('histogram_avg', [vector]),
+  histogram_count(vector): func('histogram_count', [vector]),
+  histogram_sum(vector): func('histogram_sum', [vector]),
+  histogram_fraction(lower, upper, vector): func('histogram_fraction', [lower, upper, vector]),
+  histogram_quantile(phi, vector): func('histogram_quantile', [phi, vector]),
+  histogram_stddev(vector): func('histogram_stddev', [vector]),
+  histogram_stdvar(vector): func('histogram_stdvar', [vector]),
+  holt_winters(vector, range, sf, tf): func('holt_winters', [rangeVector(vector, range), sf, tf]),
+  hour(vector): func('hour', [vector]),
+  idelta(vector, range): func('idelta', [rangeVector(vector, range)]),
+  increase(vector, range): func('increase', [rangeVector(vector, range)]),
+  irate(vector, range): func('irate', [rangeVector(vector, range)]),
+  ln(vector): func('ln', [vector]),
+  log2(vector): func('log2', [vector]),
+  log10(vector): func('log10', [vector]),
+  minute(vector): func('minute', [vector]),
+  month(vector): func('month', [vector]),
+  predict_linear(vector, range, t): func('predict_linear', [rangeVector(vector, range), t]),
+  rate(vector, range): func('rate', [rangeVector(vector, range)]),
+  resets(vector, range): func('resets', [rangeVector(vector, range)]),
+  round(vector, to_nearest=1): func('round', [vector, to_nearest]),
+  scalar(vector): func('scalar', [vector]),
+  sgn(vector): func('sgn', [vector]),
+  sort(vector): func('sort', [vector]),
+  sort_desc(vector): func('sort_desc', [vector]),
+  sqrt(vector): func('sqrt', [vector]),
   time(): func('time'),
-  timestamp(vector): funcInstant('timestamp', vector),
-  vector(scalar): funcScalar('vector', scalar),
-  year(vector): funcInstant('year', vector),
-  avg_over_time(vector, range): funcRange('avg_over_time', vector, range),
-  min_over_time(vector, range): funcRange('min_over_time', vector, range),
-  max_over_time(vector, range): funcRange('max_over_time', vector, range),
-  sum_over_time(vector, range): funcRange('sum_over_time', vector, range),
-  count_over_time(vector, range): funcRange('count_over_time', vector, range),
-  quantile_over_time(scalar, vector, range): funcScalarRange('quantile_over_time', scalar, vector, range),
-  stddev_over_time(vector, range): funcRange('stddev_over_time', vector, range),
-  stdvar_over_time(vector, range): funcRange('stdvar_over_time', vector, range),
-  last_over_time(vector, range): funcRange('last_over_time', vector, range),
-  present_over_time(vector, range): funcRange('present_over_time', vector, range),
-  mad_over_time(vector, range): funcRange('mad_over_time', vector, range),
-  acos(vector): funcInstant('acos', vector),
-  acosh(vector): funcInstant('acosh', vector),
-  asin(vector): funcInstant('asin', vector),
-  asinh(vector): funcInstant('asinh', vector),
-  atan(vector): funcInstant('atan', vector),
-  atanh(vector): funcInstant('atanh', vector),
-  cos(vector): funcInstant('cos', vector),
-  cosh(vector): funcInstant('cosh', vector),
-  sin(vector): funcInstant('sin', vector),
-  sinh(vector): funcInstant('sinh', vector),
-  tan(vector): funcInstant('tan', vector),
-  tanh(vector): funcInstant('tanh', vector),
-  deg(vector): funcInstant('deg', vector),
+  timestamp(vector): func('timestamp', [vector]),
+  vector(scalar): func('vector', [scalar]),
+  year(vector): func('year', [vector]),
+  avg_over_time(vector, range): func('avg_over_time', [rangeVector(vector, range)]),
+  min_over_time(vector, range): func('min_over_time', [rangeVector(vector, range)]),
+  max_over_time(vector, range): func('max_over_time', [rangeVector(vector, range)]),
+  sum_over_time(vector, range): func('sum_over_time', [rangeVector(vector, range)]),
+  count_over_time(vector, range): func('count_over_time', [rangeVector(vector, range)]),
+  quantile_over_time(scalar, vector, range): func('quantile_over_time', [scalar, rangeVector(vector, range)]),
+  stddev_over_time(vector, range): func('stddev_over_time', [rangeVector(vector, range)]),
+  stdvar_over_time(vector, range): func('stdvar_over_time', [rangeVector(vector, range)]),
+  last_over_time(vector, range): func('last_over_time', [rangeVector(vector, range)]),
+  present_over_time(vector, range): func('present_over_time', [rangeVector(vector, range)]),
+  mad_over_time(vector, range): func('mad_over_time', [rangeVector(vector, range)]),
+  acos(vector): func('acos', [vector]),
+  acosh(vector): func('acosh', [vector]),
+  asin(vector): func('asin', [vector]),
+  asinh(vector): func('asinh', [vector]),
+  atan(vector): func('atan', [vector]),
+  atanh(vector): func('atanh', [vector]),
+  cos(vector): func('cos', [vector]),
+  cosh(vector): func('cosh', [vector]),
+  sin(vector): func('sin', [vector]),
+  sinh(vector): func('sinh', [vector]),
+  tan(vector): func('tan', [vector]),
+  tanh(vector): func('tanh', [vector]),
+  deg(vector): func('deg', [vector]),
   pi(): func('pi'),
-  rad(vector): funcInstant('rad', vector),
+  rad(vector): func('rad', [vector]),
 };
 
 local promql =

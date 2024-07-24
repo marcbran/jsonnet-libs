@@ -3,5 +3,10 @@ version: '3.8'
 services:
   prometheus:
     image: prom/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --enable-feature=promql-experimental-functions
     ports:
       - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
