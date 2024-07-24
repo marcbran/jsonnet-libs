@@ -55,7 +55,7 @@ local comparisonOperators = {
 local aggregationOperator(operator, parameter, expression, by, without) = {
   local byString = if (std.length(by) > 0) then 'by(%s)' % std.join(', ', by) else '',
   local withoutString = if (std.length(without) > 0) then 'without(%s)' % std.join(', ', without) else '',
-  local expressionString = if (parameter == '') then '(%s)' % expression.output else '(%s, %s)' % [parameter, expression.output],
+  local expressionString = if (parameter == '') then '(%s)' % expression.output else '(%s, %s)' % [std.manifestJson(parameter), expression.output],
   local parts = [operator, byString, withoutString, expressionString],
   output: std.join(' ', [part for part in parts if part != '']),
 };
@@ -69,7 +69,7 @@ local aggregationOperators = {
   stddev(expression, by=[], without=[]): aggregationOperator('stddev', '', expression, by, without),
   stdvar(expression, by=[], without=[]): aggregationOperator('stdvar', '', expression, by, without),
   count(expression, by=[], without=[]): aggregationOperator('count', '', expression, by, without),
-  count_values(expression, by=[], without=[]): aggregationOperator('count_values', '', expression, by, without),
+  count_values(parameter, expression, by=[], without=[]): aggregationOperator('count_values', parameter, expression, by, without),
   bottomk(parameter, expression, by=[], without=[]): aggregationOperator('bottomk', parameter, expression, by, without),
   topk(parameter, expression, by=[], without=[]): aggregationOperator('topk', parameter, expression, by, without),
   quantile(parameter, expression, by=[], without=[]): aggregationOperator('quantile', parameter, expression, by, without),

@@ -1,10 +1,6 @@
 local p = import '../main.libsonnet';
 local prometheus = import 'prometheus.libsonnet';
 
-local instance = {
-  memory_limit_bytes: p.metric('instance_memory_limit_bytes'),
-};
-
 local metricTests = {
   name: 'metric',
   tests: [
@@ -164,8 +160,8 @@ local aggregationOperatorTests = {
     },
     {
       name: 'count_values',
-      input:: p.count_values(prometheus.http_requests_total, by=['instance']),
-      expected: 'count_values by(instance) (prometheus_http_requests_total)',
+      input:: p.count_values('instance', prometheus.http_requests_total, by=['instance']),
+      expected: 'count_values by(instance) ("instance", prometheus_http_requests_total)',
     },
     {
       name: 'bottomk',
@@ -193,7 +189,7 @@ local testGroups = [
   aggregationOperatorTests,
 ];
 
-[
+std.flattenArrays([
   [
     {
       name: '%s/%s' % [group.name, test.name],
@@ -201,7 +197,6 @@ local testGroups = [
       expected: test.expected,
     }
     for test in group.tests
-    if test.input.output != test.expected
   ]
   for group in testGroups
-]
+])
