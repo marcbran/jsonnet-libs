@@ -130,6 +130,32 @@ func formatJsonnet(provider string, source string, data any) (string, error) {
     },
 {{- end }}
   },
+  data: {
+{{- range $key, $value := .data_source_schemas }}
+    {{ $key | trimProvider }}(name): {
+      local data = self,
+{{- range $key, $value := $value.block.attributes }}
+      {{ $key }}:: {{ if $value.required }}error '{{ $key }} is required'{{ else }}null{{ end }},
+{{- end }}
+      __required_provider__: {
+        '{{ provider }}': {
+          source: "{{ source }}"
+        }
+      },
+      __block__: {
+        data: {
+          {{ $key }}: {
+            [name]: {
+{{- range $key, $value := $value.block.attributes }}
+              {{ $key }}: data.{{ $key }},
+{{- end }}
+            }
+          }
+        }
+      },
+    },
+{{- end }}
+  },
 {{- end }}
 }
 `)
