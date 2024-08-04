@@ -111,12 +111,14 @@ func formatJsonnet(provider string, source string, data any) (string, error) {
 {{- range $key, $value := $value.block.attributes }}
       {{ $key }}:: {{ if $value.required }}error '{{ $key }} is required'{{ else }}null{{ end }},
 {{- end }}
-      __required_provider__: {
+      _required_provider: {
         '{{ provider }}': {
           source: "{{ source }}"
         }
       },
-      __block__: {
+      _param: "{{ $key }}.%s" % [name],
+      _ref: "${{ ` + "`{`" + ` }}{{ $key }}.%s}" % [name],
+      _block: {
         resource: {
           {{ $key }}: {
             [name]: {
@@ -137,12 +139,14 @@ func formatJsonnet(provider string, source string, data any) (string, error) {
 {{- range $key, $value := $value.block.attributes }}
       {{ $key }}:: {{ if $value.required }}error '{{ $key }} is required'{{ else }}null{{ end }},
 {{- end }}
-      __required_provider__: {
+      _required_provider: {
         '{{ provider }}': {
           source: "{{ source }}"
         }
       },
-      __block__: {
+      _param: "data.{{ $key }}.%s" % [name],
+      _ref: "${{ ` + "`{`" + ` }}data.{{ $key }}.%s}" % [name],
+      _block: {
         data: {
           {{ $key }}: {
             [name]: {
@@ -170,7 +174,7 @@ func formatJsonnet(provider string, source string, data any) (string, error) {
 }
 
 func writeJsonnet(prefix string, output string, jsonnet string) error {
-	dir := filepath.Join(output, prefix)
+	dir := filepath.Join(output, fmt.Sprintf("terraform-provider-%s", prefix))
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err
