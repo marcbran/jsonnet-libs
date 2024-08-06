@@ -1,7 +1,7 @@
 local terraformStack(resources) =
   local requiredProviders = std.foldl(
     function(acc, provider) std.mergePatch(acc, provider),
-    [resource._required_provider for resource in resources],
+    [resource.__required_provider__ for resource in resources],
     {}
   );
   local terraform = {
@@ -9,7 +9,7 @@ local terraformStack(resources) =
       required_providers: requiredProviders,
     },
   };
-  local blocks = [resource._block for resource in resources];
+  local blocks = [resource.__block__ for resource in resources];
   [terraform] + blocks;
 
 terraformStack

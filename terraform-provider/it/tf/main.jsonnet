@@ -1,5 +1,5 @@
 local tf = import '../../../terraform-stack/main.libsonnet';
-local l = import './local/main.libsonnet';
+local l = import './terraform-provider-local/main.libsonnet';
 
 tf([
   l.resource.file('test') {

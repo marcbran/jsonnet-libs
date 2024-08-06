@@ -1,15 +1,23 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"html/template"
+	"github.com/google/go-jsonnet"
+	"github.com/google/go-jsonnet/formatter"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 )
+
+//go:embed tmpl/main.libsonnet
+var tmpl string
+
+//go:embed tmpl/jsonnet.libsonnet
+var j string
 
 func main() {
 	provider := flag.String("provider", "", "The name of the provider")
@@ -88,89 +96,33 @@ terraform {
 }
 
 func formatJsonnet(provider string, source string, data any) (string, error) {
-	var builder strings.Builder
-	tmpl, err := template.New("main").
-		Funcs(template.FuncMap{
-			"trimProvider": func(s string) string {
-				return strings.TrimPrefix(s, provider+"_")
-			},
-			"provider": func() string {
-				return provider
-			},
-			"source": func() string {
-				return source
-			},
-		}).
-		Parse(`
-{
-{{- range .provider_schemas }}
-  resource: {
-{{- range $key, $value := .resource_schemas }}
-    {{ $key | trimProvider }}(name): {
-      local resource = self,
-{{- range $key, $value := $value.block.attributes }}
-      {{ $key }}:: {{ if $value.required }}error '{{ $key }} is required'{{ else }}null{{ end }},
-{{- end }}
-      _required_provider: {
-        '{{ provider }}': {
-          source: "{{ source }}"
-        }
-      },
-      _param: "{{ $key }}.%s" % [name],
-      _ref: "${{ ` + "`{`" + ` }}{{ $key }}.%s}" % [name],
-      _block: {
-        resource: {
-          {{ $key }}: {
-            [name]: {
-{{- range $key, $value := $value.block.attributes }}
-              {{ $key }}: resource.{{ $key }},
-{{- end }}
-            }
-          }
-        }
-      },
-    },
-{{- end }}
-  },
-  data: {
-{{- range $key, $value := .data_source_schemas }}
-    {{ $key | trimProvider }}(name): {
-      local data = self,
-{{- range $key, $value := $value.block.attributes }}
-      {{ $key }}:: {{ if $value.required }}error '{{ $key }} is required'{{ else }}null{{ end }},
-{{- end }}
-      _required_provider: {
-        '{{ provider }}': {
-          source: "{{ source }}"
-        }
-      },
-      _param: "data.{{ $key }}.%s" % [name],
-      _ref: "${{ ` + "`{`" + ` }}data.{{ $key }}.%s}" % [name],
-      _block: {
-        data: {
-          {{ $key }}: {
-            [name]: {
-{{- range $key, $value := $value.block.attributes }}
-              {{ $key }}: data.{{ $key }},
-{{- end }}
-            }
-          }
-        }
-      },
-    },
-{{- end }}
-  },
-{{- end }}
-}
-`)
+	b, err := json.Marshal(data)
 	if err != nil {
 		return "", err
 	}
-	err = tmpl.Execute(&builder, data)
+
+	vm := jsonnet.MakeVM()
+	vm.Importer(&jsonnet.MemoryImporter{
+		Data: map[string]jsonnet.Contents{
+			"main.libsonnet":    jsonnet.MakeContents(tmpl),
+			"jsonnet.libsonnet": jsonnet.MakeContents(j),
+		},
+	})
+	snippet := fmt.Sprintf(`{
+		provider: import 'main.libsonnet',
+        output: self.provider('%s', '%s', %s).output
+	}.output`, provider, source, string(b))
+	jsonStr, err := vm.EvaluateAnonymousSnippet("main.jsonnet", snippet)
 	if err != nil {
 		return "", err
 	}
-	return builder.String(), nil
+	jsonStr = jsonStr[1 : len(jsonStr)-2]
+	jsonStr = strings.ReplaceAll(jsonStr, "\\n", "\n")
+	format, err := formatter.Format("main.jsonnet", jsonStr, formatter.DefaultOptions())
+	if err != nil {
+		return "", err
+	}
+	return format, nil
 }
 
 func writeJsonnet(prefix string, output string, jsonnet string) error {

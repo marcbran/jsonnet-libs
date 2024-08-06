@@ -17,25 +17,24 @@ func TestFormatJsonnet(t *testing.T) {
 			provider: "local",
 			source:   "hashicorp/local",
 			data:     localProviderSchema(),
-			expected: `
-{
+			expected: `{
   resource: {
     file(name): {
       local resource = self,
       content:: null,
       __required_provider__: {
         'local': {
-          source: "hashicorp/local"
-        }
+          source: 'hashicorp/local',
+        },
       },
       __block__: {
         resource: {
           local_file: {
             [name]: {
               content: resource.content,
-            }
-          }
-        }
+            },
+          },
+        },
       },
     },
   },
@@ -45,17 +44,17 @@ func TestFormatJsonnet(t *testing.T) {
       content:: null,
       __required_provider__: {
         'local': {
-          source: "hashicorp/local"
-        }
+          source: 'hashicorp/local',
+        },
       },
       __block__: {
         data: {
           local_file: {
             [name]: {
               content: data.content,
-            }
-          }
-        }
+            },
+          },
+        },
       },
     },
   },
