@@ -3,7 +3,8 @@ set -eu
 
 function build() {
   cd "$(dirname "${0}")/.."
-  cp "main.libsonnet" "gen"
+  mkdir -p "gen/grafonnet-layout"
+  cp "main.libsonnet" "gen/grafonnet-layout"
 }
 
 build

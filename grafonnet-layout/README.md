@@ -7,7 +7,7 @@ Jsonnet library that adds simple layout functions to [grafonnet](https://github.
 To add grafonnet-layout to a jsonnet project:
 
 ```console
-jb install github.com/marcbran/jsonnet-libs/grafonnet-layout/gen@main
+jb install github.com/marcbran/jsonnet-libs/grafonnet-layout/gen/grafonnet-layout@main
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ jb install github.com/marcbran/jsonnet-libs/grafonnet-layout/gen@main
 ```jsonnet
 // dashboard.jsonnet
 local grafonnet = import 'github.com/grafana/grafonnet/gen/grafonnet-latest/main.libsonnet';
-local layout = import 'github.com/marcbran/jsonnet-libs/grafonnet-layout/gen/main.libsonnet';
+local layout = import 'github.com/marcbran/jsonnet-libs/grafonnet-layout/gen/grafonnet-layout/main.libsonnet';
 
 // Mixin the layout to add the layout functions to grafonnet
 local g = grafonnet + layout.withLayout;
