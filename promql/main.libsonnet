@@ -83,13 +83,6 @@ local func(name, parameters=[]) = {
   output: '%s(%s)' % [name, parameterString],
 };
 
-/*
-TODO
-label_join(v instant-vector, dst_label string, separator string, src_label_1 string, src_label_2 string, ...)
-label_replace(v instant-vector, dst_label string, replacement string, src_label string, regex string)
-sort_by_label(v instant-vector, label string, ...)
-sort_by_label_desc(v instant-vector, label string, ...)
-*/
 local functions = {
   abs(vector): func('abs', [vector]),
   absent(vector): func('absent', [vector]),
@@ -119,6 +112,8 @@ local functions = {
   idelta(vector, range): func('idelta', [rangeVector(vector, range)]),
   increase(vector, range): func('increase', [rangeVector(vector, range)]),
   irate(vector, range): func('irate', [rangeVector(vector, range)]),
+  // label_join(v instant-vector, dst_label string, separator string, src_label_1 string, src_label_2 string, ...)
+  label_replace(v, dst_label, replacement, src_label, regex): func('label_replace', [v, dst_label, replacement, src_label, regex]),
   ln(vector): func('ln', [vector]),
   log2(vector): func('log2', [vector]),
   log10(vector): func('log10', [vector]),
@@ -131,6 +126,8 @@ local functions = {
   scalar(vector): func('scalar', [vector]),
   sgn(vector): func('sgn', [vector]),
   sort(vector): func('sort', [vector]),
+  // sort_by_label(v instant-vector, label string, ...)
+  // sort_by_label_desc(v instant-vector, label string, ...)
   sort_desc(vector): func('sort_desc', [vector]),
   sqrt(vector): func('sqrt', [vector]),
   time(): func('time'),

@@ -325,6 +325,11 @@ local funcTests = {
       expected: 'irate(prometheus_http_requests_total[5m])',
     },
     {
+      name: 'label_replace',
+      input:: p.label_replace(prometheus.http_requests_total, 'status', '$1', 'code', '.*'),
+      expected: 'label_replace(prometheus_http_requests_total, "status", "$1", "code", ".*")',
+    },
+    {
       name: 'ln',
       input:: p.ln(prometheus.http_requests_total),
       expected: 'ln(prometheus_http_requests_total)',
