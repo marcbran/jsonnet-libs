@@ -325,6 +325,11 @@ local funcTests = {
       expected: 'irate(prometheus_http_requests_total[5m])',
     },
     {
+      name: 'label_join',
+      input:: p.label_join(prometheus.http_requests_total, 'code_handler', ', ', ['code', 'handler']),
+      expected: 'label_join(prometheus_http_requests_total, "code_handler", ", ", "code", "handler")',
+    },
+    {
       name: 'label_replace',
       input:: p.label_replace(prometheus.http_requests_total, 'status', '$1', 'code', '.*'),
       expected: 'label_replace(prometheus_http_requests_total, "status", "$1", "code", ".*")',
@@ -393,6 +398,16 @@ local funcTests = {
       name: 'sort',
       input:: p.sort(prometheus.http_requests_total),
       expected: 'sort(prometheus_http_requests_total)',
+    },
+    {
+      name: 'sort_by_label',
+      input:: p.sort_by_label(prometheus.http_requests_total, ['code', 'handler']),
+      expected: 'sort_by_label(prometheus_http_requests_total, "code", "handler")',
+    },
+    {
+      name: 'sort_by_label_desc',
+      input:: p.sort_by_label_desc(prometheus.http_requests_total, ['code', 'handler']),
+      expected: 'sort_by_label_desc(prometheus_http_requests_total, "code", "handler")',
     },
     {
       name: 'sort_desc',

@@ -76,9 +76,16 @@ local aggregationOperators = {
 };
 
 local func(name, parameters=[]) = {
-  local parameterString = if (std.length(parameters) > 0) then std.join(', ', [
+  local params =
+    if std.length(parameters) == 0
+    then []
+    else
+      if std.type(parameters[std.length(parameters) - 1]) == 'array'
+      then parameters[:std.length(parameters) - 1] + parameters[std.length(parameters) - 1]
+      else parameters,
+  local parameterString = if (std.length(params) > 0) then std.join(', ', [
     if (std.type(parameter) == 'object') then parameter.output else std.manifestJson(parameter)
-    for parameter in parameters
+    for parameter in params
   ]) else '',
   output: '%s(%s)' % [name, parameterString],
 };
@@ -112,7 +119,7 @@ local functions = {
   idelta(vector, range): func('idelta', [rangeVector(vector, range)]),
   increase(vector, range): func('increase', [rangeVector(vector, range)]),
   irate(vector, range): func('irate', [rangeVector(vector, range)]),
-  // label_join(v instant-vector, dst_label string, separator string, src_label_1 string, src_label_2 string, ...)
+  label_join(v, dst_label, separator, src_labels): func('label_join', [v, dst_label, separator, src_labels]),
   label_replace(v, dst_label, replacement, src_label, regex): func('label_replace', [v, dst_label, replacement, src_label, regex]),
   ln(vector): func('ln', [vector]),
   log2(vector): func('log2', [vector]),
@@ -126,8 +133,8 @@ local functions = {
   scalar(vector): func('scalar', [vector]),
   sgn(vector): func('sgn', [vector]),
   sort(vector): func('sort', [vector]),
-  // sort_by_label(v instant-vector, label string, ...)
-  // sort_by_label_desc(v instant-vector, label string, ...)
+  sort_by_label(v, labels): func('sort_by_label', [v, labels]),
+  sort_by_label_desc(v, labels): func('sort_by_label_desc', [v, labels]),
   sort_desc(vector): func('sort_desc', [vector]),
   sqrt(vector): func('sqrt', [vector]),
   time(): func('time'),
