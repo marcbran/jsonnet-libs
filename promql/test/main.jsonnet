@@ -12,6 +12,42 @@ local metricTests = {
   ],
 };
 
+local selectorTests = {
+  name: 'selectors',
+  tests: [
+    {
+      name: 'range',
+      input:: p.range(prometheus.http_requests_total, '5m'),
+      expected: 'prometheus_http_requests_total[5m]',
+    },
+    {
+      name: 'offset',
+      input:: p.offset(prometheus.http_requests_total, '5m'),
+      expected: 'prometheus_http_requests_total offset 5m',
+    },
+    {
+      name: 'at',
+      input:: p.at(prometheus.http_requests_total, '1609746000'),
+      expected: 'prometheus_http_requests_total @ 1609746000',
+    },
+    {
+      name: 'offset at',
+      input:: p.at(p.offset(prometheus.http_requests_total, '5m'), '1609746000'),
+      expected: 'prometheus_http_requests_total offset 5m @ 1609746000',
+    },
+    {
+      name: 'subquery without resolution',
+      input:: p.subquery(prometheus.http_requests_total, '5m'),
+      expected: 'prometheus_http_requests_total[5m]',
+    },
+    {
+      name: 'subquery with resolution',
+      input:: p.subquery(prometheus.http_requests_total, '5m', '1m'),
+      expected: 'prometheus_http_requests_total[5m:1m]',
+    },
+  ],
+};
+
 local matcherTests = {
   name: 'matchers',
   tests: [
@@ -574,6 +610,7 @@ local funcTests = {
 
 local testGroups = [
   metricTests,
+  selectorTests,
   matcherTests,
   arithmeticOperatorTests,
   comparisonOperatorTests,

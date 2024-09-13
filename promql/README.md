@@ -46,8 +46,8 @@ You can find more examples in the [test cases](./test/main.jsonnet).
 
 These things are still on the todo list:
 
-- [ ] Support for subqueries
 - [ ] Better Code Generation for Prometheus Metrics
 - [ ] Integration with Grafana using Grafonnet
 - [ ] Integration with AlertManager
 - [ ] More real world examples
+- [ ] Parentheses support
