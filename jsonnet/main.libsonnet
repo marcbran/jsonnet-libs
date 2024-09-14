@@ -144,8 +144,14 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
   ImportBin(string): {
     output: "importbin '%s'" % [string],
   },
+  Comment(string): {
+    output: '// %s' % [string],
+  },
+  Newline: {
+    output: '\\n',
+  },
   Exprs(exprs, newlines=0): {
-    local sep = if newlines == 0 then '' else ['\n' for _ in std.range(1, newlines)],
+    local sep = if newlines == 0 then '' else ['\\n' for _ in std.range(1, newlines)],
     output: joinExpr(';%s' % sep, exprs),
   },
   BinaryOp(a, op, b): {

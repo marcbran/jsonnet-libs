@@ -393,6 +393,17 @@ local ifTests = {
   ],
 };
 
+local commentTests = {
+  name: 'comment',
+  tests: [
+    {
+      name: 'simple',
+      input:: j.Comment('Hello World'),
+      expected: '// Hello World',
+    },
+  ],
+};
+
 local testGroups = [
   nullTests,
   trueTests,
@@ -412,6 +423,7 @@ local testGroups = [
   arrayTests,
   arrayCompTests,
   ifTests,
+  commentTests,
 ];
 
 std.flattenArrays([
