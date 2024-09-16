@@ -52,7 +52,16 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
     output: '%s=%s' % [id, expr.output],
   },
   Object(members, newlines=0): {
-    output: '{%s%s}' % [printNewlines(newlines), joinExpr(', ', members)],
+    output: '{%s%s}' % [printNewlines(newlines), std.join(
+      '',
+      std.mapWithIndex(
+        function(i, member)
+          if (i < std.length(members) - 1)
+          then '%s%s' % [member.output, std.get(member, 'sep', ', ')]
+          else member.output,
+        members
+      )
+    )],
   },
   Field(name, expr, override='', hidden=':'): {
     output: '%s%s%s %s' % [name.output, override, hidden, expr.output],
@@ -83,11 +92,11 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
   },
   Array(exprs, newlines=0): {
     output: '[%s%s]' % [printNewlines(newlines), std.join(
-      ' ',
+      '',
       std.mapWithIndex(
         function(i, expr)
           if (i < std.length(exprs) - 1)
-          then '%s%s' % [expr.output, std.get(expr, 'sep', ',')]
+          then '%s%s' % [expr.output, std.get(expr, 'arraySep', std.get(expr, 'sep', ', '))]
           else expr.output,
         exprs
       )
@@ -110,11 +119,11 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
   },
   Local(id, expr): {
     output: 'local %s = %s' % [id, expr.output],
-    sep: ';',
+    arraySep: '; ',
   },
   LocalFunc(id, params, expr): {
     output: 'local %s(%s) = %s' % [id, joinExpr(', ', params), expr.output],
-    sep: ';',
+    arraySep: '; ',
   },
   If(expr): {
     local ifExpr = expr,
@@ -146,13 +155,24 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
   },
   Comment(string): {
     output: '// %s' % [string],
+    sep: '\\n',
   },
   Newline: {
-    output: '\\n',
+    output: '',
+    sep: '\\n',
   },
   Exprs(exprs, newlines=0): {
-    local sep = if newlines == 0 then '' else ['\\n' for _ in std.range(1, newlines)],
-    output: joinExpr(';%s' % sep, exprs),
+    local newlinesString = if newlines == 0 then '' else ['\\n' for _ in std.range(1, newlines)],
+    output: std.join(
+      '',
+      std.mapWithIndex(
+        function(i, expr)
+          if (i < std.length(exprs) - 1)
+          then '%s%s%s' % [expr.output, std.get(expr, 'sep', ';'), newlinesString]
+          else expr.output,
+        exprs
+      )
+    ),
   },
   BinaryOp(a, op, b): {
     output: '%s %s %s' % [a.output, op, b.output],

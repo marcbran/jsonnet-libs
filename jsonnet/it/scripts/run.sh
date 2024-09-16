@@ -9,7 +9,8 @@ function run() {
 
   echo "Evaluating Jsonnet..."
   local exit_code=0
-  while read -r query; do
+  while read -r raw_query; do
+    local query; query="$(echo "${raw_query}" | sed 's/\\n/\n/g')"
     echo "${query}"
 
     local response
