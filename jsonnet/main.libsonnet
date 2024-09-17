@@ -162,7 +162,7 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
     sep: '\\n',
   },
   Exprs(exprs, newlines=0): {
-    local newlinesString = if newlines == 0 then '' else ['\\n' for _ in std.range(1, newlines)],
+    local newlinesString = if newlines == 0 then '' else std.join('', ['\\n' for _ in std.range(1, newlines)]),
     output: std.join(
       '',
       std.mapWithIndex(
