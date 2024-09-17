@@ -1,8 +1,16 @@
 local lt = import '../main.libsonnet';
 
-local random(title) = {
+local randomPanel(title) = {
   title: title,
   type: 'timeseries',
+};
+
+local random = {
+  title: error 'title required',
+  panel: {
+    title: $.title,
+    type: 'timeseries',
+  },
 };
 
 local rowTests = {
@@ -11,7 +19,7 @@ local rowTests = {
     {
       name: 'single',
       input:: lt.row(5, [
-        lt.panel(1, random('a')),
+        lt.panel(1, randomPanel('a')),
       ]),
       expected: [{
         gridPos: { h: 5, w: 1, x: 0, y: 0 },
@@ -22,9 +30,9 @@ local rowTests = {
     {
       name: 'multiple',
       input:: lt.row(5, [
-        lt.panel(1, random('a')),
-        lt.panel(2, random('b')),
-        lt.panel(4, random('c')),
+        lt.panel(1, randomPanel('a')),
+        lt.panel(2, randomPanel('b')),
+        lt.panel(4, randomPanel('c')),
       ]),
       expected: [
         {
@@ -47,13 +55,13 @@ local rowTests = {
     {
       name: 'nested',
       input:: lt.row(6, [
-        lt.panel(1, random('a')),
+        lt.panel(1, randomPanel('a')),
         lt.column(6, [
-          lt.panel(2, random('b')),
-          lt.panel(2, random('c')),
-          lt.panel(2, random('d')),
+          lt.panel(2, randomPanel('b')),
+          lt.panel(2, randomPanel('c')),
+          lt.panel(2, randomPanel('d')),
         ]),
-        lt.panel(4, random('e')),
+        lt.panel(4, randomPanel('e')),
       ]),
       expected: [
         {
@@ -92,7 +100,7 @@ local columnTests = {
     {
       name: 'single',
       input:: lt.column(5, [
-        lt.panel(1, random('a')),
+        lt.panel(1, randomPanel('a')),
       ]),
       expected: [{
         gridPos: { h: 1, w: 5, x: 0, y: 0 },
@@ -103,9 +111,9 @@ local columnTests = {
     {
       name: 'multiple',
       input:: lt.column(5, [
-        lt.panel(1, random('a')),
-        lt.panel(2, random('b')),
-        lt.panel(4, random('c')),
+        lt.panel(1, randomPanel('a')),
+        lt.panel(2, randomPanel('b')),
+        lt.panel(4, randomPanel('c')),
       ]),
       expected: [
         {
@@ -128,13 +136,13 @@ local columnTests = {
     {
       name: 'nested',
       input:: lt.column(6, [
-        lt.panel(1, random('a')),
+        lt.panel(1, randomPanel('a')),
         lt.row(6, [
-          lt.panel(2, random('b')),
-          lt.panel(2, random('c')),
-          lt.panel(2, random('d')),
+          lt.panel(2, randomPanel('b')),
+          lt.panel(2, randomPanel('c')),
+          lt.panel(2, randomPanel('d')),
         ]),
-        lt.panel(4, random('e')),
+        lt.panel(4, randomPanel('e')),
       ]),
       expected: [
         {
@@ -172,7 +180,16 @@ local panelTests = {
   tests: [
     {
       name: 'simple',
-      input:: lt.panel(1, random('a')),
+      input:: lt.panel(1, randomPanel('a')),
+      expected: [{
+        gridPos: { h: 1, w: 1, x: 0, y: 0 },
+        title: 'a',
+        type: 'timeseries',
+      }],
+    },
+    {
+      name: 'provider',
+      input:: lt.panel(1, random { title: 'a' }),
       expected: [{
         gridPos: { h: 1, w: 1, x: 0, y: 0 },
         title: 'a',

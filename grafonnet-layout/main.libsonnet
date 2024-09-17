@@ -106,7 +106,7 @@ local column(width, children) = {
 local panel(size, panel) = {
   type: 'layout-panel',
   size: size,
-  panel: panel,
+  panel: std.get(panel, 'panel', panel),
 };
 
 local space(size) = {
