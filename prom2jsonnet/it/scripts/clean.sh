@@ -5,4 +5,4 @@ cd "$(dirname "${0}")/.."
 
 echo "Cleaning up..."
 docker-compose down
-rm -f prom-metrics ./actual/prometheus.libsonnet
+rm -f prom2jsonnet ./actual/prometheus.libsonnet

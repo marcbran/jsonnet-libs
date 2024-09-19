@@ -5,8 +5,8 @@ cd "$(dirname "${0}")/.."
 
 trap ./scripts/clean.sh EXIT
 
-echo "Building prom-metrics..."
-go build -o prom-metrics ../main.go
+echo "Building prom2jsonnet..."
+go build -o prom2jsonnet ../main.go
 
 echo "Starting Docker Compose..."
 docker-compose up -d
@@ -19,8 +19,8 @@ while true; do
   sleep 1
 done
 
-echo "Running prom-metrics..."
-./prom-metrics --prefix=prometheus --url=http://localhost:9090/metrics --output ./actual
+echo "Running prom2jsonnet..."
+./prom2jsonnet --url=http://localhost:9090/metrics --output ./actual prometheus
 
 if [ -f "./actual/prometheus.libsonnet" ]; then
     if diff "./actual/prometheus.libsonnet" "./expected/prometheus.libsonnet"; then

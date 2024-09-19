@@ -3,10 +3,10 @@ local metric(name) = {
     output(field): '%s%s"%s"' % [field, '=', value],
   },
   local labels = [[field, self[field]] for field in std.sort(std.objectFields(self)) if field != 'output'],
-  local comparisons = [[label[0], if std.type(label[1]) == 'string' then eq(label[1]) else label[1]] for label in labels],
-  local filters = [comparison[1].output(comparison[0]) for comparison in comparisons],
-  local filterString = std.join(', ', filters),
-  output: if (std.length(filterString) > 0) then '%s{%s}' % [name, filterString] else name,
+  local operators = [[label[0], if std.type(label[1]) == 'string' then eq(label[1]) else label[1]] for label in labels],
+  local matchers = [operator[1].output(operator[0]) for operator in operators],
+  local matcherString = std.join(', ', matchers),
+  output: if std.length(matcherString) > 0 then '%s{%s}' % [name, matcherString] else name,
 };
 
 local prometheus = {
@@ -85,6 +85,10 @@ local prometheus = {
   // HELP Exemplars in to remote storage, compare to exemplars out for queue managers.
   // TYPE counter
   remote_storage_exemplars_in_total: metric('prometheus_remote_storage_exemplars_in_total'),
+
+  // HELP Highest timestamp that has come into the remote storage via the Appender interface, in seconds since epoch.
+  // TYPE gauge
+  remote_storage_highest_timestamp_in_seconds: metric('prometheus_remote_storage_highest_timestamp_in_seconds'),
 
   // HELP HistogramSamples in to remote storage, compare to histograms out for queue managers.
   // TYPE counter
@@ -194,6 +198,18 @@ local prometheus = {
   // TYPE counter
   sd_updates_total: metric('prometheus_sd_updates_total'),
 
+  // HELP Actual intervals between scrapes.
+  // TYPE summary
+  target_interval_length_seconds: metric('prometheus_target_interval_length_seconds'),
+
+  // HELP The number of bytes that are currently used for storing metric metadata in the cache
+  // TYPE gauge
+  target_metadata_cache_bytes: metric('prometheus_target_metadata_cache_bytes'),
+
+  // HELP Total number of metric metadata entries in the cache
+  // TYPE gauge
+  target_metadata_cache_entries: metric('prometheus_target_metadata_cache_entries'),
+
   // HELP Total number of times scrape pools hit the label limits, during sync or config reload.
   // TYPE counter
   target_scrape_pool_exceeded_label_limits_total: metric('prometheus_target_scrape_pool_exceeded_label_limits_total'),
@@ -209,6 +225,18 @@ local prometheus = {
   // HELP Total number of scrape pool reloads.
   // TYPE counter
   target_scrape_pool_reloads_total: metric('prometheus_target_scrape_pool_reloads_total'),
+
+  // HELP Total number of syncs that were executed on a scrape pool.
+  // TYPE counter
+  target_scrape_pool_sync_total: metric('prometheus_target_scrape_pool_sync_total'),
+
+  // HELP Maximum number of targets allowed in this scrape pool.
+  // TYPE gauge
+  target_scrape_pool_target_limit: metric('prometheus_target_scrape_pool_target_limit'),
+
+  // HELP Current number of targets in this scrape pool.
+  // TYPE gauge
+  target_scrape_pool_targets: metric('prometheus_target_scrape_pool_targets'),
 
   // HELP Total number of scrape pool creations that failed.
   // TYPE counter
@@ -249,6 +277,14 @@ local prometheus = {
   // HELP Total number of samples rejected due to not being out of the expected order.
   // TYPE counter
   target_scrapes_sample_out_of_order_total: metric('prometheus_target_scrapes_sample_out_of_order_total'),
+
+  // HELP Total number of target sync failures.
+  // TYPE counter
+  target_sync_failed_total: metric('prometheus_target_sync_failed_total'),
+
+  // HELP Actual interval to sync the scrape pool.
+  // TYPE summary
+  target_sync_length_seconds: metric('prometheus_target_sync_length_seconds'),
 
   // HELP The total number of template text expansion failures.
   // TYPE counter
@@ -394,6 +430,14 @@ local prometheus = {
   // TYPE gauge
   tsdb_head_min_time_seconds: metric('prometheus_tsdb_head_min_time_seconds'),
 
+  // HELP Total number of appended out of order samples.
+  // TYPE counter
+  tsdb_head_out_of_order_samples_appended_total: metric('prometheus_tsdb_head_out_of_order_samples_appended_total'),
+
+  // HELP Total number of appended samples.
+  // TYPE counter
+  tsdb_head_samples_appended_total: metric('prometheus_tsdb_head_samples_appended_total'),
+
   // HELP Total number of series in the head block.
   // TYPE gauge
   tsdb_head_series: metric('prometheus_tsdb_head_series'),
@@ -442,6 +486,14 @@ local prometheus = {
   // TYPE counter
   tsdb_mmap_chunks_total: metric('prometheus_tsdb_mmap_chunks_total'),
 
+  // HELP Total number of out of bound samples ingestion failed attempts with out of order support disabled.
+  // TYPE counter
+  tsdb_out_of_bound_samples_total: metric('prometheus_tsdb_out_of_bound_samples_total'),
+
+  // HELP Total number of out of order samples ingestion failed attempts due to out of order being disabled.
+  // TYPE counter
+  tsdb_out_of_order_samples_total: metric('prometheus_tsdb_out_of_order_samples_total'),
+
   // HELP Number of times the database failed to reloadBlocks block data from disk.
   // TYPE counter
   tsdb_reloads_failures_total: metric('prometheus_tsdb_reloads_failures_total'),
@@ -481,6 +533,10 @@ local prometheus = {
   // HELP The time taken to recompact blocks to remove tombstones.
   // TYPE histogram
   tsdb_tombstone_cleanup_seconds: metric('prometheus_tsdb_tombstone_cleanup_seconds'),
+
+  // HELP Total number of out of order samples ingestion failed attempts with out of support enabled, but sample outside of time window.
+  // TYPE counter
+  tsdb_too_old_samples_total: metric('prometheus_tsdb_too_old_samples_total'),
 
   // HELP Total number of compactions done on overlapping blocks.
   // TYPE counter
