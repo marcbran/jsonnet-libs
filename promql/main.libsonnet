@@ -1,20 +1,20 @@
 local rangeSelector(vector, range) = {
-  output: '%s[%s]' % [vector.output, range],
+  expr: '%s[%s]' % [vector.expr, range],
 };
 
 local offsetModifier(vector, offset) = {
-  output: '%s offset %s' % [vector.output, offset],
+  expr: '%s offset %s' % [vector.expr, offset],
 };
 
 local atModifier(vector, time) = {
-  output: '%s @ %s' % [vector.output, time],
+  expr: '%s @ %s' % [vector.expr, time],
 };
 
 local subquery(vector, range, resolution=null) = {
-  output:
+  expr:
     if (resolution == null)
-    then '%s[%s]' % [vector.output, range]
-    else '%s[%s:%s]' % [vector.output, range, resolution],
+    then '%s[%s]' % [vector.expr, range]
+    else '%s[%s:%s]' % [vector.expr, range, resolution],
 };
 
 local selectors = {
@@ -25,7 +25,7 @@ local selectors = {
 };
 
 local matcher(value, operator) = {
-  output(field): '%s%s"%s"' % [field, operator, value],
+  expr(field): '%s%s"%s"' % [field, operator, value],
 };
 
 local matchers = {
@@ -40,8 +40,8 @@ local operator(left, operator, right, by, ignoring, group_left, group_right) = {
   local ignoringString = if (std.length(ignoring) > 0) then 'ignoring(%s)' % std.join(', ', ignoring) else '',
   local groupLeftString = if (std.length(group_left) > 0) then 'group_left(%s)' % std.join(', ', group_left) else '',
   local groupRightString = if (std.length(group_right) > 0) then 'group_right(%s)' % std.join(', ', group_right) else '',
-  local parts = [left.output, operator, byString, ignoringString, groupLeftString, groupRightString, right.output],
-  output: std.join(' ', [part for part in parts if part != '']),
+  local parts = [left.expr, operator, byString, ignoringString, groupLeftString, groupRightString, right.expr],
+  expr: std.join(' ', [part for part in parts if part != '']),
 };
 
 local arithmeticOperators = {
@@ -77,9 +77,9 @@ local comparisonOperators = {
 local aggregationOperator(operator, parameter, expression, by, without) = {
   local byString = if (std.length(by) > 0) then 'by(%s)' % std.join(', ', by) else '',
   local withoutString = if (std.length(without) > 0) then 'without(%s)' % std.join(', ', without) else '',
-  local expressionString = if (parameter == '') then '(%s)' % expression.output else '(%s, %s)' % [std.manifestJson(parameter), expression.output],
+  local expressionString = if (parameter == '') then '(%s)' % expression.expr else '(%s, %s)' % [std.manifestJson(parameter), expression.expr],
   local parts = [operator, byString, withoutString, expressionString],
-  output: std.join(' ', [part for part in parts if part != '']),
+  expr: std.join(' ', [part for part in parts if part != '']),
 };
 
 local aggregationOperators = {
@@ -106,10 +106,10 @@ local func(name, parameters=[]) = {
       then parameters[:std.length(parameters) - 1] + parameters[std.length(parameters) - 1]
       else parameters,
   local parameterString = if (std.length(params) > 0) then std.join(', ', [
-    if (std.type(parameter) == 'object') then parameter.output else std.manifestJson(parameter)
+    if (std.type(parameter) == 'object') then parameter.expr else std.manifestJson(parameter)
     for parameter in params
   ]) else '',
-  output: '%s(%s)' % [name, parameterString],
+  expr: '%s(%s)' % [name, parameterString],
 };
 
 local functions = {

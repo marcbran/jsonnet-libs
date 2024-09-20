@@ -20,9 +20,9 @@ local metric = j.LocalFunc('metric', [j.Id('name')], j.Object([
     'operators',
     j.ArrayComp(j.Array([
       j.Index(j.Id('label'), j.Number(0)),
-      j.If(j.Eq(j.Call(j.Member(j.Id('std'), 'type'), [j.Index(j.Id('label'), j.Number(1))]), j.String('string'))).
-        Then(j.Call(j.Id('eq'), [j.Index(j.Id('label'), j.Number(1))])).
-        Else(j.Index(j.Id('label'), j.Number(1))),
+      j.If(j.Eq(j.Call(j.Member(j.Id('std'), 'type'), [j.Index(j.Id('label'), j.Number(1))]), j.String('function'))).
+        Then(j.Index(j.Id('label'), j.Number(1))).
+        Else(j.Call(j.Id('eq'), [j.Index(j.Id('label'), j.Number(1))])),
     ])).
       For('label', j.Id('labels'))
   ),

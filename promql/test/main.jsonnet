@@ -622,7 +622,7 @@ std.flattenArrays([
   [
     {
       name: '%s/%s' % [group.name, test.name],
-      actual: test.input.output,
+      actual: test.input.expr,
       expected: test.expected,
     }
     for test in group.tests

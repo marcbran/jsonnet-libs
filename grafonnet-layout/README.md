@@ -17,7 +17,7 @@ jb install github.com/marcbran/jsonnet-libs/grafonnet-layout/gen/grafonnet-layou
 local grafonnet = import 'github.com/grafana/grafonnet/gen/grafonnet-latest/main.libsonnet';
 local layout = import 'github.com/marcbran/jsonnet-libs/grafonnet-layout/gen/grafonnet-layout/main.libsonnet';
 
-// Mixin the layout to add the layout functions to grafonnet
+// Mixin the library to add the layout functions to grafonnet
 local g = grafonnet + layout.withLayout;
 
 // Example panel

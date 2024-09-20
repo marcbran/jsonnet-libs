@@ -3,7 +3,7 @@ local metric(name) = {
     expr(field): '%s%s"%s"' % [field, '=', value],
   },
   local labels = [[field, self[field]] for field in std.sort(std.objectFields(self)) if field != 'expr'],
-  local operators = [[label[0], if std.type(label[1]) == 'string' then eq(label[1]) else label[1]] for label in labels],
+  local operators = [[label[0], if std.type(label[1]) == 'function' then label[1] else eq(label[1])] for label in labels],
   local matchers = [operator[1].expr(operator[0]) for operator in operators],
   local matcherString = std.join(', ', matchers),
   expr: if std.length(matcherString) > 0 then '%s{%s}' % [name, matcherString] else name,

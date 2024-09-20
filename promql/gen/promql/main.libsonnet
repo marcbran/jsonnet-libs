@@ -1,9 +1,31 @@
-local rangeVector(vector, range) = {
-  output: '%s[%s]' % [vector.output, range],
+local rangeSelector(vector, range) = {
+  expr: '%s[%s]' % [vector.expr, range],
+};
+
+local offsetModifier(vector, offset) = {
+  expr: '%s offset %s' % [vector.expr, offset],
+};
+
+local atModifier(vector, time) = {
+  expr: '%s @ %s' % [vector.expr, time],
+};
+
+local subquery(vector, range, resolution=null) = {
+  expr:
+    if (resolution == null)
+    then '%s[%s]' % [vector.expr, range]
+    else '%s[%s:%s]' % [vector.expr, range, resolution],
+};
+
+local selectors = {
+  range: rangeSelector,
+  offset: offsetModifier,
+  at: atModifier,
+  subquery: subquery,
 };
 
 local matcher(value, operator) = {
-  output(field): '%s%s"%s"' % [field, operator, value],
+  expr(field): '%s%s"%s"' % [field, operator, value],
 };
 
 local matchers = {
@@ -18,8 +40,8 @@ local operator(left, operator, right, by, ignoring, group_left, group_right) = {
   local ignoringString = if (std.length(ignoring) > 0) then 'ignoring(%s)' % std.join(', ', ignoring) else '',
   local groupLeftString = if (std.length(group_left) > 0) then 'group_left(%s)' % std.join(', ', group_left) else '',
   local groupRightString = if (std.length(group_right) > 0) then 'group_right(%s)' % std.join(', ', group_right) else '',
-  local parts = [left.output, operator, byString, ignoringString, groupLeftString, groupRightString, right.output],
-  output: std.join(' ', [part for part in parts if part != '']),
+  local parts = [left.expr, operator, byString, ignoringString, groupLeftString, groupRightString, right.expr],
+  expr: std.join(' ', [part for part in parts if part != '']),
 };
 
 local arithmeticOperators = {
@@ -55,9 +77,9 @@ local comparisonOperators = {
 local aggregationOperator(operator, parameter, expression, by, without) = {
   local byString = if (std.length(by) > 0) then 'by(%s)' % std.join(', ', by) else '',
   local withoutString = if (std.length(without) > 0) then 'without(%s)' % std.join(', ', without) else '',
-  local expressionString = if (parameter == '') then '(%s)' % expression.output else '(%s, %s)' % [std.manifestJson(parameter), expression.output],
+  local expressionString = if (parameter == '') then '(%s)' % expression.expr else '(%s, %s)' % [std.manifestJson(parameter), expression.expr],
   local parts = [operator, byString, withoutString, expressionString],
-  output: std.join(' ', [part for part in parts if part != '']),
+  expr: std.join(' ', [part for part in parts if part != '']),
 };
 
 local aggregationOperators = {
@@ -84,18 +106,18 @@ local func(name, parameters=[]) = {
       then parameters[:std.length(parameters) - 1] + parameters[std.length(parameters) - 1]
       else parameters,
   local parameterString = if (std.length(params) > 0) then std.join(', ', [
-    if (std.type(parameter) == 'object') then parameter.output else std.manifestJson(parameter)
+    if (std.type(parameter) == 'object') then parameter.expr else std.manifestJson(parameter)
     for parameter in params
   ]) else '',
-  output: '%s(%s)' % [name, parameterString],
+  expr: '%s(%s)' % [name, parameterString],
 };
 
 local functions = {
   abs(vector): func('abs', [vector]),
   absent(vector): func('absent', [vector]),
-  absent_over_time(vector, range): func('absent_over_time', [rangeVector(vector, range)]),
+  absent_over_time(vector, range): func('absent_over_time', [rangeSelector(vector, range)]),
   ceil(vector): func('ceil', [vector]),
-  changes(vector, range): func('changes', [rangeVector(vector, range)]),
+  changes(vector, range): func('changes', [rangeSelector(vector, range)]),
   clamp(vector, min, max): func('clamp', [vector, min, max]),
   clamp_max(vector, max): func('clamp_max', [vector, max]),
   clamp_min(vector, min): func('clamp_min', [vector, min]),
@@ -103,8 +125,8 @@ local functions = {
   day_of_week(vector): func('day_of_week', [vector]),
   day_of_year(vector): func('day_of_year', [vector]),
   days_in_month(vector): func('days_in_month', [vector]),
-  delta(vector, range): func('delta', [rangeVector(vector, range)]),
-  deriv(vector, range): func('deriv', [rangeVector(vector, range)]),
+  delta(vector, range): func('delta', [rangeSelector(vector, range)]),
+  deriv(vector, range): func('deriv', [rangeSelector(vector, range)]),
   exp(vector): func('exp', [vector]),
   floor(vector): func('floor', [vector]),
   histogram_avg(vector): func('histogram_avg', [vector]),
@@ -114,11 +136,11 @@ local functions = {
   histogram_quantile(phi, vector): func('histogram_quantile', [phi, vector]),
   histogram_stddev(vector): func('histogram_stddev', [vector]),
   histogram_stdvar(vector): func('histogram_stdvar', [vector]),
-  holt_winters(vector, range, sf, tf): func('holt_winters', [rangeVector(vector, range), sf, tf]),
+  holt_winters(vector, range, sf, tf): func('holt_winters', [rangeSelector(vector, range), sf, tf]),
   hour(vector): func('hour', [vector]),
-  idelta(vector, range): func('idelta', [rangeVector(vector, range)]),
-  increase(vector, range): func('increase', [rangeVector(vector, range)]),
-  irate(vector, range): func('irate', [rangeVector(vector, range)]),
+  idelta(vector, range): func('idelta', [rangeSelector(vector, range)]),
+  increase(vector, range): func('increase', [rangeSelector(vector, range)]),
+  irate(vector, range): func('irate', [rangeSelector(vector, range)]),
   label_join(v, dst_label, separator, src_labels): func('label_join', [v, dst_label, separator, src_labels]),
   label_replace(v, dst_label, replacement, src_label, regex): func('label_replace', [v, dst_label, replacement, src_label, regex]),
   ln(vector): func('ln', [vector]),
@@ -126,9 +148,9 @@ local functions = {
   log10(vector): func('log10', [vector]),
   minute(vector): func('minute', [vector]),
   month(vector): func('month', [vector]),
-  predict_linear(vector, range, t): func('predict_linear', [rangeVector(vector, range), t]),
-  rate(vector, range): func('rate', [rangeVector(vector, range)]),
-  resets(vector, range): func('resets', [rangeVector(vector, range)]),
+  predict_linear(vector, range, t): func('predict_linear', [rangeSelector(vector, range), t]),
+  rate(vector, range): func('rate', [rangeSelector(vector, range)]),
+  resets(vector, range): func('resets', [rangeSelector(vector, range)]),
   round(vector, to_nearest=1): func('round', [vector, to_nearest]),
   scalar(vector): func('scalar', [vector]),
   sgn(vector): func('sgn', [vector]),
@@ -141,17 +163,17 @@ local functions = {
   timestamp(vector): func('timestamp', [vector]),
   vector(scalar): func('vector', [scalar]),
   year(vector): func('year', [vector]),
-  avg_over_time(vector, range): func('avg_over_time', [rangeVector(vector, range)]),
-  min_over_time(vector, range): func('min_over_time', [rangeVector(vector, range)]),
-  max_over_time(vector, range): func('max_over_time', [rangeVector(vector, range)]),
-  sum_over_time(vector, range): func('sum_over_time', [rangeVector(vector, range)]),
-  count_over_time(vector, range): func('count_over_time', [rangeVector(vector, range)]),
-  quantile_over_time(scalar, vector, range): func('quantile_over_time', [scalar, rangeVector(vector, range)]),
-  stddev_over_time(vector, range): func('stddev_over_time', [rangeVector(vector, range)]),
-  stdvar_over_time(vector, range): func('stdvar_over_time', [rangeVector(vector, range)]),
-  last_over_time(vector, range): func('last_over_time', [rangeVector(vector, range)]),
-  present_over_time(vector, range): func('present_over_time', [rangeVector(vector, range)]),
-  mad_over_time(vector, range): func('mad_over_time', [rangeVector(vector, range)]),
+  avg_over_time(vector, range): func('avg_over_time', [rangeSelector(vector, range)]),
+  min_over_time(vector, range): func('min_over_time', [rangeSelector(vector, range)]),
+  max_over_time(vector, range): func('max_over_time', [rangeSelector(vector, range)]),
+  sum_over_time(vector, range): func('sum_over_time', [rangeSelector(vector, range)]),
+  count_over_time(vector, range): func('count_over_time', [rangeSelector(vector, range)]),
+  quantile_over_time(scalar, vector, range): func('quantile_over_time', [scalar, rangeSelector(vector, range)]),
+  stddev_over_time(vector, range): func('stddev_over_time', [rangeSelector(vector, range)]),
+  stdvar_over_time(vector, range): func('stdvar_over_time', [rangeSelector(vector, range)]),
+  last_over_time(vector, range): func('last_over_time', [rangeSelector(vector, range)]),
+  present_over_time(vector, range): func('present_over_time', [rangeSelector(vector, range)]),
+  mad_over_time(vector, range): func('mad_over_time', [rangeSelector(vector, range)]),
   acos(vector): func('acos', [vector]),
   acosh(vector): func('acosh', [vector]),
   asin(vector): func('asin', [vector]),
@@ -170,7 +192,8 @@ local functions = {
 };
 
 local promql =
-  matchers
+  selectors
+  + matchers
   + arithmeticOperators
   + comparisonOperators
   + aggregationOperators
