@@ -5,7 +5,7 @@ function clean {
   cd "$(dirname "${0}")/.."
 
   echo "Cleaning up..."
-#  docker-compose down
+  docker-compose down
 }
 
 clean

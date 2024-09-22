@@ -1,10 +1,9 @@
-.PHONY: build test it
+.PHONY: it build deliver
+
+it:
+	@$(MAKE) -C it run
 
 build:
 	@go build
 
-test:
-	@go test
-
-it:
-	@$(MAKE) -C it run
+deliver: it build

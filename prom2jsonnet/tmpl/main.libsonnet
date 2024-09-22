@@ -5,7 +5,7 @@ local metric = j.LocalFunc('metric', [j.Id('name')], j.Object([
     'eq',
     [j.Id('value')],
     j.Object([
-      j.FieldFunc(j.Id('output'), [j.Id('field')], j.String('%s%s"%s"', [j.Id('field'), j.String('='), j.Id('value')])),
+      j.FieldFunc(j.Id('expr'), [j.Id('field')], j.String('%s%s"%s"', [j.Id('field'), j.String('='), j.Id('value')])),
     ], newlines=1)
   ),
   j.Local(
@@ -14,7 +14,7 @@ local metric = j.LocalFunc('metric', [j.Id('name')], j.Object([
       For('field', j.Call(j.Member(j.Id('std'), 'sort'), [
       j.Call(j.Member(j.Id('std'), 'objectFields'), [j.Self]),
     ])).
-      If(j.Neq(j.Id('field'), j.String('output')))
+      If(j.Neq(j.Id('field'), j.String('expr')))
   ),
   j.Local(
     'operators',
@@ -29,7 +29,7 @@ local metric = j.LocalFunc('metric', [j.Id('name')], j.Object([
   j.Local(
     'matchers',
     j.ArrayComp(
-      j.Call(j.Member(j.Index(j.Id('operator'), j.Number(1)), 'output'), [j.Index(j.Id('operator'), j.Number(0))]),
+      j.Call(j.Member(j.Index(j.Id('operator'), j.Number(1)), 'expr'), [j.Index(j.Id('operator'), j.Number(0))]),
     ).
       For('operator', j.Id('operators'))
   ),
@@ -38,7 +38,7 @@ local metric = j.LocalFunc('metric', [j.Id('name')], j.Object([
     j.Call(j.Member(j.Id('std'), 'join'), [j.String(', '), j.Id('matchers')])
   ),
   j.Field(
-    j.Id('output'),
+    j.Id('expr'),
     j.If(j.Gt(j.Call(j.Member(j.Id('std'), 'length'), [j.Id('matcherString')]), j.Number(0))).
       Then(j.String('%s{%s}', [j.Id('name'), j.Id('matcherString')])).
       Else(j.Id('name')),

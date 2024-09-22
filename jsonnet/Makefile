@@ -1,4 +1,4 @@
-.PHONY: test it build
+.PHONY: test it build deliver
 
 test:
 	@$(MAKE) -C test run
@@ -8,3 +8,5 @@ it:
 
 build:
 	@./scripts/build.sh
+
+deliver: test it build
