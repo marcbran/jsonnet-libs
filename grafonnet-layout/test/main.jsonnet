@@ -13,6 +13,13 @@ local random = {
   },
 };
 
+local mixin = {
+  datasource: {
+    default: true,
+    type: 'prometheus',
+  },
+};
+
 local rowTests = {
   name: 'row',
   tests: [
@@ -210,11 +217,106 @@ local spaceTests = {
   ],
 };
 
+local mixinTests = {
+  name: 'mixin',
+  tests: [
+    {
+      name: 'single',
+      input:: lt.mixin(
+        mixin, lt.panel(1, randomPanel('a')),
+      ),
+      expected: [{
+        datasource: { default: true, type: 'prometheus' },
+        gridPos: { h: 1, w: 1, x: 0, y: 0 },
+        title: 'a',
+        type: 'timeseries',
+      }],
+    },
+    {
+      name: 'multiple',
+      input:: lt.mixin(
+        mixin,
+        lt.row(6, [
+          lt.panel(2, randomPanel('a')),
+          lt.panel(2, randomPanel('b')),
+          lt.panel(2, randomPanel('c')),
+        ])
+      ),
+      expected: [
+        {
+          datasource: { default: true, type: 'prometheus' },
+          gridPos: { h: 6, w: 2, x: 0, y: 0 },
+          title: 'a',
+          type: 'timeseries',
+        },
+        {
+          datasource: { default: true, type: 'prometheus' },
+          gridPos: { h: 6, w: 2, x: 2, y: 0 },
+          title: 'b',
+          type: 'timeseries',
+        },
+        {
+          datasource: { default: true, type: 'prometheus' },
+          gridPos: { h: 6, w: 2, x: 4, y: 0 },
+          title: 'c',
+          type: 'timeseries',
+        },
+      ],
+    },
+    {
+      name: 'nested',
+      input:: lt.column(6, [
+        lt.panel(1, randomPanel('a')),
+        lt.mixin(
+          mixin,
+          lt.row(6, [
+            lt.panel(2, randomPanel('b')),
+            lt.panel(2, randomPanel('c')),
+            lt.panel(2, randomPanel('d')),
+          ])
+        ),
+        lt.panel(4, randomPanel('e')),
+      ]),
+      expected: [
+        {
+          gridPos: { h: 1, w: 6, x: 0, y: 0 },
+          title: 'a',
+          type: 'timeseries',
+        },
+        {
+          datasource: { default: true, type: 'prometheus' },
+          gridPos: { h: 6, w: 2, x: 0, y: 1 },
+          title: 'b',
+          type: 'timeseries',
+        },
+        {
+          datasource: { default: true, type: 'prometheus' },
+          gridPos: { h: 6, w: 2, x: 2, y: 1 },
+          title: 'c',
+          type: 'timeseries',
+        },
+        {
+          datasource: { default: true, type: 'prometheus' },
+          gridPos: { h: 6, w: 2, x: 4, y: 1 },
+          title: 'd',
+          type: 'timeseries',
+        },
+        {
+          gridPos: { h: 4, w: 6, x: 0, y: 7 },
+          title: 'e',
+          type: 'timeseries',
+        },
+      ],
+    },
+  ],
+};
+
 local testGroups = [
   rowTests,
   columnTests,
   panelTests,
   spaceTests,
+  mixinTests,
 ];
 
 std.flattenArrays([
