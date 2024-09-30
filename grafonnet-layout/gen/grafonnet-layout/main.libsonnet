@@ -62,6 +62,11 @@ local render = {
     w: width,
     h: height,
   },
+  mixin(mixin, x=0, y=0, w=0, h=0):
+    local renderedChild = self.dispatch(mixin.child, x, y, w, h);
+    renderedChild {
+      panels: [panel + mixin.mixin for panel in super.panels],
+    },
   raw(panel, x=0, y=0, w=0, h=0): {
     panels: [panel {
       gridPos: {
@@ -85,6 +90,8 @@ local render = {
       self.space(elem, x, y, w, h)
     else if std.get(elem, 'type', '') == 'layout-panel' then
       self.panel(elem, x, y, w, h)
+    else if std.get(elem, 'type', '') == 'layout-mixin' then
+      self.mixin(elem, x, y, w, h)
     else
       self.raw(elem, x, y, w, h),
 };
@@ -114,12 +121,19 @@ local space(size) = {
   size: size,
 };
 
+local mixin(mixin, child) = {
+  type: 'layout-mixin',
+  mixin: mixin,
+  child: child,
+};
+
 local withLayout = {
   lt: {
     row: row,
     column: column,
     panel: panel,
     space: space,
+    mixin: mixin,
   },
   local layoutMixin = {
     withLayout(lt): super.withPanels(layout(lt)),
@@ -138,5 +152,6 @@ local withLayout = {
   column: column,
   panel: panel,
   space: space,
+  mixin: mixin,
   withLayout: withLayout,
 }
