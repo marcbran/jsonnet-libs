@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  grafana:
+    image: grafana/grafana-oss
+    environment:
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+    ports:
+      - "3000:3000"
