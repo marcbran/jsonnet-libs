@@ -7,65 +7,88 @@ import (
 func TestFormatJsonnet(t *testing.T) {
 	tests := []struct {
 		name     string
-		provider string
-		source   string
-		data     any
+		provider Provider
 		expected string
 	}{
 		{
-			name:     "Single Resource and Data Source",
-			provider: "local",
-			source:   "hashicorp/local",
-			data:     localProviderSchema(),
-			expected: `{
-  resource: {
-    file(name): {
-      local resource = self,
-      content:: null,
-      __required_provider__: {
-        'local': {
-          source: 'hashicorp/local',
+			name: "Single Resource and Data Source",
+			provider: Provider{
+				name:    "local",
+				source:  "hashicorp/local",
+				version: "0.0.1",
+				schema:  localProviderSchema(),
+			},
+			expected: `local build = {
+  expression(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.ref else std.mapWithKey(function(key, value) self.expression(value), val) else if std.type(val) == 'array' then std.map(function(element) self.expression(element), val) else if std.type(val) == 'string' then '"%s"' % [val] else val,
+  template(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then '${%s}' % [val._.ref] else std.mapWithKey(function(key, value) self.template(value), val) else if std.type(val) == 'array' then std.map(function(element) self.template(element), val) else if std.type(val) == 'string' then val else val,
+};
+
+local path(segments) = {
+  ref: { _: { ref: std.join('.', segments) } },
+  child(segment): path(segments + [segment]),
+};
+
+local func(name, parameters=[]) = {
+  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
+  _: { ref: '%s(%s)' % [name, parameterString] },
+};
+
+local provider = {
+  local name = 'local',
+  provider(block): {
+    _: {
+      block: {
+        provider: {
+          [name]: std.prune({
+            alias: std.get(block, 'alias', null, true),
+          }),
         },
       },
-      __block__: {
-        resource: {
-          local_file: {
-            [name]: {
-              content: resource.content,
+    },
+  },
+  resource: {
+    file(name, block): {
+      local p = path(['local_file', name]),
+      _: p.ref._ {
+        block: {
+          resource: {
+            local_file: {
+              [name]: std.prune({
+                content: build.template(std.get(block, 'content', null, true)),
+              }),
             },
           },
         },
       },
+      content: p.child('content').ref,
     },
   },
   data: {
-    file(name): {
-      local data = self,
-      content:: null,
-      __required_provider__: {
-        'local': {
-          source: 'hashicorp/local',
-        },
-      },
-      __block__: {
-        data: {
-          local_file: {
-            [name]: {
-              content: data.content,
+    file(name, block): {
+      local p = path(['data', 'local_file', name]),
+      _: p.ref._ {
+        block: {
+          data: {
+            local_file: {
+              [name]: std.prune({
+              }),
             },
           },
         },
       },
+      content: p.child('content').ref,
     },
   },
-}
+};
+
+provider
 `,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual, err := formatJsonnet(tt.provider, tt.source, tt.data)
+			actual, err := formatJsonnet(tt.provider)
 			if err != nil {
 				t.Errorf("formatJsonnet() encounterd an erorr: %v", err)
 			}
