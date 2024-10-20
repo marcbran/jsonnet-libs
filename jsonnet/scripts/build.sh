@@ -6,6 +6,7 @@ function build() {
   mkdir -p "gen/jsonnet"
   cp "main.libsonnet" "gen/jsonnet"
   cp "main.libsonnet" "../prom2jsonnet/tmpl/jsonnet.libsonnet"
+  cp "main.libsonnet" "../terraform-provider/tmpl/jsonnet.libsonnet"
 }
 
 build
