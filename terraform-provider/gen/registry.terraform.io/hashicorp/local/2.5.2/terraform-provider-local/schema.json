@@ -1,0 +1,359 @@
+{
+  "format_version": "1.0",
+  "provider_schemas": {
+    "registry.terraform.io/hashicorp/local": {
+      "data_source_schemas": {
+        "local_file": {
+          "block": {
+            "attributes": {
+              "content": {
+                "computed": true,
+                "description": "Raw content of the file that was read, as UTF-8 encoded string. Files that do not contain UTF-8 text will have invalid UTF-8 sequences in `content`\n  replaced with the Unicode replacement character. ",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_base64": {
+                "computed": true,
+                "description": "Base64 encoded version of the file content (use this when dealing with binary data).",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_base64sha256": {
+                "computed": true,
+                "description": "Base64 encoded SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_base64sha512": {
+                "computed": true,
+                "description": "Base64 encoded SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_md5": {
+                "computed": true,
+                "description": "MD5 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha1": {
+                "computed": true,
+                "description": "SHA1 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha256": {
+                "computed": true,
+                "description": "SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha512": {
+                "computed": true,
+                "description": "SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "filename": {
+                "description": "Path to the file that will be read. The data source will return an error if the file does not exist.",
+                "description_kind": "plain",
+                "required": true,
+                "type": "string"
+              },
+              "id": {
+                "computed": true,
+                "description": "The hexadecimal encoding of the SHA1 checksum of the file content.",
+                "description_kind": "plain",
+                "type": "string"
+              }
+            },
+            "description": "Reads a file from the local filesystem.",
+            "description_kind": "plain"
+          },
+          "version": 0
+        },
+        "local_sensitive_file": {
+          "block": {
+            "attributes": {
+              "content": {
+                "computed": true,
+                "description": "Raw content of the file that was read, as UTF-8 encoded string. Files that do not contain UTF-8 text will have invalid UTF-8 sequences in `content`\n  replaced with the Unicode replacement character.",
+                "description_kind": "plain",
+                "sensitive": true,
+                "type": "string"
+              },
+              "content_base64": {
+                "computed": true,
+                "description": "Base64 encoded version of the file content (use this when dealing with binary data).",
+                "description_kind": "plain",
+                "sensitive": true,
+                "type": "string"
+              },
+              "content_base64sha256": {
+                "computed": true,
+                "description": "Base64 encoded SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_base64sha512": {
+                "computed": true,
+                "description": "Base64 encoded SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_md5": {
+                "computed": true,
+                "description": "MD5 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha1": {
+                "computed": true,
+                "description": "SHA1 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha256": {
+                "computed": true,
+                "description": "SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha512": {
+                "computed": true,
+                "description": "SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "filename": {
+                "description": "Path to the file that will be read. The data source will return an error if the file does not exist.",
+                "description_kind": "plain",
+                "required": true,
+                "type": "string"
+              },
+              "id": {
+                "computed": true,
+                "description": "The hexadecimal encoding of the SHA1 checksum of the file content.",
+                "description_kind": "plain",
+                "type": "string"
+              }
+            },
+            "description": "Reads a file that contains sensitive data, from the local filesystem.",
+            "description_kind": "plain"
+          },
+          "version": 0
+        }
+      },
+      "functions": {
+        "direxists": {
+          "description": "Given a path string, will return true if the directory exists. This function works only with directories. If used with a file, the function will return an error.\n\nThis function behaves similar to the built-in [`fileexists`](https://developer.hashicorp.com/terraform/language/functions/fileexists) function, however, `direxists` will not replace filesystem paths including `~` with the current user's home directory path. This functionality can be achieved by using the built-in [`pathexpand`](https://developer.hashicorp.com/terraform/language/functions/pathexpand) function with `direxists`, see example below.",
+          "parameters": [
+            {
+              "description": "Relative or absolute path to check for the existence of a directory",
+              "name": "path",
+              "type": "string"
+            }
+          ],
+          "return_type": "bool",
+          "summary": "Determines whether a directory exists at a given path."
+        }
+      },
+      "provider": {
+        "block": {
+          "description_kind": "plain"
+        },
+        "version": 0
+      },
+      "resource_schemas": {
+        "local_file": {
+          "block": {
+            "attributes": {
+              "content": {
+                "description": "Content to store in the file, expected to be a UTF-8 encoded string.\n Conflicts with `sensitive_content`, `content_base64` and `source`.\n Exactly one of these four arguments must be specified.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              },
+              "content_base64": {
+                "description": "Content to store in the file, expected to be binary encoded as base64 string.\n Conflicts with `content`, `sensitive_content` and `source`.\n Exactly one of these four arguments must be specified.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              },
+              "content_base64sha256": {
+                "computed": true,
+                "description": "Base64 encoded SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_base64sha512": {
+                "computed": true,
+                "description": "Base64 encoded SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_md5": {
+                "computed": true,
+                "description": "MD5 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha1": {
+                "computed": true,
+                "description": "SHA1 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha256": {
+                "computed": true,
+                "description": "SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha512": {
+                "computed": true,
+                "description": "SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "directory_permission": {
+                "computed": true,
+                "description": "Permissions to set for directories created (before umask), expressed as string in\n [numeric notation](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation).\n Default value is `\"0777\"`.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              },
+              "file_permission": {
+                "computed": true,
+                "description": "Permissions to set for the output file (before umask), expressed as string in\n [numeric notation](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation).\n Default value is `\"0777\"`.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              },
+              "filename": {
+                "description": "The path to the file that will be created.\n Missing parent directories will be created.\n If the file already exists, it will be overridden with the given content.",
+                "description_kind": "plain",
+                "required": true,
+                "type": "string"
+              },
+              "id": {
+                "computed": true,
+                "description": "The hexadecimal encoding of the SHA1 checksum of the file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "sensitive_content": {
+                "deprecated": true,
+                "description": "Sensitive content to store in the file, expected to be an UTF-8 encoded string.\n Will not be displayed in diffs.\n Conflicts with `content`, `content_base64` and `source`.\n Exactly one of these four arguments must be specified.\n If in need to use _sensitive_ content, please use the [`local_sensitive_file`](./sensitive_file.html)\n resource instead.",
+                "description_kind": "plain",
+                "optional": true,
+                "sensitive": true,
+                "type": "string"
+              },
+              "source": {
+                "description": "Path to file to use as source for the one we are creating.\n Conflicts with `content`, `sensitive_content` and `content_base64`.\n Exactly one of these four arguments must be specified.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              }
+            },
+            "description": "Generates a local file with the given content.",
+            "description_kind": "plain"
+          },
+          "version": 0
+        },
+        "local_sensitive_file": {
+          "block": {
+            "attributes": {
+              "content": {
+                "description": "Sensitive Content to store in the file, expected to be a UTF-8 encoded string.\n Conflicts with `content_base64` and `source`.\n Exactly one of these three arguments must be specified.",
+                "description_kind": "plain",
+                "optional": true,
+                "sensitive": true,
+                "type": "string"
+              },
+              "content_base64": {
+                "description": "Sensitive Content to store in the file, expected to be binary encoded as base64 string.\n Conflicts with `content` and `source`.\n Exactly one of these three arguments must be specified.",
+                "description_kind": "plain",
+                "optional": true,
+                "sensitive": true,
+                "type": "string"
+              },
+              "content_base64sha256": {
+                "computed": true,
+                "description": "Base64 encoded SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_base64sha512": {
+                "computed": true,
+                "description": "Base64 encoded SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_md5": {
+                "computed": true,
+                "description": "MD5 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha1": {
+                "computed": true,
+                "description": "SHA1 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha256": {
+                "computed": true,
+                "description": "SHA256 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "content_sha512": {
+                "computed": true,
+                "description": "SHA512 checksum of file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "directory_permission": {
+                "computed": true,
+                "description": "Permissions to set for directories created (before umask), expressed as string in\n [numeric notation](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation).\n Default value is `\"0700\"`.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              },
+              "file_permission": {
+                "computed": true,
+                "description": "Permissions to set for the output file (before umask), expressed as string in\n [numeric notation](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation).\n Default value is `\"0700\"`.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              },
+              "filename": {
+                "description": "The path to the file that will be created.\n Missing parent directories will be created.\n If the file already exists, it will be overridden with the given content.",
+                "description_kind": "plain",
+                "required": true,
+                "type": "string"
+              },
+              "id": {
+                "computed": true,
+                "description": "The hexadecimal encoding of the SHA1 checksum of the file content.",
+                "description_kind": "plain",
+                "type": "string"
+              },
+              "source": {
+                "description": "Path to file to use as source for the one we are creating.\n Conflicts with `content` and `content_base64`.\n Exactly one of these three arguments must be specified.",
+                "description_kind": "plain",
+                "optional": true,
+                "type": "string"
+              }
+            },
+            "description": "Generates a local file with the given sensitive content.",
+            "description_kind": "plain"
+          },
+          "version": 0
+        }
+      }
+    }
+  }
+}

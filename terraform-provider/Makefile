@@ -1,4 +1,4 @@
-.PHONY: build test it
+.PHONY: build test it gen
 
 build:
 	@go build
@@ -8,3 +8,6 @@ test:
 
 it:
 	@$(MAKE) -C it run
+
+gen:
+	@./scripts/gen.sh
