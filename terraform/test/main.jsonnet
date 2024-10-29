@@ -148,6 +148,7 @@ local moduleTests = {
   tests: [
     {
       name: 'string',
+      it: false,
       input:: [
         tf.Module('example', {
           source: './example',
@@ -588,6 +589,7 @@ std.flattenArrays([
       name: '%s/%s' % [group.name, test.name],
       actual: tf.Cfg(test.input),
       expected: test.expected,
+      it: std.get(test, 'it', true),
     }
     for test in group.tests
   ]
