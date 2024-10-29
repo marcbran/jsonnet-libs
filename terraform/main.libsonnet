@@ -2,16 +2,22 @@ local build = {
   expression(val):
     if std.type(val) == 'object' then
       if std.objectHas(val, '_')
-      then val._.ref
-      else std.mapWithKey(function(key, value) self.expression(value), val)
-    else if std.type(val) == 'array' then std.map(function(element) self.expression(element), val)
+      then
+        if std.objectHas(val._, 'ref')
+        then val._.ref
+        else '"%s"' % val._.str
+      else std.manifestJsonMinified(std.mapWithKey(function(key, value) self.template(value), val))
+    else if std.type(val) == 'array' then std.manifestJsonMinified(std.map(function(element) self.template(element), val))
     else if std.type(val) == 'string' then '"%s"' % val
     else val,
 
   template(val):
     if std.type(val) == 'object' then
       if std.objectHas(val, '_')
-      then '${%s}' % val._.ref
+      then
+        if std.objectHas(val._, 'ref')
+        then '${%s}' % val._.ref
+        else val._.str
       else std.mapWithKey(function(key, value) self.template(value), val)
     else if std.type(val) == 'array' then std.map(function(element) self.template(element), val)
     else if std.type(val) == 'string' then '%s' % val
@@ -29,6 +35,12 @@ local functions = {
   jsonencode(parameter): func('jsonencode', [parameter]),
   trimprefix(string, prefix): func('trimprefix', [string, prefix]),
   trimsuffix(string, prefix): func('trimsuffix', [string, prefix]),
+};
+
+local Format(string, values) = {
+  _: {
+    str: string % [build.template(value) for value in values],
+  },
 };
 
 local Variable(name, block) = {
@@ -133,6 +145,7 @@ local Cfg(resources) =
   [preamble] + extractBlocks(resources);
 
 local terraform = functions {
+  Format: Format,
   Variable: Variable,
   Local: Local,
   Output: Output,

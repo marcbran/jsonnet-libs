@@ -167,7 +167,7 @@ local moduleTests = {
 };
 
 local functionTests = {
-  name: 'local',
+  name: 'function',
   tests: [
     {
       name: 'string',
@@ -181,6 +181,40 @@ local functionTests = {
           output: {
             example: {
               value: '${trimprefix("helloworld", "hello")}',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'array',
+      input:: [
+        tf.Output('example', {
+          value: tf.jsonencode([{ foo: 'bar' }]),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${jsonencode([{"foo":"bar"}])}',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'object',
+      input:: [
+        tf.Output('example', {
+          value: tf.jsonencode({ foo: 'bar' }),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${jsonencode({"foo":"bar"})}',
             },
           },
         },
@@ -215,6 +249,46 @@ local functionTests = {
           output: {
             example: {
               value: '${provider::local::direxists("/opt/terraform")}',
+            },
+          },
+        },
+      ]),
+    },
+  ],
+};
+
+local formatTests = {
+  name: 'format',
+  tests: [
+    {
+      name: 'string',
+      input:: [
+        tf.Output('example', {
+          value: tf.Format('Hello %s!', ['World']),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: 'Hello World!',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'function',
+      input:: [
+        tf.Output('example', {
+          value: tf.Format('Hel1lo %s!', [tf.jsonencode({ foo: 'bar' })]),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: 'Hello ${jsonencode({"foo":"bar"})}!',
             },
           },
         },
@@ -503,6 +577,7 @@ local testGroups = [
   localTests,
   moduleTests,
   functionTests,
+  formatTests,
   resourceTests,
   dataTests,
 ];
