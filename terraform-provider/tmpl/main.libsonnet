@@ -7,7 +7,11 @@ local build = j.Local('build', j.Object([
     j.If(j.Eq(j.Std.type(j.Id('val')), j.String('object')))
     .Then(
       j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
-      .Then(j.Member(j.Member(j.Id('val'), '_'), 'ref'))
+      .Then(
+        j.If(j.Std.objectHas(j.Member(j.Id('val'), '_'), j.String('ref')))
+        .Then(j.Member(j.Member(j.Id('val'), '_'), 'ref'))
+        .Else(j.String('"%s"', [j.Member(j.Member(j.Id('val'), '_'), 'str')]))
+      )
       .Else(j.Std.mapWithKey(j.Func([j.Id('key'), j.Id('value')], j.Call(j.Member(j.Self, 'expression'), [j.Id('value')])), j.Id('val')))
     )
     .Else(
@@ -26,7 +30,11 @@ local build = j.Local('build', j.Object([
     j.If(j.Eq(j.Std.type(j.Id('val')), j.String('object')))
     .Then(
       j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
-      .Then(j.String('${%s}', [j.Member(j.Member(j.Id('val'), '_'), 'ref')]))
+      .Then(
+        j.If(j.Std.objectHas(j.Member(j.Id('val'), '_'), j.String('ref')))
+        .Then(j.String('${%s}', [j.Member(j.Member(j.Id('val'), '_'), 'ref')]))
+        .Else(j.Member(j.Member(j.Id('val'), '_'), 'str'))
+      )
       .Else(j.Std.mapWithKey(j.Func([j.Id('key'), j.Id('value')], j.Call(j.Member(j.Self, 'template'), [j.Id('value')])), j.Id('val')))
     )
     .Else(
