@@ -215,8 +215,8 @@ func formatJsonnet(provider Provider) (string, error) {
 	snippet := fmt.Sprintf(`{
 		template: import 'main.libsonnet',
         provider: import 'provider.json',
-        output: self.template('%s', '%s', self.provider)
-	}.output`, provider.name, provider.source)
+        output: self.template('%s', '%s', '%s', self.provider)
+	}.output`, provider.name, provider.source, provider.version)
 	jsonStr, err := vm.EvaluateAnonymousSnippet("main.jsonnet", snippet)
 	if err != nil {
 		return "", err

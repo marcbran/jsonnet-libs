@@ -9,6 +9,16 @@ local cfg(blocks) = [
   },
 ] + blocks;
 
+local localCfg(blocks) = [
+  {
+    terraform: {
+      required_providers: {
+        'local': { source: 'registry.terraform.io/hashicorp/local', version: '2.5.2' },
+      },
+    },
+  },
+] + blocks;
+
 local variableTests = {
   name: 'variable',
   tests: [
@@ -140,6 +150,35 @@ local localTests = {
         },
       ]),
     },
+    {
+      name: 'resource',
+      input::
+        local example = Local.resource.file('example_txt', {
+          filename: 'example.txt',
+          content: 'hello',
+        });
+        [
+          example,
+          tf.Local('example2', example),
+        ],
+      expected: localCfg([
+        {
+          resource: {
+            local_file: {
+              example_txt: {
+                content: 'hello',
+                filename: 'example.txt',
+              },
+            },
+          },
+        },
+        {
+          locals: {
+            example2: '${local_file.example_txt}',
+          },
+        },
+      ]),
+    },
   ],
 };
 
@@ -245,7 +284,7 @@ local functionTests = {
           value: Local.func.direxists('/opt/terraform'),
         }),
       ],
-      expected: cfg([
+      expected: localCfg([
         {
           output: {
             example: {
@@ -282,7 +321,7 @@ local formatTests = {
       name: 'function',
       input:: [
         tf.Output('example', {
-          value: tf.Format('Hel1lo %s!', [tf.jsonencode({ foo: 'bar' })]),
+          value: tf.Format('Hello %s!', [tf.jsonencode({ foo: 'bar' })]),
         }),
       ],
       expected: cfg([
@@ -312,9 +351,10 @@ local resourceTests = {
           example,
           tf.Output('example', {
             value: example,
+            sensitive: true,
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           resource: {
             local_file: {
@@ -345,9 +385,10 @@ local resourceTests = {
           example,
           tf.Output('example', {
             value: example.content,
+            sensitive: true,
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           resource: {
             local_file: {
@@ -378,9 +419,10 @@ local resourceTests = {
           example,
           tf.Output('example', {
             value: tf.jsonencode(example),
+            sensitive: true,
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           resource: {
             local_file: {
@@ -414,7 +456,7 @@ local resourceTests = {
             content: example.content,
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           resource: {
             local_file: {
@@ -455,7 +497,7 @@ local dataTests = {
             value: example,
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           data: {
             local_file: {
@@ -486,7 +528,7 @@ local dataTests = {
             value: example.content,
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           data: {
             local_file: {
@@ -517,7 +559,7 @@ local dataTests = {
             value: tf.jsonencode(example),
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           data: {
             local_file: {
@@ -548,7 +590,7 @@ local dataTests = {
             filename: example.filename,
           }),
         ],
-      expected: cfg([
+      expected: localCfg([
         {
           data: {
             local_file: {

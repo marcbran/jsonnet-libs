@@ -117,12 +117,12 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
     },
     For(id, expr): compspec([forSpec(id, expr)]),
   },
-  Local(id, expr): {
-    output: 'local %s = %s' % [id, expr.output],
+  Local(id, expr, newline=false): {
+    output: 'local %s =%s%s' % [id, if (newline) then '\\n' else ' ', expr.output],
     arraySep: '; ',
   },
-  LocalFunc(id, params, expr): {
-    output: 'local %s(%s) = %s' % [id, joinExpr(', ', params), expr.output],
+  LocalFunc(id, params, expr, newline=false): {
+    output: 'local %s(%s) =%s%s' % [id, joinExpr(', ', params), if (newline) then '\\n' else ' ', expr.output],
     arraySep: '; ',
   },
   If(expr): {

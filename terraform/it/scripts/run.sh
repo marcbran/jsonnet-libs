@@ -17,9 +17,11 @@ function run() {
 
     local actual; actual="$(echo "${tst}" | jq -r '.[1]')"
     mkdir -p tf
+    touch tf/example.txt
     echo "${actual}" > tf/main.tf.json
     terraform -chdir=tf init
     terraform -chdir=tf plan
+    rm -rf tf
 
   done < <(jsonnet '../test/main.jsonnet' | jq -rc 'map([.it, .actual]) | .[]')
 

@@ -22,11 +22,30 @@ local build = {
     else if std.type(val) == 'array' then std.map(function(element) self.template(element), val)
     else if std.type(val) == 'string' then '%s' % val
     else val,
+
+  requiredProvider(val):
+    if (std.type(val) == 'object')
+    then
+      if (std.objectHas(val, '_'))
+      then std.get(val._, 'requiredProvider', {})
+      else std.foldl(
+        function(acc, val) std.mergePatch(acc, val),
+        std.map(function(key) build.requiredProvider(val[key]), std.objectFields(val)),
+        {}
+      )
+    else if (std.type(val) == 'array')
+    then std.foldl(
+      function(acc, val) std.mergePatch(acc, val),
+      std.map(function(element) build.requiredProvider(element), val),
+      {}
+    )
+    else {},
 };
 
 local func(name, parameters=[]) = {
   local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
   _: {
+    requiredProvider: build.requiredProvider(parameters),
     ref: '%s(%s)' % [name, parameterString],
   },
 };
@@ -39,6 +58,7 @@ local functions = {
 
 local Format(string, values) = {
   _: {
+    requiredProvider: build.requiredProvider(values),
     str: string % [build.template(value) for value in values],
   },
 };
@@ -64,6 +84,7 @@ local Variable(name, block) = {
 
 local Output(name, block) = {
   _: {
+    requiredProvider: build.requiredProvider(block),
     block: {
       output: {
         [name]: std.prune({
@@ -82,6 +103,7 @@ local Output(name, block) = {
 local Local(name, value) = {
   _: {
     ref: 'local.%s' % [name],
+    requiredProvider: build.requiredProvider(value),
     block: {
       locals: {
         [name]: build.template(value),
@@ -99,24 +121,6 @@ local Module(name, block) = {
     },
   },
 };
-
-local extractRequiredProvider(obj) =
-  if (std.type(obj) == 'object')
-  then
-    if (std.objectHas(obj, '_'))
-    then std.get(obj._, 'requiredProvider', {})
-    else std.foldl(
-      function(acc, obj) std.mergePatch(acc, obj),
-      std.map(function(key) extractRequiredProvider(obj[key]), std.objectFields(obj)),
-      {}
-    )
-  else if (std.type(obj) == 'array')
-  then std.foldl(
-    function(acc, obj) std.mergePatch(acc, obj),
-    std.map(function(element) extractRequiredProvider(element), obj),
-    {}
-  )
-  else {};
 
 local extractBlocks(obj) =
   if (std.type(obj) == 'object')
@@ -139,7 +143,7 @@ local extractBlocks(obj) =
 local Cfg(resources) =
   local preamble = {
     terraform: {
-      required_providers: extractRequiredProvider(resources),
+      required_providers: build.requiredProvider(resources),
     },
   };
   [preamble] + extractBlocks(resources);
