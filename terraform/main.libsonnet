@@ -5,10 +5,10 @@ local build = {
       then
         if std.objectHas(val._, 'ref')
         then val._.ref
-        else '"%s"' % val._.str
+        else '"%s"' % std.strReplace(val._.str, '\n', '\\n')
       else std.manifestJsonMinified(std.mapWithKey(function(key, value) self.template(value), val))
     else if std.type(val) == 'array' then std.manifestJsonMinified(std.map(function(element) self.template(element), val))
-    else if std.type(val) == 'string' then '"%s"' % val
+    else if std.type(val) == 'string' then '"%s"' % std.strReplace(val, '\n', '\\n')
     else val,
 
   template(val):

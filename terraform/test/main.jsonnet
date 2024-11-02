@@ -294,6 +294,23 @@ local functionTests = {
         },
       ]),
     },
+    {
+      name: 'multiline',
+      input:: [
+        tf.Output('example', {
+          value: tf.trimprefix('helloworld\ntest', 'hello'),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${trimprefix("helloworld\\ntest", "hello")}',
+            },
+          },
+        },
+      ]),
+    },
   ],
 };
 
@@ -369,6 +386,7 @@ local resourceTests = {
           output: {
             example: {
               value: '${local_file.example_txt}',
+              sensitive: true,
             },
           },
         },
@@ -403,6 +421,7 @@ local resourceTests = {
           output: {
             example: {
               value: '${local_file.example_txt.content}',
+              sensitive: true,
             },
           },
         },
@@ -437,6 +456,7 @@ local resourceTests = {
           output: {
             example: {
               value: '${jsonencode(local_file.example_txt)}',
+              sensitive: true,
             },
           },
         },
