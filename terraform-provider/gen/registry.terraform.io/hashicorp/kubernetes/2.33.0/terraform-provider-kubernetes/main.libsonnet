@@ -1,17 +1,28 @@
 local build = {
   expression(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.ref else std.mapWithKey(function(key, value) self.expression(value), val) else if std.type(val) == 'array' then std.map(function(element) self.expression(element), val) else if std.type(val) == 'string' then '"%s"' % [val] else val,
   template(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then '${%s}' % [val._.ref] else std.mapWithKey(function(key, value) self.template(value), val) else if std.type(val) == 'array' then std.map(function(element) self.template(element), val) else if std.type(val) == 'string' then val else val,
+  requiredProvider(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.requiredProvider else std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.requiredProvider(val[key]), std.objectFields(val)), {}) else if std.type(val) == 'array' then std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.requiredProvider(val[key]), val), {}) else {},
+};
+
+local requiredProvider = {
+  _: {
+    requiredProvider: {
+      kubernetes: {
+        source: 'registry.terraform.io/hashicorp/kubernetes',
+        version: '2.33.0',
+      },
+    },
+  },
 };
 
 local path(segments) = {
-  ref: { _: { ref: std.join('.', segments) } },
   child(segment): path(segments + [segment]),
+  out: requiredProvider { _+: { ref: std.join('.', segments) } },
 };
 
-local func(name, parameters=[]) = {
-  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
-  _: { ref: '%s(%s)' % [name, parameterString] },
-};
+local func(name, parameters=[]) =
+  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]);
+  requiredProvider { _+: { ref: '%s(%s)' % [name, parameterString] } };
 
 local provider = {
   local name = 'kubernetes',
@@ -29,7 +40,7 @@ local provider = {
   resource: {
     annotations(name, block): {
       local p = path(['kubernetes_annotations', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_annotations: {
@@ -45,17 +56,17 @@ local provider = {
           },
         },
       },
-      annotations: p.child('annotations').ref,
-      api_version: p.child('api_version').ref,
-      field_manager: p.child('field_manager').ref,
-      force: p.child('force').ref,
-      id: p.child('id').ref,
-      kind: p.child('kind').ref,
-      template_annotations: p.child('template_annotations').ref,
+      annotations: p.child('annotations').out,
+      api_version: p.child('api_version').out,
+      field_manager: p.child('field_manager').out,
+      force: p.child('force').out,
+      id: p.child('id').out,
+      kind: p.child('kind').out,
+      template_annotations: p.child('template_annotations').out,
     },
     api_service(name, block): {
       local p = path(['kubernetes_api_service', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_api_service: {
@@ -65,11 +76,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     api_service_v1(name, block): {
       local p = path(['kubernetes_api_service_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_api_service_v1: {
@@ -79,11 +90,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     certificate_signing_request(name, block): {
       local p = path(['kubernetes_certificate_signing_request', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_certificate_signing_request: {
@@ -94,13 +105,13 @@ local provider = {
           },
         },
       },
-      auto_approve: p.child('auto_approve').ref,
-      certificate: p.child('certificate').ref,
-      id: p.child('id').ref,
+      auto_approve: p.child('auto_approve').out,
+      certificate: p.child('certificate').out,
+      id: p.child('id').out,
     },
     certificate_signing_request_v1(name, block): {
       local p = path(['kubernetes_certificate_signing_request_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_certificate_signing_request_v1: {
@@ -111,13 +122,13 @@ local provider = {
           },
         },
       },
-      auto_approve: p.child('auto_approve').ref,
-      certificate: p.child('certificate').ref,
-      id: p.child('id').ref,
+      auto_approve: p.child('auto_approve').out,
+      certificate: p.child('certificate').out,
+      id: p.child('id').out,
     },
     cluster_role(name, block): {
       local p = path(['kubernetes_cluster_role', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_cluster_role: {
@@ -127,11 +138,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     cluster_role_binding(name, block): {
       local p = path(['kubernetes_cluster_role_binding', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_cluster_role_binding: {
@@ -141,11 +152,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     cluster_role_binding_v1(name, block): {
       local p = path(['kubernetes_cluster_role_binding_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_cluster_role_binding_v1: {
@@ -155,11 +166,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     cluster_role_v1(name, block): {
       local p = path(['kubernetes_cluster_role_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_cluster_role_v1: {
@@ -169,11 +180,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     config_map(name, block): {
       local p = path(['kubernetes_config_map', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_config_map: {
@@ -186,14 +197,14 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
     },
     config_map_v1(name, block): {
       local p = path(['kubernetes_config_map_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_config_map_v1: {
@@ -206,14 +217,14 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
     },
     config_map_v1_data(name, block): {
       local p = path(['kubernetes_config_map_v1_data', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_config_map_v1_data: {
@@ -226,14 +237,14 @@ local provider = {
           },
         },
       },
-      data: p.child('data').ref,
-      field_manager: p.child('field_manager').ref,
-      force: p.child('force').ref,
-      id: p.child('id').ref,
+      data: p.child('data').out,
+      field_manager: p.child('field_manager').out,
+      force: p.child('force').out,
+      id: p.child('id').out,
     },
     cron_job(name, block): {
       local p = path(['kubernetes_cron_job', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_cron_job: {
@@ -243,11 +254,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     cron_job_v1(name, block): {
       local p = path(['kubernetes_cron_job_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_cron_job_v1: {
@@ -257,11 +268,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     csi_driver(name, block): {
       local p = path(['kubernetes_csi_driver', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_csi_driver: {
@@ -271,11 +282,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     csi_driver_v1(name, block): {
       local p = path(['kubernetes_csi_driver_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_csi_driver_v1: {
@@ -285,11 +296,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     daemon_set_v1(name, block): {
       local p = path(['kubernetes_daemon_set_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_daemon_set_v1: {
@@ -300,12 +311,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_rollout: p.child('wait_for_rollout').ref,
+      id: p.child('id').out,
+      wait_for_rollout: p.child('wait_for_rollout').out,
     },
     daemonset(name, block): {
       local p = path(['kubernetes_daemonset', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_daemonset: {
@@ -316,12 +327,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_rollout: p.child('wait_for_rollout').ref,
+      id: p.child('id').out,
+      wait_for_rollout: p.child('wait_for_rollout').out,
     },
     default_service_account(name, block): {
       local p = path(['kubernetes_default_service_account', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_default_service_account: {
@@ -332,13 +343,13 @@ local provider = {
           },
         },
       },
-      automount_service_account_token: p.child('automount_service_account_token').ref,
-      default_secret_name: p.child('default_secret_name').ref,
-      id: p.child('id').ref,
+      automount_service_account_token: p.child('automount_service_account_token').out,
+      default_secret_name: p.child('default_secret_name').out,
+      id: p.child('id').out,
     },
     default_service_account_v1(name, block): {
       local p = path(['kubernetes_default_service_account_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_default_service_account_v1: {
@@ -349,13 +360,13 @@ local provider = {
           },
         },
       },
-      automount_service_account_token: p.child('automount_service_account_token').ref,
-      default_secret_name: p.child('default_secret_name').ref,
-      id: p.child('id').ref,
+      automount_service_account_token: p.child('automount_service_account_token').out,
+      default_secret_name: p.child('default_secret_name').out,
+      id: p.child('id').out,
     },
     deployment(name, block): {
       local p = path(['kubernetes_deployment', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_deployment: {
@@ -366,12 +377,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_rollout: p.child('wait_for_rollout').ref,
+      id: p.child('id').out,
+      wait_for_rollout: p.child('wait_for_rollout').out,
     },
     deployment_v1(name, block): {
       local p = path(['kubernetes_deployment_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_deployment_v1: {
@@ -382,12 +393,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_rollout: p.child('wait_for_rollout').ref,
+      id: p.child('id').out,
+      wait_for_rollout: p.child('wait_for_rollout').out,
     },
     endpoint_slice_v1(name, block): {
       local p = path(['kubernetes_endpoint_slice_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_endpoint_slice_v1: {
@@ -398,12 +409,12 @@ local provider = {
           },
         },
       },
-      address_type: p.child('address_type').ref,
-      id: p.child('id').ref,
+      address_type: p.child('address_type').out,
+      id: p.child('id').out,
     },
     endpoints(name, block): {
       local p = path(['kubernetes_endpoints', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_endpoints: {
@@ -413,11 +424,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     endpoints_v1(name, block): {
       local p = path(['kubernetes_endpoints_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_endpoints_v1: {
@@ -427,11 +438,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     env(name, block): {
       local p = path(['kubernetes_env', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_env: {
@@ -447,17 +458,17 @@ local provider = {
           },
         },
       },
-      api_version: p.child('api_version').ref,
-      container: p.child('container').ref,
-      field_manager: p.child('field_manager').ref,
-      force: p.child('force').ref,
-      id: p.child('id').ref,
-      init_container: p.child('init_container').ref,
-      kind: p.child('kind').ref,
+      api_version: p.child('api_version').out,
+      container: p.child('container').out,
+      field_manager: p.child('field_manager').out,
+      force: p.child('force').out,
+      id: p.child('id').out,
+      init_container: p.child('init_container').out,
+      kind: p.child('kind').out,
     },
     horizontal_pod_autoscaler(name, block): {
       local p = path(['kubernetes_horizontal_pod_autoscaler', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_horizontal_pod_autoscaler: {
@@ -467,11 +478,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     horizontal_pod_autoscaler_v1(name, block): {
       local p = path(['kubernetes_horizontal_pod_autoscaler_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_horizontal_pod_autoscaler_v1: {
@@ -481,11 +492,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     horizontal_pod_autoscaler_v2(name, block): {
       local p = path(['kubernetes_horizontal_pod_autoscaler_v2', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_horizontal_pod_autoscaler_v2: {
@@ -495,11 +506,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     horizontal_pod_autoscaler_v2beta2(name, block): {
       local p = path(['kubernetes_horizontal_pod_autoscaler_v2beta2', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_horizontal_pod_autoscaler_v2beta2: {
@@ -509,11 +520,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     ingress(name, block): {
       local p = path(['kubernetes_ingress', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_ingress: {
@@ -524,13 +535,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      status: p.child('status').ref,
-      wait_for_load_balancer: p.child('wait_for_load_balancer').ref,
+      id: p.child('id').out,
+      status: p.child('status').out,
+      wait_for_load_balancer: p.child('wait_for_load_balancer').out,
     },
     ingress_class(name, block): {
       local p = path(['kubernetes_ingress_class', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_ingress_class: {
@@ -540,11 +551,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     ingress_class_v1(name, block): {
       local p = path(['kubernetes_ingress_class_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_ingress_class_v1: {
@@ -554,11 +565,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     ingress_v1(name, block): {
       local p = path(['kubernetes_ingress_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_ingress_v1: {
@@ -569,13 +580,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      status: p.child('status').ref,
-      wait_for_load_balancer: p.child('wait_for_load_balancer').ref,
+      id: p.child('id').out,
+      status: p.child('status').out,
+      wait_for_load_balancer: p.child('wait_for_load_balancer').out,
     },
     job(name, block): {
       local p = path(['kubernetes_job', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_job: {
@@ -586,12 +597,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_completion: p.child('wait_for_completion').ref,
+      id: p.child('id').out,
+      wait_for_completion: p.child('wait_for_completion').out,
     },
     job_v1(name, block): {
       local p = path(['kubernetes_job_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_job_v1: {
@@ -602,12 +613,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_completion: p.child('wait_for_completion').ref,
+      id: p.child('id').out,
+      wait_for_completion: p.child('wait_for_completion').out,
     },
     labels(name, block): {
       local p = path(['kubernetes_labels', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_labels: {
@@ -622,16 +633,16 @@ local provider = {
           },
         },
       },
-      api_version: p.child('api_version').ref,
-      field_manager: p.child('field_manager').ref,
-      force: p.child('force').ref,
-      id: p.child('id').ref,
-      kind: p.child('kind').ref,
-      labels: p.child('labels').ref,
+      api_version: p.child('api_version').out,
+      field_manager: p.child('field_manager').out,
+      force: p.child('force').out,
+      id: p.child('id').out,
+      kind: p.child('kind').out,
+      labels: p.child('labels').out,
     },
     limit_range(name, block): {
       local p = path(['kubernetes_limit_range', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_limit_range: {
@@ -641,11 +652,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     limit_range_v1(name, block): {
       local p = path(['kubernetes_limit_range_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_limit_range_v1: {
@@ -655,11 +666,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     manifest(name, block): {
       local p = path(['kubernetes_manifest', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_manifest: {
@@ -672,14 +683,14 @@ local provider = {
           },
         },
       },
-      computed_fields: p.child('computed_fields').ref,
-      manifest: p.child('manifest').ref,
-      object: p.child('object').ref,
-      wait_for: p.child('wait_for').ref,
+      computed_fields: p.child('computed_fields').out,
+      manifest: p.child('manifest').out,
+      object: p.child('object').out,
+      wait_for: p.child('wait_for').out,
     },
     mutating_webhook_configuration(name, block): {
       local p = path(['kubernetes_mutating_webhook_configuration', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_mutating_webhook_configuration: {
@@ -689,11 +700,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     mutating_webhook_configuration_v1(name, block): {
       local p = path(['kubernetes_mutating_webhook_configuration_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_mutating_webhook_configuration_v1: {
@@ -703,11 +714,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     namespace(name, block): {
       local p = path(['kubernetes_namespace', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_namespace: {
@@ -718,12 +729,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_default_service_account: p.child('wait_for_default_service_account').ref,
+      id: p.child('id').out,
+      wait_for_default_service_account: p.child('wait_for_default_service_account').out,
     },
     namespace_v1(name, block): {
       local p = path(['kubernetes_namespace_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_namespace_v1: {
@@ -734,12 +745,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_default_service_account: p.child('wait_for_default_service_account').ref,
+      id: p.child('id').out,
+      wait_for_default_service_account: p.child('wait_for_default_service_account').out,
     },
     network_policy(name, block): {
       local p = path(['kubernetes_network_policy', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_network_policy: {
@@ -749,11 +760,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     network_policy_v1(name, block): {
       local p = path(['kubernetes_network_policy_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_network_policy_v1: {
@@ -763,11 +774,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     node_taint(name, block): {
       local p = path(['kubernetes_node_taint', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_node_taint: {
@@ -779,13 +790,13 @@ local provider = {
           },
         },
       },
-      field_manager: p.child('field_manager').ref,
-      force: p.child('force').ref,
-      id: p.child('id').ref,
+      field_manager: p.child('field_manager').out,
+      force: p.child('force').out,
+      id: p.child('id').out,
     },
     persistent_volume(name, block): {
       local p = path(['kubernetes_persistent_volume', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_persistent_volume: {
@@ -795,11 +806,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     persistent_volume_claim(name, block): {
       local p = path(['kubernetes_persistent_volume_claim', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_persistent_volume_claim: {
@@ -810,12 +821,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_until_bound: p.child('wait_until_bound').ref,
+      id: p.child('id').out,
+      wait_until_bound: p.child('wait_until_bound').out,
     },
     persistent_volume_claim_v1(name, block): {
       local p = path(['kubernetes_persistent_volume_claim_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_persistent_volume_claim_v1: {
@@ -826,12 +837,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_until_bound: p.child('wait_until_bound').ref,
+      id: p.child('id').out,
+      wait_until_bound: p.child('wait_until_bound').out,
     },
     persistent_volume_v1(name, block): {
       local p = path(['kubernetes_persistent_volume_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_persistent_volume_v1: {
@@ -841,11 +852,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     pod(name, block): {
       local p = path(['kubernetes_pod', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_pod: {
@@ -856,12 +867,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      target_state: p.child('target_state').ref,
+      id: p.child('id').out,
+      target_state: p.child('target_state').out,
     },
     pod_disruption_budget(name, block): {
       local p = path(['kubernetes_pod_disruption_budget', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_pod_disruption_budget: {
@@ -871,11 +882,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     pod_disruption_budget_v1(name, block): {
       local p = path(['kubernetes_pod_disruption_budget_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_pod_disruption_budget_v1: {
@@ -885,11 +896,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     pod_security_policy(name, block): {
       local p = path(['kubernetes_pod_security_policy', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_pod_security_policy: {
@@ -899,11 +910,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     pod_security_policy_v1beta1(name, block): {
       local p = path(['kubernetes_pod_security_policy_v1beta1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_pod_security_policy_v1beta1: {
@@ -913,11 +924,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     pod_v1(name, block): {
       local p = path(['kubernetes_pod_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_pod_v1: {
@@ -928,12 +939,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      target_state: p.child('target_state').ref,
+      id: p.child('id').out,
+      target_state: p.child('target_state').out,
     },
     priority_class(name, block): {
       local p = path(['kubernetes_priority_class', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_priority_class: {
@@ -947,15 +958,15 @@ local provider = {
           },
         },
       },
-      description: p.child('description').ref,
-      global_default: p.child('global_default').ref,
-      id: p.child('id').ref,
-      preemption_policy: p.child('preemption_policy').ref,
-      value: p.child('value').ref,
+      description: p.child('description').out,
+      global_default: p.child('global_default').out,
+      id: p.child('id').out,
+      preemption_policy: p.child('preemption_policy').out,
+      value: p.child('value').out,
     },
     priority_class_v1(name, block): {
       local p = path(['kubernetes_priority_class_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_priority_class_v1: {
@@ -969,15 +980,15 @@ local provider = {
           },
         },
       },
-      description: p.child('description').ref,
-      global_default: p.child('global_default').ref,
-      id: p.child('id').ref,
-      preemption_policy: p.child('preemption_policy').ref,
-      value: p.child('value').ref,
+      description: p.child('description').out,
+      global_default: p.child('global_default').out,
+      id: p.child('id').out,
+      preemption_policy: p.child('preemption_policy').out,
+      value: p.child('value').out,
     },
     replication_controller(name, block): {
       local p = path(['kubernetes_replication_controller', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_replication_controller: {
@@ -987,11 +998,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     replication_controller_v1(name, block): {
       local p = path(['kubernetes_replication_controller_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_replication_controller_v1: {
@@ -1001,11 +1012,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     resource_quota(name, block): {
       local p = path(['kubernetes_resource_quota', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_resource_quota: {
@@ -1015,11 +1026,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     resource_quota_v1(name, block): {
       local p = path(['kubernetes_resource_quota_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_resource_quota_v1: {
@@ -1029,11 +1040,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     role(name, block): {
       local p = path(['kubernetes_role', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_role: {
@@ -1043,11 +1054,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     role_binding(name, block): {
       local p = path(['kubernetes_role_binding', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_role_binding: {
@@ -1057,11 +1068,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     role_binding_v1(name, block): {
       local p = path(['kubernetes_role_binding_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_role_binding_v1: {
@@ -1071,11 +1082,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     role_v1(name, block): {
       local p = path(['kubernetes_role_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_role_v1: {
@@ -1085,11 +1096,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     runtime_class_v1(name, block): {
       local p = path(['kubernetes_runtime_class_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_runtime_class_v1: {
@@ -1100,12 +1111,12 @@ local provider = {
           },
         },
       },
-      handler: p.child('handler').ref,
-      id: p.child('id').ref,
+      handler: p.child('handler').out,
+      id: p.child('id').out,
     },
     secret(name, block): {
       local p = path(['kubernetes_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_secret: {
@@ -1119,16 +1130,16 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
-      type: p.child('type').ref,
-      wait_for_service_account_token: p.child('wait_for_service_account_token').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
+      type: p.child('type').out,
+      wait_for_service_account_token: p.child('wait_for_service_account_token').out,
     },
     secret_v1(name, block): {
       local p = path(['kubernetes_secret_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_secret_v1: {
@@ -1142,16 +1153,16 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
-      type: p.child('type').ref,
-      wait_for_service_account_token: p.child('wait_for_service_account_token').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
+      type: p.child('type').out,
+      wait_for_service_account_token: p.child('wait_for_service_account_token').out,
     },
     service(name, block): {
       local p = path(['kubernetes_service', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_service: {
@@ -1162,13 +1173,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      status: p.child('status').ref,
-      wait_for_load_balancer: p.child('wait_for_load_balancer').ref,
+      id: p.child('id').out,
+      status: p.child('status').out,
+      wait_for_load_balancer: p.child('wait_for_load_balancer').out,
     },
     service_account(name, block): {
       local p = path(['kubernetes_service_account', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_service_account: {
@@ -1179,13 +1190,13 @@ local provider = {
           },
         },
       },
-      automount_service_account_token: p.child('automount_service_account_token').ref,
-      default_secret_name: p.child('default_secret_name').ref,
-      id: p.child('id').ref,
+      automount_service_account_token: p.child('automount_service_account_token').out,
+      default_secret_name: p.child('default_secret_name').out,
+      id: p.child('id').out,
     },
     service_account_v1(name, block): {
       local p = path(['kubernetes_service_account_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_service_account_v1: {
@@ -1196,13 +1207,13 @@ local provider = {
           },
         },
       },
-      automount_service_account_token: p.child('automount_service_account_token').ref,
-      default_secret_name: p.child('default_secret_name').ref,
-      id: p.child('id').ref,
+      automount_service_account_token: p.child('automount_service_account_token').out,
+      default_secret_name: p.child('default_secret_name').out,
+      id: p.child('id').out,
     },
     service_v1(name, block): {
       local p = path(['kubernetes_service_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_service_v1: {
@@ -1213,13 +1224,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      status: p.child('status').ref,
-      wait_for_load_balancer: p.child('wait_for_load_balancer').ref,
+      id: p.child('id').out,
+      status: p.child('status').out,
+      wait_for_load_balancer: p.child('wait_for_load_balancer').out,
     },
     stateful_set(name, block): {
       local p = path(['kubernetes_stateful_set', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_stateful_set: {
@@ -1230,12 +1241,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_rollout: p.child('wait_for_rollout').ref,
+      id: p.child('id').out,
+      wait_for_rollout: p.child('wait_for_rollout').out,
     },
     stateful_set_v1(name, block): {
       local p = path(['kubernetes_stateful_set_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_stateful_set_v1: {
@@ -1246,12 +1257,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      wait_for_rollout: p.child('wait_for_rollout').ref,
+      id: p.child('id').out,
+      wait_for_rollout: p.child('wait_for_rollout').out,
     },
     storage_class(name, block): {
       local p = path(['kubernetes_storage_class', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_storage_class: {
@@ -1267,17 +1278,17 @@ local provider = {
           },
         },
       },
-      allow_volume_expansion: p.child('allow_volume_expansion').ref,
-      id: p.child('id').ref,
-      mount_options: p.child('mount_options').ref,
-      parameters: p.child('parameters').ref,
-      reclaim_policy: p.child('reclaim_policy').ref,
-      storage_provisioner: p.child('storage_provisioner').ref,
-      volume_binding_mode: p.child('volume_binding_mode').ref,
+      allow_volume_expansion: p.child('allow_volume_expansion').out,
+      id: p.child('id').out,
+      mount_options: p.child('mount_options').out,
+      parameters: p.child('parameters').out,
+      reclaim_policy: p.child('reclaim_policy').out,
+      storage_provisioner: p.child('storage_provisioner').out,
+      volume_binding_mode: p.child('volume_binding_mode').out,
     },
     storage_class_v1(name, block): {
       local p = path(['kubernetes_storage_class_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_storage_class_v1: {
@@ -1293,17 +1304,17 @@ local provider = {
           },
         },
       },
-      allow_volume_expansion: p.child('allow_volume_expansion').ref,
-      id: p.child('id').ref,
-      mount_options: p.child('mount_options').ref,
-      parameters: p.child('parameters').ref,
-      reclaim_policy: p.child('reclaim_policy').ref,
-      storage_provisioner: p.child('storage_provisioner').ref,
-      volume_binding_mode: p.child('volume_binding_mode').ref,
+      allow_volume_expansion: p.child('allow_volume_expansion').out,
+      id: p.child('id').out,
+      mount_options: p.child('mount_options').out,
+      parameters: p.child('parameters').out,
+      reclaim_policy: p.child('reclaim_policy').out,
+      storage_provisioner: p.child('storage_provisioner').out,
+      volume_binding_mode: p.child('volume_binding_mode').out,
     },
     token_request_v1(name, block): {
       local p = path(['kubernetes_token_request_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_token_request_v1: {
@@ -1313,12 +1324,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      token: p.child('token').ref,
+      id: p.child('id').out,
+      token: p.child('token').out,
     },
     validating_webhook_configuration(name, block): {
       local p = path(['kubernetes_validating_webhook_configuration', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_validating_webhook_configuration: {
@@ -1328,11 +1339,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     validating_webhook_configuration_v1(name, block): {
       local p = path(['kubernetes_validating_webhook_configuration_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             kubernetes_validating_webhook_configuration_v1: {
@@ -1342,13 +1353,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
   },
   data: {
     all_namespaces(name, block): {
       local p = path(['data', 'kubernetes_all_namespaces', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_all_namespaces: {
@@ -1358,12 +1369,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      namespaces: p.child('namespaces').ref,
+      id: p.child('id').out,
+      namespaces: p.child('namespaces').out,
     },
     config_map(name, block): {
       local p = path(['data', 'kubernetes_config_map', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_config_map: {
@@ -1374,14 +1385,14 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
     },
     config_map_v1(name, block): {
       local p = path(['data', 'kubernetes_config_map_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_config_map_v1: {
@@ -1392,14 +1403,14 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
     },
     endpoints_v1(name, block): {
       local p = path(['data', 'kubernetes_endpoints_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_endpoints_v1: {
@@ -1409,11 +1420,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     ingress(name, block): {
       local p = path(['data', 'kubernetes_ingress', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_ingress: {
@@ -1423,13 +1434,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
-      status: p.child('status').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
+      status: p.child('status').out,
     },
     ingress_v1(name, block): {
       local p = path(['data', 'kubernetes_ingress_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_ingress_v1: {
@@ -1439,13 +1450,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
-      status: p.child('status').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
+      status: p.child('status').out,
     },
     mutating_webhook_configuration_v1(name, block): {
       local p = path(['data', 'kubernetes_mutating_webhook_configuration_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_mutating_webhook_configuration_v1: {
@@ -1455,12 +1466,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      webhook: p.child('webhook').ref,
+      id: p.child('id').out,
+      webhook: p.child('webhook').out,
     },
     namespace(name, block): {
       local p = path(['data', 'kubernetes_namespace', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_namespace: {
@@ -1470,12 +1481,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
     },
     namespace_v1(name, block): {
       local p = path(['data', 'kubernetes_namespace_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_namespace_v1: {
@@ -1485,12 +1496,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
     },
     nodes(name, block): {
       local p = path(['data', 'kubernetes_nodes', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_nodes: {
@@ -1500,12 +1511,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      nodes: p.child('nodes').ref,
+      id: p.child('id').out,
+      nodes: p.child('nodes').out,
     },
     persistent_volume_claim(name, block): {
       local p = path(['data', 'kubernetes_persistent_volume_claim', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_persistent_volume_claim: {
@@ -1515,11 +1526,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     persistent_volume_claim_v1(name, block): {
       local p = path(['data', 'kubernetes_persistent_volume_claim_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_persistent_volume_claim_v1: {
@@ -1529,11 +1540,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     persistent_volume_v1(name, block): {
       local p = path(['data', 'kubernetes_persistent_volume_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_persistent_volume_v1: {
@@ -1543,11 +1554,11 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
+      id: p.child('id').out,
     },
     pod(name, block): {
       local p = path(['data', 'kubernetes_pod', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_pod: {
@@ -1557,13 +1568,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
-      status: p.child('status').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
+      status: p.child('status').out,
     },
     pod_v1(name, block): {
       local p = path(['data', 'kubernetes_pod_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_pod_v1: {
@@ -1573,13 +1584,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
-      status: p.child('status').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
+      status: p.child('status').out,
     },
     resource(name, block): {
       local p = path(['data', 'kubernetes_resource', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_resource: {
@@ -1591,13 +1602,13 @@ local provider = {
           },
         },
       },
-      api_version: p.child('api_version').ref,
-      kind: p.child('kind').ref,
-      object: p.child('object').ref,
+      api_version: p.child('api_version').out,
+      kind: p.child('kind').out,
+      object: p.child('object').out,
     },
     resources(name, block): {
       local p = path(['data', 'kubernetes_resources', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_resources: {
@@ -1613,17 +1624,17 @@ local provider = {
           },
         },
       },
-      api_version: p.child('api_version').ref,
-      field_selector: p.child('field_selector').ref,
-      kind: p.child('kind').ref,
-      label_selector: p.child('label_selector').ref,
-      limit: p.child('limit').ref,
-      namespace: p.child('namespace').ref,
-      objects: p.child('objects').ref,
+      api_version: p.child('api_version').out,
+      field_selector: p.child('field_selector').out,
+      kind: p.child('kind').out,
+      label_selector: p.child('label_selector').out,
+      limit: p.child('limit').out,
+      namespace: p.child('namespace').out,
+      objects: p.child('objects').out,
     },
     secret(name, block): {
       local p = path(['data', 'kubernetes_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_secret: {
@@ -1634,15 +1645,15 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
-      type: p.child('type').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
+      type: p.child('type').out,
     },
     secret_v1(name, block): {
       local p = path(['data', 'kubernetes_secret_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_secret_v1: {
@@ -1653,15 +1664,15 @@ local provider = {
           },
         },
       },
-      binary_data: p.child('binary_data').ref,
-      data: p.child('data').ref,
-      id: p.child('id').ref,
-      immutable: p.child('immutable').ref,
-      type: p.child('type').ref,
+      binary_data: p.child('binary_data').out,
+      data: p.child('data').out,
+      id: p.child('id').out,
+      immutable: p.child('immutable').out,
+      type: p.child('type').out,
     },
     server_version(name, block): {
       local p = path(['data', 'kubernetes_server_version', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_server_version: {
@@ -1671,21 +1682,21 @@ local provider = {
           },
         },
       },
-      build_date: p.child('build_date').ref,
-      compiler: p.child('compiler').ref,
-      git_commit: p.child('git_commit').ref,
-      git_tree_state: p.child('git_tree_state').ref,
-      git_version: p.child('git_version').ref,
-      go_version: p.child('go_version').ref,
-      id: p.child('id').ref,
-      major: p.child('major').ref,
-      minor: p.child('minor').ref,
-      platform: p.child('platform').ref,
-      version: p.child('version').ref,
+      build_date: p.child('build_date').out,
+      compiler: p.child('compiler').out,
+      git_commit: p.child('git_commit').out,
+      git_tree_state: p.child('git_tree_state').out,
+      git_version: p.child('git_version').out,
+      go_version: p.child('go_version').out,
+      id: p.child('id').out,
+      major: p.child('major').out,
+      minor: p.child('minor').out,
+      platform: p.child('platform').out,
+      version: p.child('version').out,
     },
     service(name, block): {
       local p = path(['data', 'kubernetes_service', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_service: {
@@ -1695,13 +1706,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
-      status: p.child('status').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
+      status: p.child('status').out,
     },
     service_account(name, block): {
       local p = path(['data', 'kubernetes_service_account', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_service_account: {
@@ -1711,15 +1722,15 @@ local provider = {
           },
         },
       },
-      automount_service_account_token: p.child('automount_service_account_token').ref,
-      default_secret_name: p.child('default_secret_name').ref,
-      id: p.child('id').ref,
-      image_pull_secret: p.child('image_pull_secret').ref,
-      secret: p.child('secret').ref,
+      automount_service_account_token: p.child('automount_service_account_token').out,
+      default_secret_name: p.child('default_secret_name').out,
+      id: p.child('id').out,
+      image_pull_secret: p.child('image_pull_secret').out,
+      secret: p.child('secret').out,
     },
     service_account_v1(name, block): {
       local p = path(['data', 'kubernetes_service_account_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_service_account_v1: {
@@ -1729,15 +1740,15 @@ local provider = {
           },
         },
       },
-      automount_service_account_token: p.child('automount_service_account_token').ref,
-      default_secret_name: p.child('default_secret_name').ref,
-      id: p.child('id').ref,
-      image_pull_secret: p.child('image_pull_secret').ref,
-      secret: p.child('secret').ref,
+      automount_service_account_token: p.child('automount_service_account_token').out,
+      default_secret_name: p.child('default_secret_name').out,
+      id: p.child('id').out,
+      image_pull_secret: p.child('image_pull_secret').out,
+      secret: p.child('secret').out,
     },
     service_v1(name, block): {
       local p = path(['data', 'kubernetes_service_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_service_v1: {
@@ -1747,13 +1758,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      spec: p.child('spec').ref,
-      status: p.child('status').ref,
+      id: p.child('id').out,
+      spec: p.child('spec').out,
+      status: p.child('status').out,
     },
     storage_class(name, block): {
       local p = path(['data', 'kubernetes_storage_class', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_storage_class: {
@@ -1763,17 +1774,17 @@ local provider = {
           },
         },
       },
-      allow_volume_expansion: p.child('allow_volume_expansion').ref,
-      id: p.child('id').ref,
-      mount_options: p.child('mount_options').ref,
-      parameters: p.child('parameters').ref,
-      reclaim_policy: p.child('reclaim_policy').ref,
-      storage_provisioner: p.child('storage_provisioner').ref,
-      volume_binding_mode: p.child('volume_binding_mode').ref,
+      allow_volume_expansion: p.child('allow_volume_expansion').out,
+      id: p.child('id').out,
+      mount_options: p.child('mount_options').out,
+      parameters: p.child('parameters').out,
+      reclaim_policy: p.child('reclaim_policy').out,
+      storage_provisioner: p.child('storage_provisioner').out,
+      volume_binding_mode: p.child('volume_binding_mode').out,
     },
     storage_class_v1(name, block): {
       local p = path(['data', 'kubernetes_storage_class_v1', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             kubernetes_storage_class_v1: {
@@ -1783,13 +1794,13 @@ local provider = {
           },
         },
       },
-      allow_volume_expansion: p.child('allow_volume_expansion').ref,
-      id: p.child('id').ref,
-      mount_options: p.child('mount_options').ref,
-      parameters: p.child('parameters').ref,
-      reclaim_policy: p.child('reclaim_policy').ref,
-      storage_provisioner: p.child('storage_provisioner').ref,
-      volume_binding_mode: p.child('volume_binding_mode').ref,
+      allow_volume_expansion: p.child('allow_volume_expansion').out,
+      id: p.child('id').out,
+      mount_options: p.child('mount_options').out,
+      parameters: p.child('parameters').out,
+      reclaim_policy: p.child('reclaim_policy').out,
+      storage_provisioner: p.child('storage_provisioner').out,
+      volume_binding_mode: p.child('volume_binding_mode').out,
     },
   },
   func: {

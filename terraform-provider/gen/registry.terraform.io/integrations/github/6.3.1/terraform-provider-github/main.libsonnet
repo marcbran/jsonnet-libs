@@ -1,17 +1,28 @@
 local build = {
   expression(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.ref else std.mapWithKey(function(key, value) self.expression(value), val) else if std.type(val) == 'array' then std.map(function(element) self.expression(element), val) else if std.type(val) == 'string' then '"%s"' % [val] else val,
   template(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then '${%s}' % [val._.ref] else std.mapWithKey(function(key, value) self.template(value), val) else if std.type(val) == 'array' then std.map(function(element) self.template(element), val) else if std.type(val) == 'string' then val else val,
+  requiredProvider(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.requiredProvider else std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.requiredProvider(val[key]), std.objectFields(val)), {}) else if std.type(val) == 'array' then std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.requiredProvider(val[key]), val), {}) else {},
+};
+
+local requiredProvider = {
+  _: {
+    requiredProvider: {
+      github: {
+        source: 'registry.terraform.io/integrations/github',
+        version: '6.3.1',
+      },
+    },
+  },
 };
 
 local path(segments) = {
-  ref: { _: { ref: std.join('.', segments) } },
   child(segment): path(segments + [segment]),
+  out: requiredProvider { _+: { ref: std.join('.', segments) } },
 };
 
-local func(name, parameters=[]) = {
-  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
-  _: { ref: '%s(%s)' % [name, parameterString] },
-};
+local func(name, parameters=[]) =
+  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]);
+  requiredProvider { _+: { ref: '%s(%s)' % [name, parameterString] } };
 
 local provider = {
   local name = 'github',
@@ -29,7 +40,7 @@ local provider = {
   resource: {
     actions_environment_secret(name, block): {
       local p = path(['github_actions_environment_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_environment_secret: {
@@ -44,18 +55,18 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      environment: p.child('environment').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      repository: p.child('repository').ref,
-      secret_name: p.child('secret_name').ref,
-      updated_at: p.child('updated_at').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      environment: p.child('environment').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      repository: p.child('repository').out,
+      secret_name: p.child('secret_name').out,
+      updated_at: p.child('updated_at').out,
     },
     actions_environment_variable(name, block): {
       local p = path(['github_actions_environment_variable', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_environment_variable: {
@@ -69,17 +80,17 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      environment: p.child('environment').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      updated_at: p.child('updated_at').ref,
-      value: p.child('value').ref,
-      variable_name: p.child('variable_name').ref,
+      created_at: p.child('created_at').out,
+      environment: p.child('environment').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      updated_at: p.child('updated_at').out,
+      value: p.child('value').out,
+      variable_name: p.child('variable_name').out,
     },
     actions_organization_oidc_subject_claim_customization_template(name, block): {
       local p = path(['github_actions_organization_oidc_subject_claim_customization_template', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_organization_oidc_subject_claim_customization_template: {
@@ -90,12 +101,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      include_claim_keys: p.child('include_claim_keys').ref,
+      id: p.child('id').out,
+      include_claim_keys: p.child('include_claim_keys').out,
     },
     actions_organization_permissions(name, block): {
       local p = path(['github_actions_organization_permissions', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_organization_permissions: {
@@ -107,13 +118,13 @@ local provider = {
           },
         },
       },
-      allowed_actions: p.child('allowed_actions').ref,
-      enabled_repositories: p.child('enabled_repositories').ref,
-      id: p.child('id').ref,
+      allowed_actions: p.child('allowed_actions').out,
+      enabled_repositories: p.child('enabled_repositories').out,
+      id: p.child('id').out,
     },
     actions_organization_secret(name, block): {
       local p = path(['github_actions_organization_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_organization_secret: {
@@ -128,18 +139,18 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      secret_name: p.child('secret_name').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
-      updated_at: p.child('updated_at').ref,
-      visibility: p.child('visibility').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      secret_name: p.child('secret_name').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
+      updated_at: p.child('updated_at').out,
+      visibility: p.child('visibility').out,
     },
     actions_organization_secret_repositories(name, block): {
       local p = path(['github_actions_organization_secret_repositories', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_organization_secret_repositories: {
@@ -151,13 +162,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      secret_name: p.child('secret_name').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
+      id: p.child('id').out,
+      secret_name: p.child('secret_name').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
     },
     actions_organization_variable(name, block): {
       local p = path(['github_actions_organization_variable', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_organization_variable: {
@@ -171,17 +182,17 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      id: p.child('id').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
-      updated_at: p.child('updated_at').ref,
-      value: p.child('value').ref,
-      variable_name: p.child('variable_name').ref,
-      visibility: p.child('visibility').ref,
+      created_at: p.child('created_at').out,
+      id: p.child('id').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
+      updated_at: p.child('updated_at').out,
+      value: p.child('value').out,
+      variable_name: p.child('variable_name').out,
+      visibility: p.child('visibility').out,
     },
     actions_repository_access_level(name, block): {
       local p = path(['github_actions_repository_access_level', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_repository_access_level: {
@@ -193,13 +204,13 @@ local provider = {
           },
         },
       },
-      access_level: p.child('access_level').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      access_level: p.child('access_level').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     actions_repository_oidc_subject_claim_customization_template(name, block): {
       local p = path(['github_actions_repository_oidc_subject_claim_customization_template', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_repository_oidc_subject_claim_customization_template: {
@@ -212,14 +223,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      include_claim_keys: p.child('include_claim_keys').ref,
-      repository: p.child('repository').ref,
-      use_default: p.child('use_default').ref,
+      id: p.child('id').out,
+      include_claim_keys: p.child('include_claim_keys').out,
+      repository: p.child('repository').out,
+      use_default: p.child('use_default').out,
     },
     actions_repository_permissions(name, block): {
       local p = path(['github_actions_repository_permissions', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_repository_permissions: {
@@ -232,14 +243,14 @@ local provider = {
           },
         },
       },
-      allowed_actions: p.child('allowed_actions').ref,
-      enabled: p.child('enabled').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      allowed_actions: p.child('allowed_actions').out,
+      enabled: p.child('enabled').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     actions_runner_group(name, block): {
       local p = path(['github_actions_runner_group', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_runner_group: {
@@ -255,22 +266,22 @@ local provider = {
           },
         },
       },
-      allows_public_repositories: p.child('allows_public_repositories').ref,
-      default: p.child('default').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      inherited: p.child('inherited').ref,
-      name: p.child('name').ref,
-      restricted_to_workflows: p.child('restricted_to_workflows').ref,
-      runners_url: p.child('runners_url').ref,
-      selected_repositories_url: p.child('selected_repositories_url').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
-      selected_workflows: p.child('selected_workflows').ref,
-      visibility: p.child('visibility').ref,
+      allows_public_repositories: p.child('allows_public_repositories').out,
+      default: p.child('default').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      inherited: p.child('inherited').out,
+      name: p.child('name').out,
+      restricted_to_workflows: p.child('restricted_to_workflows').out,
+      runners_url: p.child('runners_url').out,
+      selected_repositories_url: p.child('selected_repositories_url').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
+      selected_workflows: p.child('selected_workflows').out,
+      visibility: p.child('visibility').out,
     },
     actions_secret(name, block): {
       local p = path(['github_actions_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_secret: {
@@ -284,17 +295,17 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      repository: p.child('repository').ref,
-      secret_name: p.child('secret_name').ref,
-      updated_at: p.child('updated_at').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      repository: p.child('repository').out,
+      secret_name: p.child('secret_name').out,
+      updated_at: p.child('updated_at').out,
     },
     actions_variable(name, block): {
       local p = path(['github_actions_variable', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_actions_variable: {
@@ -307,16 +318,16 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      updated_at: p.child('updated_at').ref,
-      value: p.child('value').ref,
-      variable_name: p.child('variable_name').ref,
+      created_at: p.child('created_at').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      updated_at: p.child('updated_at').out,
+      value: p.child('value').out,
+      variable_name: p.child('variable_name').out,
     },
     app_installation_repositories(name, block): {
       local p = path(['github_app_installation_repositories', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_app_installation_repositories: {
@@ -328,13 +339,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      installation_id: p.child('installation_id').ref,
-      selected_repositories: p.child('selected_repositories').ref,
+      id: p.child('id').out,
+      installation_id: p.child('installation_id').out,
+      selected_repositories: p.child('selected_repositories').out,
     },
     app_installation_repository(name, block): {
       local p = path(['github_app_installation_repository', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_app_installation_repository: {
@@ -346,14 +357,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      installation_id: p.child('installation_id').ref,
-      repo_id: p.child('repo_id').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      installation_id: p.child('installation_id').out,
+      repo_id: p.child('repo_id').out,
+      repository: p.child('repository').out,
     },
     branch(name, block): {
       local p = path(['github_branch', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_branch: {
@@ -366,18 +377,18 @@ local provider = {
           },
         },
       },
-      branch: p.child('branch').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      ref: p.child('ref').ref,
-      repository: p.child('repository').ref,
-      sha: p.child('sha').ref,
-      source_branch: p.child('source_branch').ref,
-      source_sha: p.child('source_sha').ref,
+      branch: p.child('branch').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      ref: p.child('ref').out,
+      repository: p.child('repository').out,
+      sha: p.child('sha').out,
+      source_branch: p.child('source_branch').out,
+      source_sha: p.child('source_sha').out,
     },
     branch_default(name, block): {
       local p = path(['github_branch_default', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_branch_default: {
@@ -390,15 +401,15 @@ local provider = {
           },
         },
       },
-      branch: p.child('branch').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      rename: p.child('rename').ref,
-      repository: p.child('repository').ref,
+      branch: p.child('branch').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      rename: p.child('rename').out,
+      repository: p.child('repository').out,
     },
     branch_protection(name, block): {
       local p = path(['github_branch_protection', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_branch_protection: {
@@ -418,21 +429,21 @@ local provider = {
           },
         },
       },
-      allows_deletions: p.child('allows_deletions').ref,
-      allows_force_pushes: p.child('allows_force_pushes').ref,
-      enforce_admins: p.child('enforce_admins').ref,
-      force_push_bypassers: p.child('force_push_bypassers').ref,
-      id: p.child('id').ref,
-      lock_branch: p.child('lock_branch').ref,
-      pattern: p.child('pattern').ref,
-      repository_id: p.child('repository_id').ref,
-      require_conversation_resolution: p.child('require_conversation_resolution').ref,
-      require_signed_commits: p.child('require_signed_commits').ref,
-      required_linear_history: p.child('required_linear_history').ref,
+      allows_deletions: p.child('allows_deletions').out,
+      allows_force_pushes: p.child('allows_force_pushes').out,
+      enforce_admins: p.child('enforce_admins').out,
+      force_push_bypassers: p.child('force_push_bypassers').out,
+      id: p.child('id').out,
+      lock_branch: p.child('lock_branch').out,
+      pattern: p.child('pattern').out,
+      repository_id: p.child('repository_id').out,
+      require_conversation_resolution: p.child('require_conversation_resolution').out,
+      require_signed_commits: p.child('require_signed_commits').out,
+      required_linear_history: p.child('required_linear_history').out,
     },
     branch_protection_v3(name, block): {
       local p = path(['github_branch_protection_v3', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_branch_protection_v3: {
@@ -447,17 +458,17 @@ local provider = {
           },
         },
       },
-      branch: p.child('branch').ref,
-      enforce_admins: p.child('enforce_admins').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      require_conversation_resolution: p.child('require_conversation_resolution').ref,
-      require_signed_commits: p.child('require_signed_commits').ref,
+      branch: p.child('branch').out,
+      enforce_admins: p.child('enforce_admins').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      require_conversation_resolution: p.child('require_conversation_resolution').out,
+      require_signed_commits: p.child('require_signed_commits').out,
     },
     codespaces_organization_secret(name, block): {
       local p = path(['github_codespaces_organization_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_codespaces_organization_secret: {
@@ -472,18 +483,18 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      secret_name: p.child('secret_name').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
-      updated_at: p.child('updated_at').ref,
-      visibility: p.child('visibility').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      secret_name: p.child('secret_name').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
+      updated_at: p.child('updated_at').out,
+      visibility: p.child('visibility').out,
     },
     codespaces_organization_secret_repositories(name, block): {
       local p = path(['github_codespaces_organization_secret_repositories', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_codespaces_organization_secret_repositories: {
@@ -495,13 +506,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      secret_name: p.child('secret_name').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
+      id: p.child('id').out,
+      secret_name: p.child('secret_name').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
     },
     codespaces_secret(name, block): {
       local p = path(['github_codespaces_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_codespaces_secret: {
@@ -515,17 +526,17 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      repository: p.child('repository').ref,
-      secret_name: p.child('secret_name').ref,
-      updated_at: p.child('updated_at').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      repository: p.child('repository').out,
+      secret_name: p.child('secret_name').out,
+      updated_at: p.child('updated_at').out,
     },
     codespaces_user_secret(name, block): {
       local p = path(['github_codespaces_user_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_codespaces_user_secret: {
@@ -539,17 +550,17 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      secret_name: p.child('secret_name').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
-      updated_at: p.child('updated_at').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      secret_name: p.child('secret_name').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
+      updated_at: p.child('updated_at').out,
     },
     dependabot_organization_secret(name, block): {
       local p = path(['github_dependabot_organization_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_dependabot_organization_secret: {
@@ -564,18 +575,18 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      secret_name: p.child('secret_name').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
-      updated_at: p.child('updated_at').ref,
-      visibility: p.child('visibility').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      secret_name: p.child('secret_name').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
+      updated_at: p.child('updated_at').out,
+      visibility: p.child('visibility').out,
     },
     dependabot_organization_secret_repositories(name, block): {
       local p = path(['github_dependabot_organization_secret_repositories', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_dependabot_organization_secret_repositories: {
@@ -587,13 +598,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      secret_name: p.child('secret_name').ref,
-      selected_repository_ids: p.child('selected_repository_ids').ref,
+      id: p.child('id').out,
+      secret_name: p.child('secret_name').out,
+      selected_repository_ids: p.child('selected_repository_ids').out,
     },
     dependabot_secret(name, block): {
       local p = path(['github_dependabot_secret', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_dependabot_secret: {
@@ -607,17 +618,17 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      encrypted_value: p.child('encrypted_value').ref,
-      id: p.child('id').ref,
-      plaintext_value: p.child('plaintext_value').ref,
-      repository: p.child('repository').ref,
-      secret_name: p.child('secret_name').ref,
-      updated_at: p.child('updated_at').ref,
+      created_at: p.child('created_at').out,
+      encrypted_value: p.child('encrypted_value').out,
+      id: p.child('id').out,
+      plaintext_value: p.child('plaintext_value').out,
+      repository: p.child('repository').out,
+      secret_name: p.child('secret_name').out,
+      updated_at: p.child('updated_at').out,
     },
     emu_group_mapping(name, block): {
       local p = path(['github_emu_group_mapping', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_emu_group_mapping: {
@@ -629,14 +640,14 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      group_id: p.child('group_id').ref,
-      id: p.child('id').ref,
-      team_slug: p.child('team_slug').ref,
+      etag: p.child('etag').out,
+      group_id: p.child('group_id').out,
+      id: p.child('id').out,
+      team_slug: p.child('team_slug').out,
     },
     enterprise_actions_permissions(name, block): {
       local p = path(['github_enterprise_actions_permissions', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_enterprise_actions_permissions: {
@@ -649,14 +660,14 @@ local provider = {
           },
         },
       },
-      allowed_actions: p.child('allowed_actions').ref,
-      enabled_organizations: p.child('enabled_organizations').ref,
-      enterprise_slug: p.child('enterprise_slug').ref,
-      id: p.child('id').ref,
+      allowed_actions: p.child('allowed_actions').out,
+      enabled_organizations: p.child('enabled_organizations').out,
+      enterprise_slug: p.child('enterprise_slug').out,
+      id: p.child('id').out,
     },
     enterprise_actions_runner_group(name, block): {
       local p = path(['github_enterprise_actions_runner_group', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_enterprise_actions_runner_group: {
@@ -673,22 +684,22 @@ local provider = {
           },
         },
       },
-      allows_public_repositories: p.child('allows_public_repositories').ref,
-      default: p.child('default').ref,
-      enterprise_slug: p.child('enterprise_slug').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      restricted_to_workflows: p.child('restricted_to_workflows').ref,
-      runners_url: p.child('runners_url').ref,
-      selected_organization_ids: p.child('selected_organization_ids').ref,
-      selected_organizations_url: p.child('selected_organizations_url').ref,
-      selected_workflows: p.child('selected_workflows').ref,
-      visibility: p.child('visibility').ref,
+      allows_public_repositories: p.child('allows_public_repositories').out,
+      default: p.child('default').out,
+      enterprise_slug: p.child('enterprise_slug').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      restricted_to_workflows: p.child('restricted_to_workflows').out,
+      runners_url: p.child('runners_url').out,
+      selected_organization_ids: p.child('selected_organization_ids').out,
+      selected_organizations_url: p.child('selected_organizations_url').out,
+      selected_workflows: p.child('selected_workflows').out,
+      visibility: p.child('visibility').out,
     },
     enterprise_organization(name, block): {
       local p = path(['github_enterprise_organization', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_enterprise_organization: {
@@ -704,18 +715,18 @@ local provider = {
           },
         },
       },
-      admin_logins: p.child('admin_logins').ref,
-      billing_email: p.child('billing_email').ref,
-      database_id: p.child('database_id').ref,
-      description: p.child('description').ref,
-      display_name: p.child('display_name').ref,
-      enterprise_id: p.child('enterprise_id').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
+      admin_logins: p.child('admin_logins').out,
+      billing_email: p.child('billing_email').out,
+      database_id: p.child('database_id').out,
+      description: p.child('description').out,
+      display_name: p.child('display_name').out,
+      enterprise_id: p.child('enterprise_id').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
     },
     issue(name, block): {
       local p = path(['github_issue', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_issue: {
@@ -731,20 +742,20 @@ local provider = {
           },
         },
       },
-      assignees: p.child('assignees').ref,
-      body: p.child('body').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      issue_id: p.child('issue_id').ref,
-      labels: p.child('labels').ref,
-      milestone_number: p.child('milestone_number').ref,
-      number: p.child('number').ref,
-      repository: p.child('repository').ref,
-      title: p.child('title').ref,
+      assignees: p.child('assignees').out,
+      body: p.child('body').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      issue_id: p.child('issue_id').out,
+      labels: p.child('labels').out,
+      milestone_number: p.child('milestone_number').out,
+      number: p.child('number').out,
+      repository: p.child('repository').out,
+      title: p.child('title').out,
     },
     issue_label(name, block): {
       local p = path(['github_issue_label', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_issue_label: {
@@ -758,17 +769,17 @@ local provider = {
           },
         },
       },
-      color: p.child('color').ref,
-      description: p.child('description').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      repository: p.child('repository').ref,
-      url: p.child('url').ref,
+      color: p.child('color').out,
+      description: p.child('description').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      repository: p.child('repository').out,
+      url: p.child('url').out,
     },
     issue_labels(name, block): {
       local p = path(['github_issue_labels', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_issue_labels: {
@@ -779,12 +790,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     membership(name, block): {
       local p = path(['github_membership', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_membership: {
@@ -797,15 +808,15 @@ local provider = {
           },
         },
       },
-      downgrade_on_destroy: p.child('downgrade_on_destroy').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      role: p.child('role').ref,
-      username: p.child('username').ref,
+      downgrade_on_destroy: p.child('downgrade_on_destroy').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      role: p.child('role').out,
+      username: p.child('username').out,
     },
     organization_block(name, block): {
       local p = path(['github_organization_block', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_organization_block: {
@@ -816,13 +827,13 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      username: p.child('username').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      username: p.child('username').out,
     },
     organization_custom_role(name, block): {
       local p = path(['github_organization_custom_role', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_organization_custom_role: {
@@ -836,15 +847,15 @@ local provider = {
           },
         },
       },
-      base_role: p.child('base_role').ref,
-      description: p.child('description').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      permissions: p.child('permissions').ref,
+      base_role: p.child('base_role').out,
+      description: p.child('description').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      permissions: p.child('permissions').out,
     },
     organization_project(name, block): {
       local p = path(['github_organization_project', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_organization_project: {
@@ -856,15 +867,15 @@ local provider = {
           },
         },
       },
-      body: p.child('body').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      url: p.child('url').ref,
+      body: p.child('body').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      url: p.child('url').out,
     },
     organization_ruleset(name, block): {
       local p = path(['github_organization_ruleset', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_organization_ruleset: {
@@ -877,17 +888,17 @@ local provider = {
           },
         },
       },
-      enforcement: p.child('enforcement').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      ruleset_id: p.child('ruleset_id').ref,
-      target: p.child('target').ref,
+      enforcement: p.child('enforcement').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      ruleset_id: p.child('ruleset_id').out,
+      target: p.child('target').out,
     },
     organization_security_manager(name, block): {
       local p = path(['github_organization_security_manager', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_organization_security_manager: {
@@ -898,12 +909,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      team_slug: p.child('team_slug').ref,
+      id: p.child('id').out,
+      team_slug: p.child('team_slug').out,
     },
     organization_settings(name, block): {
       local p = path(['github_organization_settings', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_organization_settings: {
@@ -939,37 +950,37 @@ local provider = {
           },
         },
       },
-      advanced_security_enabled_for_new_repositories: p.child('advanced_security_enabled_for_new_repositories').ref,
-      billing_email: p.child('billing_email').ref,
-      blog: p.child('blog').ref,
-      company: p.child('company').ref,
-      default_repository_permission: p.child('default_repository_permission').ref,
-      dependabot_alerts_enabled_for_new_repositories: p.child('dependabot_alerts_enabled_for_new_repositories').ref,
-      dependabot_security_updates_enabled_for_new_repositories: p.child('dependabot_security_updates_enabled_for_new_repositories').ref,
-      dependency_graph_enabled_for_new_repositories: p.child('dependency_graph_enabled_for_new_repositories').ref,
-      description: p.child('description').ref,
-      email: p.child('email').ref,
-      has_organization_projects: p.child('has_organization_projects').ref,
-      has_repository_projects: p.child('has_repository_projects').ref,
-      id: p.child('id').ref,
-      location: p.child('location').ref,
-      members_can_create_internal_repositories: p.child('members_can_create_internal_repositories').ref,
-      members_can_create_pages: p.child('members_can_create_pages').ref,
-      members_can_create_private_pages: p.child('members_can_create_private_pages').ref,
-      members_can_create_private_repositories: p.child('members_can_create_private_repositories').ref,
-      members_can_create_public_pages: p.child('members_can_create_public_pages').ref,
-      members_can_create_public_repositories: p.child('members_can_create_public_repositories').ref,
-      members_can_create_repositories: p.child('members_can_create_repositories').ref,
-      members_can_fork_private_repositories: p.child('members_can_fork_private_repositories').ref,
-      name: p.child('name').ref,
-      secret_scanning_enabled_for_new_repositories: p.child('secret_scanning_enabled_for_new_repositories').ref,
-      secret_scanning_push_protection_enabled_for_new_repositories: p.child('secret_scanning_push_protection_enabled_for_new_repositories').ref,
-      twitter_username: p.child('twitter_username').ref,
-      web_commit_signoff_required: p.child('web_commit_signoff_required').ref,
+      advanced_security_enabled_for_new_repositories: p.child('advanced_security_enabled_for_new_repositories').out,
+      billing_email: p.child('billing_email').out,
+      blog: p.child('blog').out,
+      company: p.child('company').out,
+      default_repository_permission: p.child('default_repository_permission').out,
+      dependabot_alerts_enabled_for_new_repositories: p.child('dependabot_alerts_enabled_for_new_repositories').out,
+      dependabot_security_updates_enabled_for_new_repositories: p.child('dependabot_security_updates_enabled_for_new_repositories').out,
+      dependency_graph_enabled_for_new_repositories: p.child('dependency_graph_enabled_for_new_repositories').out,
+      description: p.child('description').out,
+      email: p.child('email').out,
+      has_organization_projects: p.child('has_organization_projects').out,
+      has_repository_projects: p.child('has_repository_projects').out,
+      id: p.child('id').out,
+      location: p.child('location').out,
+      members_can_create_internal_repositories: p.child('members_can_create_internal_repositories').out,
+      members_can_create_pages: p.child('members_can_create_pages').out,
+      members_can_create_private_pages: p.child('members_can_create_private_pages').out,
+      members_can_create_private_repositories: p.child('members_can_create_private_repositories').out,
+      members_can_create_public_pages: p.child('members_can_create_public_pages').out,
+      members_can_create_public_repositories: p.child('members_can_create_public_repositories').out,
+      members_can_create_repositories: p.child('members_can_create_repositories').out,
+      members_can_fork_private_repositories: p.child('members_can_fork_private_repositories').out,
+      name: p.child('name').out,
+      secret_scanning_enabled_for_new_repositories: p.child('secret_scanning_enabled_for_new_repositories').out,
+      secret_scanning_push_protection_enabled_for_new_repositories: p.child('secret_scanning_push_protection_enabled_for_new_repositories').out,
+      twitter_username: p.child('twitter_username').out,
+      web_commit_signoff_required: p.child('web_commit_signoff_required').out,
     },
     organization_webhook(name, block): {
       local p = path(['github_organization_webhook', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_organization_webhook: {
@@ -981,15 +992,15 @@ local provider = {
           },
         },
       },
-      active: p.child('active').ref,
-      etag: p.child('etag').ref,
-      events: p.child('events').ref,
-      id: p.child('id').ref,
-      url: p.child('url').ref,
+      active: p.child('active').out,
+      etag: p.child('etag').out,
+      events: p.child('events').out,
+      id: p.child('id').out,
+      url: p.child('url').out,
     },
     project_card(name, block): {
       local p = path(['github_project_card', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_project_card: {
@@ -1003,17 +1014,17 @@ local provider = {
           },
         },
       },
-      card_id: p.child('card_id').ref,
-      column_id: p.child('column_id').ref,
-      content_id: p.child('content_id').ref,
-      content_type: p.child('content_type').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      note: p.child('note').ref,
+      card_id: p.child('card_id').out,
+      column_id: p.child('column_id').out,
+      content_id: p.child('content_id').out,
+      content_type: p.child('content_type').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      note: p.child('note').out,
     },
     project_column(name, block): {
       local p = path(['github_project_column', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_project_column: {
@@ -1025,15 +1036,15 @@ local provider = {
           },
         },
       },
-      column_id: p.child('column_id').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      project_id: p.child('project_id').ref,
+      column_id: p.child('column_id').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      project_id: p.child('project_id').out,
     },
     release(name, block): {
       local p = path(['github_release', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_release: {
@@ -1052,31 +1063,31 @@ local provider = {
           },
         },
       },
-      assets_url: p.child('assets_url').ref,
-      body: p.child('body').ref,
-      created_at: p.child('created_at').ref,
-      discussion_category_name: p.child('discussion_category_name').ref,
-      draft: p.child('draft').ref,
-      etag: p.child('etag').ref,
-      generate_release_notes: p.child('generate_release_notes').ref,
-      html_url: p.child('html_url').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      prerelease: p.child('prerelease').ref,
-      published_at: p.child('published_at').ref,
-      release_id: p.child('release_id').ref,
-      repository: p.child('repository').ref,
-      tag_name: p.child('tag_name').ref,
-      tarball_url: p.child('tarball_url').ref,
-      target_commitish: p.child('target_commitish').ref,
-      upload_url: p.child('upload_url').ref,
-      url: p.child('url').ref,
-      zipball_url: p.child('zipball_url').ref,
+      assets_url: p.child('assets_url').out,
+      body: p.child('body').out,
+      created_at: p.child('created_at').out,
+      discussion_category_name: p.child('discussion_category_name').out,
+      draft: p.child('draft').out,
+      etag: p.child('etag').out,
+      generate_release_notes: p.child('generate_release_notes').out,
+      html_url: p.child('html_url').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      prerelease: p.child('prerelease').out,
+      published_at: p.child('published_at').out,
+      release_id: p.child('release_id').out,
+      repository: p.child('repository').out,
+      tag_name: p.child('tag_name').out,
+      tarball_url: p.child('tarball_url').out,
+      target_commitish: p.child('target_commitish').out,
+      upload_url: p.child('upload_url').out,
+      url: p.child('url').out,
+      zipball_url: p.child('zipball_url').out,
     },
     repository(name, block): {
       local p = path(['github_repository', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository: {
@@ -1113,52 +1124,52 @@ local provider = {
           },
         },
       },
-      allow_auto_merge: p.child('allow_auto_merge').ref,
-      allow_merge_commit: p.child('allow_merge_commit').ref,
-      allow_rebase_merge: p.child('allow_rebase_merge').ref,
-      allow_squash_merge: p.child('allow_squash_merge').ref,
-      allow_update_branch: p.child('allow_update_branch').ref,
-      archive_on_destroy: p.child('archive_on_destroy').ref,
-      archived: p.child('archived').ref,
-      auto_init: p.child('auto_init').ref,
-      default_branch: p.child('default_branch').ref,
-      delete_branch_on_merge: p.child('delete_branch_on_merge').ref,
-      description: p.child('description').ref,
-      etag: p.child('etag').ref,
-      full_name: p.child('full_name').ref,
-      git_clone_url: p.child('git_clone_url').ref,
-      gitignore_template: p.child('gitignore_template').ref,
-      has_discussions: p.child('has_discussions').ref,
-      has_downloads: p.child('has_downloads').ref,
-      has_issues: p.child('has_issues').ref,
-      has_projects: p.child('has_projects').ref,
-      has_wiki: p.child('has_wiki').ref,
-      homepage_url: p.child('homepage_url').ref,
-      html_url: p.child('html_url').ref,
-      http_clone_url: p.child('http_clone_url').ref,
-      id: p.child('id').ref,
-      ignore_vulnerability_alerts_during_read: p.child('ignore_vulnerability_alerts_during_read').ref,
-      is_template: p.child('is_template').ref,
-      license_template: p.child('license_template').ref,
-      merge_commit_message: p.child('merge_commit_message').ref,
-      merge_commit_title: p.child('merge_commit_title').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      primary_language: p.child('primary_language').ref,
-      private: p.child('private').ref,
-      repo_id: p.child('repo_id').ref,
-      squash_merge_commit_message: p.child('squash_merge_commit_message').ref,
-      squash_merge_commit_title: p.child('squash_merge_commit_title').ref,
-      ssh_clone_url: p.child('ssh_clone_url').ref,
-      svn_url: p.child('svn_url').ref,
-      topics: p.child('topics').ref,
-      visibility: p.child('visibility').ref,
-      vulnerability_alerts: p.child('vulnerability_alerts').ref,
-      web_commit_signoff_required: p.child('web_commit_signoff_required').ref,
+      allow_auto_merge: p.child('allow_auto_merge').out,
+      allow_merge_commit: p.child('allow_merge_commit').out,
+      allow_rebase_merge: p.child('allow_rebase_merge').out,
+      allow_squash_merge: p.child('allow_squash_merge').out,
+      allow_update_branch: p.child('allow_update_branch').out,
+      archive_on_destroy: p.child('archive_on_destroy').out,
+      archived: p.child('archived').out,
+      auto_init: p.child('auto_init').out,
+      default_branch: p.child('default_branch').out,
+      delete_branch_on_merge: p.child('delete_branch_on_merge').out,
+      description: p.child('description').out,
+      etag: p.child('etag').out,
+      full_name: p.child('full_name').out,
+      git_clone_url: p.child('git_clone_url').out,
+      gitignore_template: p.child('gitignore_template').out,
+      has_discussions: p.child('has_discussions').out,
+      has_downloads: p.child('has_downloads').out,
+      has_issues: p.child('has_issues').out,
+      has_projects: p.child('has_projects').out,
+      has_wiki: p.child('has_wiki').out,
+      homepage_url: p.child('homepage_url').out,
+      html_url: p.child('html_url').out,
+      http_clone_url: p.child('http_clone_url').out,
+      id: p.child('id').out,
+      ignore_vulnerability_alerts_during_read: p.child('ignore_vulnerability_alerts_during_read').out,
+      is_template: p.child('is_template').out,
+      license_template: p.child('license_template').out,
+      merge_commit_message: p.child('merge_commit_message').out,
+      merge_commit_title: p.child('merge_commit_title').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      primary_language: p.child('primary_language').out,
+      private: p.child('private').out,
+      repo_id: p.child('repo_id').out,
+      squash_merge_commit_message: p.child('squash_merge_commit_message').out,
+      squash_merge_commit_title: p.child('squash_merge_commit_title').out,
+      ssh_clone_url: p.child('ssh_clone_url').out,
+      svn_url: p.child('svn_url').out,
+      topics: p.child('topics').out,
+      visibility: p.child('visibility').out,
+      vulnerability_alerts: p.child('vulnerability_alerts').out,
+      web_commit_signoff_required: p.child('web_commit_signoff_required').out,
     },
     repository_autolink_reference(name, block): {
       local p = path(['github_repository_autolink_reference', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_autolink_reference: {
@@ -1172,16 +1183,16 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      is_alphanumeric: p.child('is_alphanumeric').ref,
-      key_prefix: p.child('key_prefix').ref,
-      repository: p.child('repository').ref,
-      target_url_template: p.child('target_url_template').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      is_alphanumeric: p.child('is_alphanumeric').out,
+      key_prefix: p.child('key_prefix').out,
+      repository: p.child('repository').out,
+      target_url_template: p.child('target_url_template').out,
     },
     repository_collaborator(name, block): {
       local p = path(['github_repository_collaborator', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_collaborator: {
@@ -1195,16 +1206,16 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      invitation_id: p.child('invitation_id').ref,
-      permission: p.child('permission').ref,
-      permission_diff_suppression: p.child('permission_diff_suppression').ref,
-      repository: p.child('repository').ref,
-      username: p.child('username').ref,
+      id: p.child('id').out,
+      invitation_id: p.child('invitation_id').out,
+      permission: p.child('permission').out,
+      permission_diff_suppression: p.child('permission_diff_suppression').out,
+      repository: p.child('repository').out,
+      username: p.child('username').out,
     },
     repository_collaborators(name, block): {
       local p = path(['github_repository_collaborators', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_collaborators: {
@@ -1215,13 +1226,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      invitation_ids: p.child('invitation_ids').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      invitation_ids: p.child('invitation_ids').out,
+      repository: p.child('repository').out,
     },
     repository_dependabot_security_updates(name, block): {
       local p = path(['github_repository_dependabot_security_updates', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_dependabot_security_updates: {
@@ -1233,13 +1244,13 @@ local provider = {
           },
         },
       },
-      enabled: p.child('enabled').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      enabled: p.child('enabled').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     repository_deploy_key(name, block): {
       local p = path(['github_repository_deploy_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_deploy_key: {
@@ -1253,16 +1264,16 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      read_only: p.child('read_only').ref,
-      repository: p.child('repository').ref,
-      title: p.child('title').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      read_only: p.child('read_only').out,
+      repository: p.child('repository').out,
+      title: p.child('title').out,
     },
     repository_deployment_branch_policy(name, block): {
       local p = path(['github_repository_deployment_branch_policy', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_deployment_branch_policy: {
@@ -1275,15 +1286,15 @@ local provider = {
           },
         },
       },
-      environment_name: p.child('environment_name').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      repository: p.child('repository').ref,
+      environment_name: p.child('environment_name').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      repository: p.child('repository').out,
     },
     repository_environment(name, block): {
       local p = path(['github_repository_environment', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_environment: {
@@ -1298,16 +1309,16 @@ local provider = {
           },
         },
       },
-      can_admins_bypass: p.child('can_admins_bypass').ref,
-      environment: p.child('environment').ref,
-      id: p.child('id').ref,
-      prevent_self_review: p.child('prevent_self_review').ref,
-      repository: p.child('repository').ref,
-      wait_timer: p.child('wait_timer').ref,
+      can_admins_bypass: p.child('can_admins_bypass').out,
+      environment: p.child('environment').out,
+      id: p.child('id').out,
+      prevent_self_review: p.child('prevent_self_review').out,
+      repository: p.child('repository').out,
+      wait_timer: p.child('wait_timer').out,
     },
     repository_environment_deployment_policy(name, block): {
       local p = path(['github_repository_environment_deployment_policy', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_environment_deployment_policy: {
@@ -1320,14 +1331,14 @@ local provider = {
           },
         },
       },
-      branch_pattern: p.child('branch_pattern').ref,
-      environment: p.child('environment').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      branch_pattern: p.child('branch_pattern').out,
+      environment: p.child('environment').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     repository_file(name, block): {
       local p = path(['github_repository_file', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_file: {
@@ -1344,22 +1355,22 @@ local provider = {
           },
         },
       },
-      branch: p.child('branch').ref,
-      commit_author: p.child('commit_author').ref,
-      commit_email: p.child('commit_email').ref,
-      commit_message: p.child('commit_message').ref,
-      commit_sha: p.child('commit_sha').ref,
-      content: p.child('content').ref,
-      file: p.child('file').ref,
-      id: p.child('id').ref,
-      overwrite_on_create: p.child('overwrite_on_create').ref,
-      ref: p.child('ref').ref,
-      repository: p.child('repository').ref,
-      sha: p.child('sha').ref,
+      branch: p.child('branch').out,
+      commit_author: p.child('commit_author').out,
+      commit_email: p.child('commit_email').out,
+      commit_message: p.child('commit_message').out,
+      commit_sha: p.child('commit_sha').out,
+      content: p.child('content').out,
+      file: p.child('file').out,
+      id: p.child('id').out,
+      overwrite_on_create: p.child('overwrite_on_create').out,
+      ref: p.child('ref').out,
+      repository: p.child('repository').out,
+      sha: p.child('sha').out,
     },
     repository_milestone(name, block): {
       local p = path(['github_repository_milestone', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_milestone: {
@@ -1375,18 +1386,18 @@ local provider = {
           },
         },
       },
-      description: p.child('description').ref,
-      due_date: p.child('due_date').ref,
-      id: p.child('id').ref,
-      number: p.child('number').ref,
-      owner: p.child('owner').ref,
-      repository: p.child('repository').ref,
-      state: p.child('state').ref,
-      title: p.child('title').ref,
+      description: p.child('description').out,
+      due_date: p.child('due_date').out,
+      id: p.child('id').out,
+      number: p.child('number').out,
+      owner: p.child('owner').out,
+      repository: p.child('repository').out,
+      state: p.child('state').out,
+      title: p.child('title').out,
     },
     repository_project(name, block): {
       local p = path(['github_repository_project', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_project: {
@@ -1399,16 +1410,16 @@ local provider = {
           },
         },
       },
-      body: p.child('body').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      repository: p.child('repository').ref,
-      url: p.child('url').ref,
+      body: p.child('body').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      repository: p.child('repository').out,
+      url: p.child('url').out,
     },
     repository_pull_request(name, block): {
       local p = path(['github_repository_pull_request', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_pull_request: {
@@ -1425,27 +1436,27 @@ local provider = {
           },
         },
       },
-      base_ref: p.child('base_ref').ref,
-      base_repository: p.child('base_repository').ref,
-      base_sha: p.child('base_sha').ref,
-      body: p.child('body').ref,
-      draft: p.child('draft').ref,
-      head_ref: p.child('head_ref').ref,
-      head_sha: p.child('head_sha').ref,
-      id: p.child('id').ref,
-      labels: p.child('labels').ref,
-      maintainer_can_modify: p.child('maintainer_can_modify').ref,
-      number: p.child('number').ref,
-      opened_at: p.child('opened_at').ref,
-      opened_by: p.child('opened_by').ref,
-      owner: p.child('owner').ref,
-      state: p.child('state').ref,
-      title: p.child('title').ref,
-      updated_at: p.child('updated_at').ref,
+      base_ref: p.child('base_ref').out,
+      base_repository: p.child('base_repository').out,
+      base_sha: p.child('base_sha').out,
+      body: p.child('body').out,
+      draft: p.child('draft').out,
+      head_ref: p.child('head_ref').out,
+      head_sha: p.child('head_sha').out,
+      id: p.child('id').out,
+      labels: p.child('labels').out,
+      maintainer_can_modify: p.child('maintainer_can_modify').out,
+      number: p.child('number').out,
+      opened_at: p.child('opened_at').out,
+      opened_by: p.child('opened_by').out,
+      owner: p.child('owner').out,
+      state: p.child('state').out,
+      title: p.child('title').out,
+      updated_at: p.child('updated_at').out,
     },
     repository_ruleset(name, block): {
       local p = path(['github_repository_ruleset', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_ruleset: {
@@ -1459,18 +1470,18 @@ local provider = {
           },
         },
       },
-      enforcement: p.child('enforcement').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      repository: p.child('repository').ref,
-      ruleset_id: p.child('ruleset_id').ref,
-      target: p.child('target').ref,
+      enforcement: p.child('enforcement').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      repository: p.child('repository').out,
+      ruleset_id: p.child('ruleset_id').out,
+      target: p.child('target').out,
     },
     repository_tag_protection(name, block): {
       local p = path(['github_repository_tag_protection', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_tag_protection: {
@@ -1482,14 +1493,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      pattern: p.child('pattern').ref,
-      repository: p.child('repository').ref,
-      tag_protection_id: p.child('tag_protection_id').ref,
+      id: p.child('id').out,
+      pattern: p.child('pattern').out,
+      repository: p.child('repository').out,
+      tag_protection_id: p.child('tag_protection_id').out,
     },
     repository_topics(name, block): {
       local p = path(['github_repository_topics', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_topics: {
@@ -1501,13 +1512,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      topics: p.child('topics').ref,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      topics: p.child('topics').out,
     },
     repository_webhook(name, block): {
       local p = path(['github_repository_webhook', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_repository_webhook: {
@@ -1520,16 +1531,16 @@ local provider = {
           },
         },
       },
-      active: p.child('active').ref,
-      etag: p.child('etag').ref,
-      events: p.child('events').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      url: p.child('url').ref,
+      active: p.child('active').out,
+      etag: p.child('etag').out,
+      events: p.child('events').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      url: p.child('url').out,
     },
     team(name, block): {
       local p = path(['github_team', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_team: {
@@ -1545,23 +1556,23 @@ local provider = {
           },
         },
       },
-      create_default_maintainer: p.child('create_default_maintainer').ref,
-      description: p.child('description').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      ldap_dn: p.child('ldap_dn').ref,
-      members_count: p.child('members_count').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      parent_team_id: p.child('parent_team_id').ref,
-      parent_team_read_id: p.child('parent_team_read_id').ref,
-      parent_team_read_slug: p.child('parent_team_read_slug').ref,
-      privacy: p.child('privacy').ref,
-      slug: p.child('slug').ref,
+      create_default_maintainer: p.child('create_default_maintainer').out,
+      description: p.child('description').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      ldap_dn: p.child('ldap_dn').out,
+      members_count: p.child('members_count').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      parent_team_id: p.child('parent_team_id').out,
+      parent_team_read_id: p.child('parent_team_read_id').out,
+      parent_team_read_slug: p.child('parent_team_read_slug').out,
+      privacy: p.child('privacy').out,
+      slug: p.child('slug').out,
     },
     team_members(name, block): {
       local p = path(['github_team_members', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_team_members: {
@@ -1572,12 +1583,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      team_id: p.child('team_id').ref,
+      id: p.child('id').out,
+      team_id: p.child('team_id').out,
     },
     team_membership(name, block): {
       local p = path(['github_team_membership', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_team_membership: {
@@ -1590,15 +1601,15 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      role: p.child('role').ref,
-      team_id: p.child('team_id').ref,
-      username: p.child('username').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      role: p.child('role').out,
+      team_id: p.child('team_id').out,
+      username: p.child('username').out,
     },
     team_repository(name, block): {
       local p = path(['github_team_repository', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_team_repository: {
@@ -1611,15 +1622,15 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      permission: p.child('permission').ref,
-      repository: p.child('repository').ref,
-      team_id: p.child('team_id').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      permission: p.child('permission').out,
+      repository: p.child('repository').out,
+      team_id: p.child('team_id').out,
     },
     team_settings(name, block): {
       local p = path(['github_team_settings', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_team_settings: {
@@ -1630,14 +1641,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      team_id: p.child('team_id').ref,
-      team_slug: p.child('team_slug').ref,
-      team_uid: p.child('team_uid').ref,
+      id: p.child('id').out,
+      team_id: p.child('team_id').out,
+      team_slug: p.child('team_slug').out,
+      team_uid: p.child('team_uid').out,
     },
     team_sync_group_mapping(name, block): {
       local p = path(['github_team_sync_group_mapping', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_team_sync_group_mapping: {
@@ -1648,13 +1659,13 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      team_slug: p.child('team_slug').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      team_slug: p.child('team_slug').out,
     },
     user_gpg_key(name, block): {
       local p = path(['github_user_gpg_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_user_gpg_key: {
@@ -1665,14 +1676,14 @@ local provider = {
           },
         },
       },
-      armored_public_key: p.child('armored_public_key').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      key_id: p.child('key_id').ref,
+      armored_public_key: p.child('armored_public_key').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      key_id: p.child('key_id').out,
     },
     user_invitation_accepter(name, block): {
       local p = path(['github_user_invitation_accepter', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_user_invitation_accepter: {
@@ -1684,13 +1695,13 @@ local provider = {
           },
         },
       },
-      allow_empty_id: p.child('allow_empty_id').ref,
-      id: p.child('id').ref,
-      invitation_id: p.child('invitation_id').ref,
+      allow_empty_id: p.child('allow_empty_id').out,
+      id: p.child('id').out,
+      invitation_id: p.child('invitation_id').out,
     },
     user_ssh_key(name, block): {
       local p = path(['github_user_ssh_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             github_user_ssh_key: {
@@ -1702,17 +1713,17 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      title: p.child('title').ref,
-      url: p.child('url').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      title: p.child('title').out,
+      url: p.child('url').out,
     },
   },
   data: {
     actions_environment_secrets(name, block): {
       local p = path(['data', 'github_actions_environment_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_environment_secrets: {
@@ -1723,15 +1734,15 @@ local provider = {
           },
         },
       },
-      environment: p.child('environment').ref,
-      full_name: p.child('full_name').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      secrets: p.child('secrets').ref,
+      environment: p.child('environment').out,
+      full_name: p.child('full_name').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      secrets: p.child('secrets').out,
     },
     actions_environment_variables(name, block): {
       local p = path(['data', 'github_actions_environment_variables', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_environment_variables: {
@@ -1742,15 +1753,15 @@ local provider = {
           },
         },
       },
-      environment: p.child('environment').ref,
-      full_name: p.child('full_name').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      variables: p.child('variables').ref,
+      environment: p.child('environment').out,
+      full_name: p.child('full_name').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      variables: p.child('variables').out,
     },
     actions_organization_oidc_subject_claim_customization_template(name, block): {
       local p = path(['data', 'github_actions_organization_oidc_subject_claim_customization_template', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_organization_oidc_subject_claim_customization_template: {
@@ -1760,12 +1771,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      include_claim_keys: p.child('include_claim_keys').ref,
+      id: p.child('id').out,
+      include_claim_keys: p.child('include_claim_keys').out,
     },
     actions_organization_public_key(name, block): {
       local p = path(['data', 'github_actions_organization_public_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_organization_public_key: {
@@ -1775,13 +1786,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      key_id: p.child('key_id').ref,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      key_id: p.child('key_id').out,
     },
     actions_organization_registration_token(name, block): {
       local p = path(['data', 'github_actions_organization_registration_token', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_organization_registration_token: {
@@ -1791,13 +1802,13 @@ local provider = {
           },
         },
       },
-      expires_at: p.child('expires_at').ref,
-      id: p.child('id').ref,
-      token: p.child('token').ref,
+      expires_at: p.child('expires_at').out,
+      id: p.child('id').out,
+      token: p.child('token').out,
     },
     actions_organization_secrets(name, block): {
       local p = path(['data', 'github_actions_organization_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_organization_secrets: {
@@ -1807,12 +1818,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      secrets: p.child('secrets').ref,
+      id: p.child('id').out,
+      secrets: p.child('secrets').out,
     },
     actions_organization_variables(name, block): {
       local p = path(['data', 'github_actions_organization_variables', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_organization_variables: {
@@ -1822,12 +1833,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      variables: p.child('variables').ref,
+      id: p.child('id').out,
+      variables: p.child('variables').out,
     },
     actions_public_key(name, block): {
       local p = path(['data', 'github_actions_public_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_public_key: {
@@ -1838,14 +1849,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      key_id: p.child('key_id').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      key_id: p.child('key_id').out,
+      repository: p.child('repository').out,
     },
     actions_registration_token(name, block): {
       local p = path(['data', 'github_actions_registration_token', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_registration_token: {
@@ -1856,14 +1867,14 @@ local provider = {
           },
         },
       },
-      expires_at: p.child('expires_at').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      token: p.child('token').ref,
+      expires_at: p.child('expires_at').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      token: p.child('token').out,
     },
     actions_repository_oidc_subject_claim_customization_template(name, block): {
       local p = path(['data', 'github_actions_repository_oidc_subject_claim_customization_template', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_repository_oidc_subject_claim_customization_template: {
@@ -1874,14 +1885,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      include_claim_keys: p.child('include_claim_keys').ref,
-      name: p.child('name').ref,
-      use_default: p.child('use_default').ref,
+      id: p.child('id').out,
+      include_claim_keys: p.child('include_claim_keys').out,
+      name: p.child('name').out,
+      use_default: p.child('use_default').out,
     },
     actions_secrets(name, block): {
       local p = path(['data', 'github_actions_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_secrets: {
@@ -1891,14 +1902,14 @@ local provider = {
           },
         },
       },
-      full_name: p.child('full_name').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      secrets: p.child('secrets').ref,
+      full_name: p.child('full_name').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      secrets: p.child('secrets').out,
     },
     actions_variables(name, block): {
       local p = path(['data', 'github_actions_variables', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_actions_variables: {
@@ -1908,14 +1919,14 @@ local provider = {
           },
         },
       },
-      full_name: p.child('full_name').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      variables: p.child('variables').ref,
+      full_name: p.child('full_name').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      variables: p.child('variables').out,
     },
     app(name, block): {
       local p = path(['data', 'github_app', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_app: {
@@ -1926,15 +1937,15 @@ local provider = {
           },
         },
       },
-      description: p.child('description').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      slug: p.child('slug').ref,
+      description: p.child('description').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      slug: p.child('slug').out,
     },
     app_token(name, block): {
       local p = path(['data', 'github_app_token', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_app_token: {
@@ -1947,15 +1958,15 @@ local provider = {
           },
         },
       },
-      app_id: p.child('app_id').ref,
-      id: p.child('id').ref,
-      installation_id: p.child('installation_id').ref,
-      pem_file: p.child('pem_file').ref,
-      token: p.child('token').ref,
+      app_id: p.child('app_id').out,
+      id: p.child('id').out,
+      installation_id: p.child('installation_id').out,
+      pem_file: p.child('pem_file').out,
+      token: p.child('token').out,
     },
     branch(name, block): {
       local p = path(['data', 'github_branch', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_branch: {
@@ -1967,16 +1978,16 @@ local provider = {
           },
         },
       },
-      branch: p.child('branch').ref,
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      ref: p.child('ref').ref,
-      repository: p.child('repository').ref,
-      sha: p.child('sha').ref,
+      branch: p.child('branch').out,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      ref: p.child('ref').out,
+      repository: p.child('repository').out,
+      sha: p.child('sha').out,
     },
     branch_protection_rules(name, block): {
       local p = path(['data', 'github_branch_protection_rules', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_branch_protection_rules: {
@@ -1987,13 +1998,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      rules: p.child('rules').ref,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      rules: p.child('rules').out,
     },
     codespaces_organization_public_key(name, block): {
       local p = path(['data', 'github_codespaces_organization_public_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_codespaces_organization_public_key: {
@@ -2003,13 +2014,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      key_id: p.child('key_id').ref,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      key_id: p.child('key_id').out,
     },
     codespaces_organization_secrets(name, block): {
       local p = path(['data', 'github_codespaces_organization_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_codespaces_organization_secrets: {
@@ -2019,12 +2030,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      secrets: p.child('secrets').ref,
+      id: p.child('id').out,
+      secrets: p.child('secrets').out,
     },
     codespaces_public_key(name, block): {
       local p = path(['data', 'github_codespaces_public_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_codespaces_public_key: {
@@ -2035,14 +2046,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      key_id: p.child('key_id').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      key_id: p.child('key_id').out,
+      repository: p.child('repository').out,
     },
     codespaces_secrets(name, block): {
       local p = path(['data', 'github_codespaces_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_codespaces_secrets: {
@@ -2052,14 +2063,14 @@ local provider = {
           },
         },
       },
-      full_name: p.child('full_name').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      secrets: p.child('secrets').ref,
+      full_name: p.child('full_name').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      secrets: p.child('secrets').out,
     },
     codespaces_user_public_key(name, block): {
       local p = path(['data', 'github_codespaces_user_public_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_codespaces_user_public_key: {
@@ -2069,13 +2080,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      key_id: p.child('key_id').ref,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      key_id: p.child('key_id').out,
     },
     codespaces_user_secrets(name, block): {
       local p = path(['data', 'github_codespaces_user_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_codespaces_user_secrets: {
@@ -2085,12 +2096,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      secrets: p.child('secrets').ref,
+      id: p.child('id').out,
+      secrets: p.child('secrets').out,
     },
     collaborators(name, block): {
       local p = path(['data', 'github_collaborators', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_collaborators: {
@@ -2103,15 +2114,15 @@ local provider = {
           },
         },
       },
-      affiliation: p.child('affiliation').ref,
-      collaborator: p.child('collaborator').ref,
-      id: p.child('id').ref,
-      owner: p.child('owner').ref,
-      repository: p.child('repository').ref,
+      affiliation: p.child('affiliation').out,
+      collaborator: p.child('collaborator').out,
+      id: p.child('id').out,
+      owner: p.child('owner').out,
+      repository: p.child('repository').out,
     },
     dependabot_organization_public_key(name, block): {
       local p = path(['data', 'github_dependabot_organization_public_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_dependabot_organization_public_key: {
@@ -2121,13 +2132,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      key_id: p.child('key_id').ref,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      key_id: p.child('key_id').out,
     },
     dependabot_organization_secrets(name, block): {
       local p = path(['data', 'github_dependabot_organization_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_dependabot_organization_secrets: {
@@ -2137,12 +2148,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      secrets: p.child('secrets').ref,
+      id: p.child('id').out,
+      secrets: p.child('secrets').out,
     },
     dependabot_public_key(name, block): {
       local p = path(['data', 'github_dependabot_public_key', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_dependabot_public_key: {
@@ -2153,14 +2164,14 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      key: p.child('key').ref,
-      key_id: p.child('key_id').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      key: p.child('key').out,
+      key_id: p.child('key_id').out,
+      repository: p.child('repository').out,
     },
     dependabot_secrets(name, block): {
       local p = path(['data', 'github_dependabot_secrets', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_dependabot_secrets: {
@@ -2170,14 +2181,14 @@ local provider = {
           },
         },
       },
-      full_name: p.child('full_name').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      secrets: p.child('secrets').ref,
+      full_name: p.child('full_name').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      secrets: p.child('secrets').out,
     },
     enterprise(name, block): {
       local p = path(['data', 'github_enterprise', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_enterprise: {
@@ -2188,17 +2199,17 @@ local provider = {
           },
         },
       },
-      created_at: p.child('created_at').ref,
-      database_id: p.child('database_id').ref,
-      description: p.child('description').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      slug: p.child('slug').ref,
-      url: p.child('url').ref,
+      created_at: p.child('created_at').out,
+      database_id: p.child('database_id').out,
+      description: p.child('description').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      slug: p.child('slug').out,
+      url: p.child('url').out,
     },
     external_groups(name, block): {
       local p = path(['data', 'github_external_groups', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_external_groups: {
@@ -2208,12 +2219,12 @@ local provider = {
           },
         },
       },
-      external_groups: p.child('external_groups').ref,
-      id: p.child('id').ref,
+      external_groups: p.child('external_groups').out,
+      id: p.child('id').out,
     },
     ip_ranges(name, block): {
       local p = path(['data', 'github_ip_ranges', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_ip_ranges: {
@@ -2223,38 +2234,38 @@ local provider = {
           },
         },
       },
-      actions: p.child('actions').ref,
-      actions_ipv4: p.child('actions_ipv4').ref,
-      actions_ipv6: p.child('actions_ipv6').ref,
-      api: p.child('api').ref,
-      api_ipv4: p.child('api_ipv4').ref,
-      api_ipv6: p.child('api_ipv6').ref,
-      dependabot: p.child('dependabot').ref,
-      dependabot_ipv4: p.child('dependabot_ipv4').ref,
-      dependabot_ipv6: p.child('dependabot_ipv6').ref,
-      git: p.child('git').ref,
-      git_ipv4: p.child('git_ipv4').ref,
-      git_ipv6: p.child('git_ipv6').ref,
-      hooks: p.child('hooks').ref,
-      hooks_ipv4: p.child('hooks_ipv4').ref,
-      hooks_ipv6: p.child('hooks_ipv6').ref,
-      id: p.child('id').ref,
-      importer: p.child('importer').ref,
-      importer_ipv4: p.child('importer_ipv4').ref,
-      importer_ipv6: p.child('importer_ipv6').ref,
-      packages: p.child('packages').ref,
-      packages_ipv4: p.child('packages_ipv4').ref,
-      packages_ipv6: p.child('packages_ipv6').ref,
-      pages: p.child('pages').ref,
-      pages_ipv4: p.child('pages_ipv4').ref,
-      pages_ipv6: p.child('pages_ipv6').ref,
-      web: p.child('web').ref,
-      web_ipv4: p.child('web_ipv4').ref,
-      web_ipv6: p.child('web_ipv6').ref,
+      actions: p.child('actions').out,
+      actions_ipv4: p.child('actions_ipv4').out,
+      actions_ipv6: p.child('actions_ipv6').out,
+      api: p.child('api').out,
+      api_ipv4: p.child('api_ipv4').out,
+      api_ipv6: p.child('api_ipv6').out,
+      dependabot: p.child('dependabot').out,
+      dependabot_ipv4: p.child('dependabot_ipv4').out,
+      dependabot_ipv6: p.child('dependabot_ipv6').out,
+      git: p.child('git').out,
+      git_ipv4: p.child('git_ipv4').out,
+      git_ipv6: p.child('git_ipv6').out,
+      hooks: p.child('hooks').out,
+      hooks_ipv4: p.child('hooks_ipv4').out,
+      hooks_ipv6: p.child('hooks_ipv6').out,
+      id: p.child('id').out,
+      importer: p.child('importer').out,
+      importer_ipv4: p.child('importer_ipv4').out,
+      importer_ipv6: p.child('importer_ipv6').out,
+      packages: p.child('packages').out,
+      packages_ipv4: p.child('packages_ipv4').out,
+      packages_ipv6: p.child('packages_ipv6').out,
+      pages: p.child('pages').out,
+      pages_ipv4: p.child('pages_ipv4').out,
+      pages_ipv6: p.child('pages_ipv6').out,
+      web: p.child('web').out,
+      web_ipv4: p.child('web_ipv4').out,
+      web_ipv6: p.child('web_ipv6').out,
     },
     issue_labels(name, block): {
       local p = path(['data', 'github_issue_labels', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_issue_labels: {
@@ -2265,13 +2276,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      labels: p.child('labels').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      labels: p.child('labels').out,
+      repository: p.child('repository').out,
     },
     membership(name, block): {
       local p = path(['data', 'github_membership', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_membership: {
@@ -2283,16 +2294,16 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      organization: p.child('organization').ref,
-      role: p.child('role').ref,
-      state: p.child('state').ref,
-      username: p.child('username').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      organization: p.child('organization').out,
+      role: p.child('role').out,
+      state: p.child('state').out,
+      username: p.child('username').out,
     },
     organization(name, block): {
       local p = path(['data', 'github_organization', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_organization: {
@@ -2304,39 +2315,39 @@ local provider = {
           },
         },
       },
-      advanced_security_enabled_for_new_repositories: p.child('advanced_security_enabled_for_new_repositories').ref,
-      default_repository_permission: p.child('default_repository_permission').ref,
-      dependabot_alerts_enabled_for_new_repositories: p.child('dependabot_alerts_enabled_for_new_repositories').ref,
-      dependabot_security_updates_enabled_for_new_repositories: p.child('dependabot_security_updates_enabled_for_new_repositories').ref,
-      dependency_graph_enabled_for_new_repositories: p.child('dependency_graph_enabled_for_new_repositories').ref,
-      description: p.child('description').ref,
-      id: p.child('id').ref,
-      ignore_archived_repos: p.child('ignore_archived_repos').ref,
-      login: p.child('login').ref,
-      members: p.child('members').ref,
-      members_allowed_repository_creation_type: p.child('members_allowed_repository_creation_type').ref,
-      members_can_create_internal_repositories: p.child('members_can_create_internal_repositories').ref,
-      members_can_create_pages: p.child('members_can_create_pages').ref,
-      members_can_create_private_pages: p.child('members_can_create_private_pages').ref,
-      members_can_create_private_repositories: p.child('members_can_create_private_repositories').ref,
-      members_can_create_public_pages: p.child('members_can_create_public_pages').ref,
-      members_can_create_public_repositories: p.child('members_can_create_public_repositories').ref,
-      members_can_create_repositories: p.child('members_can_create_repositories').ref,
-      members_can_fork_private_repositories: p.child('members_can_fork_private_repositories').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      orgname: p.child('orgname').ref,
-      plan: p.child('plan').ref,
-      repositories: p.child('repositories').ref,
-      secret_scanning_enabled_for_new_repositories: p.child('secret_scanning_enabled_for_new_repositories').ref,
-      secret_scanning_push_protection_enabled_for_new_repositories: p.child('secret_scanning_push_protection_enabled_for_new_repositories').ref,
-      two_factor_requirement_enabled: p.child('two_factor_requirement_enabled').ref,
-      users: p.child('users').ref,
-      web_commit_signoff_required: p.child('web_commit_signoff_required').ref,
+      advanced_security_enabled_for_new_repositories: p.child('advanced_security_enabled_for_new_repositories').out,
+      default_repository_permission: p.child('default_repository_permission').out,
+      dependabot_alerts_enabled_for_new_repositories: p.child('dependabot_alerts_enabled_for_new_repositories').out,
+      dependabot_security_updates_enabled_for_new_repositories: p.child('dependabot_security_updates_enabled_for_new_repositories').out,
+      dependency_graph_enabled_for_new_repositories: p.child('dependency_graph_enabled_for_new_repositories').out,
+      description: p.child('description').out,
+      id: p.child('id').out,
+      ignore_archived_repos: p.child('ignore_archived_repos').out,
+      login: p.child('login').out,
+      members: p.child('members').out,
+      members_allowed_repository_creation_type: p.child('members_allowed_repository_creation_type').out,
+      members_can_create_internal_repositories: p.child('members_can_create_internal_repositories').out,
+      members_can_create_pages: p.child('members_can_create_pages').out,
+      members_can_create_private_pages: p.child('members_can_create_private_pages').out,
+      members_can_create_private_repositories: p.child('members_can_create_private_repositories').out,
+      members_can_create_public_pages: p.child('members_can_create_public_pages').out,
+      members_can_create_public_repositories: p.child('members_can_create_public_repositories').out,
+      members_can_create_repositories: p.child('members_can_create_repositories').out,
+      members_can_fork_private_repositories: p.child('members_can_fork_private_repositories').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      orgname: p.child('orgname').out,
+      plan: p.child('plan').out,
+      repositories: p.child('repositories').out,
+      secret_scanning_enabled_for_new_repositories: p.child('secret_scanning_enabled_for_new_repositories').out,
+      secret_scanning_push_protection_enabled_for_new_repositories: p.child('secret_scanning_push_protection_enabled_for_new_repositories').out,
+      two_factor_requirement_enabled: p.child('two_factor_requirement_enabled').out,
+      users: p.child('users').out,
+      web_commit_signoff_required: p.child('web_commit_signoff_required').out,
     },
     organization_custom_role(name, block): {
       local p = path(['data', 'github_organization_custom_role', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_organization_custom_role: {
@@ -2347,15 +2358,15 @@ local provider = {
           },
         },
       },
-      base_role: p.child('base_role').ref,
-      description: p.child('description').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      permissions: p.child('permissions').ref,
+      base_role: p.child('base_role').out,
+      description: p.child('description').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      permissions: p.child('permissions').out,
     },
     organization_external_identities(name, block): {
       local p = path(['data', 'github_organization_external_identities', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_organization_external_identities: {
@@ -2365,12 +2376,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      identities: p.child('identities').ref,
+      id: p.child('id').out,
+      identities: p.child('identities').out,
     },
     organization_ip_allow_list(name, block): {
       local p = path(['data', 'github_organization_ip_allow_list', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_organization_ip_allow_list: {
@@ -2380,12 +2391,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      ip_allow_list: p.child('ip_allow_list').ref,
+      id: p.child('id').out,
+      ip_allow_list: p.child('ip_allow_list').out,
     },
     organization_team_sync_groups(name, block): {
       local p = path(['data', 'github_organization_team_sync_groups', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_organization_team_sync_groups: {
@@ -2395,12 +2406,12 @@ local provider = {
           },
         },
       },
-      groups: p.child('groups').ref,
-      id: p.child('id').ref,
+      groups: p.child('groups').out,
+      id: p.child('id').out,
     },
     organization_teams(name, block): {
       local p = path(['data', 'github_organization_teams', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_organization_teams: {
@@ -2413,15 +2424,15 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      results_per_page: p.child('results_per_page').ref,
-      root_teams_only: p.child('root_teams_only').ref,
-      summary_only: p.child('summary_only').ref,
-      teams: p.child('teams').ref,
+      id: p.child('id').out,
+      results_per_page: p.child('results_per_page').out,
+      root_teams_only: p.child('root_teams_only').out,
+      summary_only: p.child('summary_only').out,
+      teams: p.child('teams').out,
     },
     organization_webhooks(name, block): {
       local p = path(['data', 'github_organization_webhooks', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_organization_webhooks: {
@@ -2431,12 +2442,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      webhooks: p.child('webhooks').ref,
+      id: p.child('id').out,
+      webhooks: p.child('webhooks').out,
     },
     ref(name, block): {
       local p = path(['data', 'github_ref', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_ref: {
@@ -2449,16 +2460,16 @@ local provider = {
           },
         },
       },
-      etag: p.child('etag').ref,
-      id: p.child('id').ref,
-      owner: p.child('owner').ref,
-      ref: p.child('ref').ref,
-      repository: p.child('repository').ref,
-      sha: p.child('sha').ref,
+      etag: p.child('etag').out,
+      id: p.child('id').out,
+      owner: p.child('owner').out,
+      ref: p.child('ref').out,
+      repository: p.child('repository').out,
+      sha: p.child('sha').out,
     },
     release(name, block): {
       local p = path(['data', 'github_release', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_release: {
@@ -2473,31 +2484,31 @@ local provider = {
           },
         },
       },
-      asserts_url: p.child('asserts_url').ref,
-      assets: p.child('assets').ref,
-      assets_url: p.child('assets_url').ref,
-      body: p.child('body').ref,
-      created_at: p.child('created_at').ref,
-      draft: p.child('draft').ref,
-      html_url: p.child('html_url').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      owner: p.child('owner').ref,
-      prerelease: p.child('prerelease').ref,
-      published_at: p.child('published_at').ref,
-      release_id: p.child('release_id').ref,
-      release_tag: p.child('release_tag').ref,
-      repository: p.child('repository').ref,
-      retrieve_by: p.child('retrieve_by').ref,
-      tarball_url: p.child('tarball_url').ref,
-      target_commitish: p.child('target_commitish').ref,
-      upload_url: p.child('upload_url').ref,
-      url: p.child('url').ref,
-      zipball_url: p.child('zipball_url').ref,
+      asserts_url: p.child('asserts_url').out,
+      assets: p.child('assets').out,
+      assets_url: p.child('assets_url').out,
+      body: p.child('body').out,
+      created_at: p.child('created_at').out,
+      draft: p.child('draft').out,
+      html_url: p.child('html_url').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      owner: p.child('owner').out,
+      prerelease: p.child('prerelease').out,
+      published_at: p.child('published_at').out,
+      release_id: p.child('release_id').out,
+      release_tag: p.child('release_tag').out,
+      repository: p.child('repository').out,
+      retrieve_by: p.child('retrieve_by').out,
+      tarball_url: p.child('tarball_url').out,
+      target_commitish: p.child('target_commitish').out,
+      upload_url: p.child('upload_url').out,
+      url: p.child('url').out,
+      zipball_url: p.child('zipball_url').out,
     },
     repositories(name, block): {
       local p = path(['data', 'github_repositories', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repositories: {
@@ -2511,18 +2522,18 @@ local provider = {
           },
         },
       },
-      full_names: p.child('full_names').ref,
-      id: p.child('id').ref,
-      include_repo_id: p.child('include_repo_id').ref,
-      names: p.child('names').ref,
-      query: p.child('query').ref,
-      repo_ids: p.child('repo_ids').ref,
-      results_per_page: p.child('results_per_page').ref,
-      sort: p.child('sort').ref,
+      full_names: p.child('full_names').out,
+      id: p.child('id').out,
+      include_repo_id: p.child('include_repo_id').out,
+      names: p.child('names').out,
+      query: p.child('query').out,
+      repo_ids: p.child('repo_ids').out,
+      results_per_page: p.child('results_per_page').out,
+      sort: p.child('sort').out,
     },
     repository(name, block): {
       local p = path(['data', 'github_repository', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository: {
@@ -2534,46 +2545,46 @@ local provider = {
           },
         },
       },
-      allow_auto_merge: p.child('allow_auto_merge').ref,
-      allow_merge_commit: p.child('allow_merge_commit').ref,
-      allow_rebase_merge: p.child('allow_rebase_merge').ref,
-      allow_squash_merge: p.child('allow_squash_merge').ref,
-      archived: p.child('archived').ref,
-      default_branch: p.child('default_branch').ref,
-      description: p.child('description').ref,
-      fork: p.child('fork').ref,
-      full_name: p.child('full_name').ref,
-      git_clone_url: p.child('git_clone_url').ref,
-      has_discussions: p.child('has_discussions').ref,
-      has_downloads: p.child('has_downloads').ref,
-      has_issues: p.child('has_issues').ref,
-      has_projects: p.child('has_projects').ref,
-      has_wiki: p.child('has_wiki').ref,
-      homepage_url: p.child('homepage_url').ref,
-      html_url: p.child('html_url').ref,
-      http_clone_url: p.child('http_clone_url').ref,
-      id: p.child('id').ref,
-      is_template: p.child('is_template').ref,
-      merge_commit_message: p.child('merge_commit_message').ref,
-      merge_commit_title: p.child('merge_commit_title').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      pages: p.child('pages').ref,
-      primary_language: p.child('primary_language').ref,
-      private: p.child('private').ref,
-      repo_id: p.child('repo_id').ref,
-      repository_license: p.child('repository_license').ref,
-      squash_merge_commit_message: p.child('squash_merge_commit_message').ref,
-      squash_merge_commit_title: p.child('squash_merge_commit_title').ref,
-      ssh_clone_url: p.child('ssh_clone_url').ref,
-      svn_url: p.child('svn_url').ref,
-      template: p.child('template').ref,
-      topics: p.child('topics').ref,
-      visibility: p.child('visibility').ref,
+      allow_auto_merge: p.child('allow_auto_merge').out,
+      allow_merge_commit: p.child('allow_merge_commit').out,
+      allow_rebase_merge: p.child('allow_rebase_merge').out,
+      allow_squash_merge: p.child('allow_squash_merge').out,
+      archived: p.child('archived').out,
+      default_branch: p.child('default_branch').out,
+      description: p.child('description').out,
+      fork: p.child('fork').out,
+      full_name: p.child('full_name').out,
+      git_clone_url: p.child('git_clone_url').out,
+      has_discussions: p.child('has_discussions').out,
+      has_downloads: p.child('has_downloads').out,
+      has_issues: p.child('has_issues').out,
+      has_projects: p.child('has_projects').out,
+      has_wiki: p.child('has_wiki').out,
+      homepage_url: p.child('homepage_url').out,
+      html_url: p.child('html_url').out,
+      http_clone_url: p.child('http_clone_url').out,
+      id: p.child('id').out,
+      is_template: p.child('is_template').out,
+      merge_commit_message: p.child('merge_commit_message').out,
+      merge_commit_title: p.child('merge_commit_title').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      pages: p.child('pages').out,
+      primary_language: p.child('primary_language').out,
+      private: p.child('private').out,
+      repo_id: p.child('repo_id').out,
+      repository_license: p.child('repository_license').out,
+      squash_merge_commit_message: p.child('squash_merge_commit_message').out,
+      squash_merge_commit_title: p.child('squash_merge_commit_title').out,
+      ssh_clone_url: p.child('ssh_clone_url').out,
+      svn_url: p.child('svn_url').out,
+      template: p.child('template').out,
+      topics: p.child('topics').out,
+      visibility: p.child('visibility').out,
     },
     repository_autolink_references(name, block): {
       local p = path(['data', 'github_repository_autolink_references', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_autolink_references: {
@@ -2584,13 +2595,13 @@ local provider = {
           },
         },
       },
-      autolink_references: p.child('autolink_references').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      autolink_references: p.child('autolink_references').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     repository_branches(name, block): {
       local p = path(['data', 'github_repository_branches', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_branches: {
@@ -2603,15 +2614,15 @@ local provider = {
           },
         },
       },
-      branches: p.child('branches').ref,
-      id: p.child('id').ref,
-      only_non_protected_branches: p.child('only_non_protected_branches').ref,
-      only_protected_branches: p.child('only_protected_branches').ref,
-      repository: p.child('repository').ref,
+      branches: p.child('branches').out,
+      id: p.child('id').out,
+      only_non_protected_branches: p.child('only_non_protected_branches').out,
+      only_protected_branches: p.child('only_protected_branches').out,
+      repository: p.child('repository').out,
     },
     repository_deploy_keys(name, block): {
       local p = path(['data', 'github_repository_deploy_keys', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_deploy_keys: {
@@ -2622,13 +2633,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      keys: p.child('keys').ref,
-      repository: p.child('repository').ref,
+      id: p.child('id').out,
+      keys: p.child('keys').out,
+      repository: p.child('repository').out,
     },
     repository_deployment_branch_policies(name, block): {
       local p = path(['data', 'github_repository_deployment_branch_policies', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_deployment_branch_policies: {
@@ -2640,14 +2651,14 @@ local provider = {
           },
         },
       },
-      deployment_branch_policies: p.child('deployment_branch_policies').ref,
-      environment_name: p.child('environment_name').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      deployment_branch_policies: p.child('deployment_branch_policies').out,
+      environment_name: p.child('environment_name').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     repository_environments(name, block): {
       local p = path(['data', 'github_repository_environments', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_environments: {
@@ -2658,13 +2669,13 @@ local provider = {
           },
         },
       },
-      environments: p.child('environments').ref,
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
+      environments: p.child('environments').out,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
     },
     repository_file(name, block): {
       local p = path(['data', 'github_repository_file', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_file: {
@@ -2677,21 +2688,21 @@ local provider = {
           },
         },
       },
-      branch: p.child('branch').ref,
-      commit_author: p.child('commit_author').ref,
-      commit_email: p.child('commit_email').ref,
-      commit_message: p.child('commit_message').ref,
-      commit_sha: p.child('commit_sha').ref,
-      content: p.child('content').ref,
-      file: p.child('file').ref,
-      id: p.child('id').ref,
-      ref: p.child('ref').ref,
-      repository: p.child('repository').ref,
-      sha: p.child('sha').ref,
+      branch: p.child('branch').out,
+      commit_author: p.child('commit_author').out,
+      commit_email: p.child('commit_email').out,
+      commit_message: p.child('commit_message').out,
+      commit_sha: p.child('commit_sha').out,
+      content: p.child('content').out,
+      file: p.child('file').out,
+      id: p.child('id').out,
+      ref: p.child('ref').out,
+      repository: p.child('repository').out,
+      sha: p.child('sha').out,
     },
     repository_milestone(name, block): {
       local p = path(['data', 'github_repository_milestone', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_milestone: {
@@ -2704,18 +2715,18 @@ local provider = {
           },
         },
       },
-      description: p.child('description').ref,
-      due_date: p.child('due_date').ref,
-      id: p.child('id').ref,
-      number: p.child('number').ref,
-      owner: p.child('owner').ref,
-      repository: p.child('repository').ref,
-      state: p.child('state').ref,
-      title: p.child('title').ref,
+      description: p.child('description').out,
+      due_date: p.child('due_date').out,
+      id: p.child('id').out,
+      number: p.child('number').out,
+      owner: p.child('owner').out,
+      repository: p.child('repository').out,
+      state: p.child('state').out,
+      title: p.child('title').out,
     },
     repository_pull_request(name, block): {
       local p = path(['data', 'github_repository_pull_request', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_pull_request: {
@@ -2728,29 +2739,29 @@ local provider = {
           },
         },
       },
-      base_ref: p.child('base_ref').ref,
-      base_repository: p.child('base_repository').ref,
-      base_sha: p.child('base_sha').ref,
-      body: p.child('body').ref,
-      draft: p.child('draft').ref,
-      head_owner: p.child('head_owner').ref,
-      head_ref: p.child('head_ref').ref,
-      head_repository: p.child('head_repository').ref,
-      head_sha: p.child('head_sha').ref,
-      id: p.child('id').ref,
-      labels: p.child('labels').ref,
-      maintainer_can_modify: p.child('maintainer_can_modify').ref,
-      number: p.child('number').ref,
-      opened_at: p.child('opened_at').ref,
-      opened_by: p.child('opened_by').ref,
-      owner: p.child('owner').ref,
-      state: p.child('state').ref,
-      title: p.child('title').ref,
-      updated_at: p.child('updated_at').ref,
+      base_ref: p.child('base_ref').out,
+      base_repository: p.child('base_repository').out,
+      base_sha: p.child('base_sha').out,
+      body: p.child('body').out,
+      draft: p.child('draft').out,
+      head_owner: p.child('head_owner').out,
+      head_ref: p.child('head_ref').out,
+      head_repository: p.child('head_repository').out,
+      head_sha: p.child('head_sha').out,
+      id: p.child('id').out,
+      labels: p.child('labels').out,
+      maintainer_can_modify: p.child('maintainer_can_modify').out,
+      number: p.child('number').out,
+      opened_at: p.child('opened_at').out,
+      opened_by: p.child('opened_by').out,
+      owner: p.child('owner').out,
+      state: p.child('state').out,
+      title: p.child('title').out,
+      updated_at: p.child('updated_at').out,
     },
     repository_pull_requests(name, block): {
       local p = path(['data', 'github_repository_pull_requests', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_pull_requests: {
@@ -2767,19 +2778,19 @@ local provider = {
           },
         },
       },
-      base_ref: p.child('base_ref').ref,
-      base_repository: p.child('base_repository').ref,
-      head_ref: p.child('head_ref').ref,
-      id: p.child('id').ref,
-      owner: p.child('owner').ref,
-      results: p.child('results').ref,
-      sort_by: p.child('sort_by').ref,
-      sort_direction: p.child('sort_direction').ref,
-      state: p.child('state').ref,
+      base_ref: p.child('base_ref').out,
+      base_repository: p.child('base_repository').out,
+      head_ref: p.child('head_ref').out,
+      id: p.child('id').out,
+      owner: p.child('owner').out,
+      results: p.child('results').out,
+      sort_by: p.child('sort_by').out,
+      sort_direction: p.child('sort_direction').out,
+      state: p.child('state').out,
     },
     repository_teams(name, block): {
       local p = path(['data', 'github_repository_teams', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_teams: {
@@ -2789,14 +2800,14 @@ local provider = {
           },
         },
       },
-      full_name: p.child('full_name').ref,
-      id: p.child('id').ref,
-      name: p.child('name').ref,
-      teams: p.child('teams').ref,
+      full_name: p.child('full_name').out,
+      id: p.child('id').out,
+      name: p.child('name').out,
+      teams: p.child('teams').out,
     },
     repository_webhooks(name, block): {
       local p = path(['data', 'github_repository_webhooks', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_repository_webhooks: {
@@ -2807,13 +2818,13 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      repository: p.child('repository').ref,
-      webhooks: p.child('webhooks').ref,
+      id: p.child('id').out,
+      repository: p.child('repository').out,
+      webhooks: p.child('webhooks').out,
     },
     rest_api(name, block): {
       local p = path(['data', 'github_rest_api', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_rest_api: {
@@ -2824,16 +2835,16 @@ local provider = {
           },
         },
       },
-      body: p.child('body').ref,
-      code: p.child('code').ref,
-      endpoint: p.child('endpoint').ref,
-      headers: p.child('headers').ref,
-      id: p.child('id').ref,
-      status: p.child('status').ref,
+      body: p.child('body').out,
+      code: p.child('code').out,
+      endpoint: p.child('endpoint').out,
+      headers: p.child('headers').out,
+      id: p.child('id').out,
+      status: p.child('status').out,
     },
     ssh_keys(name, block): {
       local p = path(['data', 'github_ssh_keys', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_ssh_keys: {
@@ -2843,12 +2854,12 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      keys: p.child('keys').ref,
+      id: p.child('id').out,
+      keys: p.child('keys').out,
     },
     team(name, block): {
       local p = path(['data', 'github_team', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_team: {
@@ -2862,23 +2873,23 @@ local provider = {
           },
         },
       },
-      description: p.child('description').ref,
-      id: p.child('id').ref,
-      members: p.child('members').ref,
-      membership_type: p.child('membership_type').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      permission: p.child('permission').ref,
-      privacy: p.child('privacy').ref,
-      repositories: p.child('repositories').ref,
-      repositories_detailed: p.child('repositories_detailed').ref,
-      results_per_page: p.child('results_per_page').ref,
-      slug: p.child('slug').ref,
-      summary_only: p.child('summary_only').ref,
+      description: p.child('description').out,
+      id: p.child('id').out,
+      members: p.child('members').out,
+      membership_type: p.child('membership_type').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      permission: p.child('permission').out,
+      privacy: p.child('privacy').out,
+      repositories: p.child('repositories').out,
+      repositories_detailed: p.child('repositories_detailed').out,
+      results_per_page: p.child('results_per_page').out,
+      slug: p.child('slug').out,
+      summary_only: p.child('summary_only').out,
     },
     tree(name, block): {
       local p = path(['data', 'github_tree', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_tree: {
@@ -2891,15 +2902,15 @@ local provider = {
           },
         },
       },
-      entries: p.child('entries').ref,
-      id: p.child('id').ref,
-      recursive: p.child('recursive').ref,
-      repository: p.child('repository').ref,
-      tree_sha: p.child('tree_sha').ref,
+      entries: p.child('entries').out,
+      id: p.child('id').out,
+      recursive: p.child('recursive').out,
+      repository: p.child('repository').out,
+      tree_sha: p.child('tree_sha').out,
     },
     user(name, block): {
       local p = path(['data', 'github_user', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_user: {
@@ -2910,32 +2921,32 @@ local provider = {
           },
         },
       },
-      avatar_url: p.child('avatar_url').ref,
-      bio: p.child('bio').ref,
-      blog: p.child('blog').ref,
-      company: p.child('company').ref,
-      created_at: p.child('created_at').ref,
-      email: p.child('email').ref,
-      followers: p.child('followers').ref,
-      following: p.child('following').ref,
-      gpg_keys: p.child('gpg_keys').ref,
-      gravatar_id: p.child('gravatar_id').ref,
-      id: p.child('id').ref,
-      location: p.child('location').ref,
-      login: p.child('login').ref,
-      name: p.child('name').ref,
-      node_id: p.child('node_id').ref,
-      public_gists: p.child('public_gists').ref,
-      public_repos: p.child('public_repos').ref,
-      site_admin: p.child('site_admin').ref,
-      ssh_keys: p.child('ssh_keys').ref,
-      suspended_at: p.child('suspended_at').ref,
-      updated_at: p.child('updated_at').ref,
-      username: p.child('username').ref,
+      avatar_url: p.child('avatar_url').out,
+      bio: p.child('bio').out,
+      blog: p.child('blog').out,
+      company: p.child('company').out,
+      created_at: p.child('created_at').out,
+      email: p.child('email').out,
+      followers: p.child('followers').out,
+      following: p.child('following').out,
+      gpg_keys: p.child('gpg_keys').out,
+      gravatar_id: p.child('gravatar_id').out,
+      id: p.child('id').out,
+      location: p.child('location').out,
+      login: p.child('login').out,
+      name: p.child('name').out,
+      node_id: p.child('node_id').out,
+      public_gists: p.child('public_gists').out,
+      public_repos: p.child('public_repos').out,
+      site_admin: p.child('site_admin').out,
+      ssh_keys: p.child('ssh_keys').out,
+      suspended_at: p.child('suspended_at').out,
+      updated_at: p.child('updated_at').out,
+      username: p.child('username').out,
     },
     user_external_identity(name, block): {
       local p = path(['data', 'github_user_external_identity', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_user_external_identity: {
@@ -2946,15 +2957,15 @@ local provider = {
           },
         },
       },
-      id: p.child('id').ref,
-      login: p.child('login').ref,
-      saml_identity: p.child('saml_identity').ref,
-      scim_identity: p.child('scim_identity').ref,
-      username: p.child('username').ref,
+      id: p.child('id').out,
+      login: p.child('login').out,
+      saml_identity: p.child('saml_identity').out,
+      scim_identity: p.child('scim_identity').out,
+      username: p.child('username').out,
     },
     users(name, block): {
       local p = path(['data', 'github_users', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           data: {
             github_users: {
@@ -2965,12 +2976,12 @@ local provider = {
           },
         },
       },
-      emails: p.child('emails').ref,
-      id: p.child('id').ref,
-      logins: p.child('logins').ref,
-      node_ids: p.child('node_ids').ref,
-      unknown_logins: p.child('unknown_logins').ref,
-      usernames: p.child('usernames').ref,
+      emails: p.child('emails').out,
+      id: p.child('id').out,
+      logins: p.child('logins').out,
+      node_ids: p.child('node_ids').out,
+      unknown_logins: p.child('unknown_logins').out,
+      usernames: p.child('usernames').out,
     },
   },
 };

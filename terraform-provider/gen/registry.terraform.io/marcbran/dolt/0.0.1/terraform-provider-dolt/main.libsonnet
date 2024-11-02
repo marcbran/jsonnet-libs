@@ -1,17 +1,28 @@
 local build = {
   expression(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.ref else std.mapWithKey(function(key, value) self.expression(value), val) else if std.type(val) == 'array' then std.map(function(element) self.expression(element), val) else if std.type(val) == 'string' then '"%s"' % [val] else val,
   template(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then '${%s}' % [val._.ref] else std.mapWithKey(function(key, value) self.template(value), val) else if std.type(val) == 'array' then std.map(function(element) self.template(element), val) else if std.type(val) == 'string' then val else val,
+  requiredProvider(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.requiredProvider else std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.requiredProvider(val[key]), std.objectFields(val)), {}) else if std.type(val) == 'array' then std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.requiredProvider(val[key]), val), {}) else {},
+};
+
+local requiredProvider = {
+  _: {
+    requiredProvider: {
+      dolt: {
+        source: 'registry.terraform.io/marcbran/dolt',
+        version: '0.0.1',
+      },
+    },
+  },
 };
 
 local path(segments) = {
-  ref: { _: { ref: std.join('.', segments) } },
   child(segment): path(segments + [segment]),
+  out: requiredProvider { _+: { ref: std.join('.', segments) } },
 };
 
-local func(name, parameters=[]) = {
-  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
-  _: { ref: '%s(%s)' % [name, parameterString] },
-};
+local func(name, parameters=[]) =
+  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]);
+  requiredProvider { _+: { ref: '%s(%s)' % [name, parameterString] } };
 
 local provider = {
   local name = 'dolt',
@@ -29,7 +40,7 @@ local provider = {
   resource: {
     repository(name, block): {
       local p = path(['dolt_repository', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             dolt_repository: {
@@ -42,13 +53,13 @@ local provider = {
           },
         },
       },
-      email: p.child('email').ref,
-      name: p.child('name').ref,
-      path: p.child('path').ref,
+      email: p.child('email').out,
+      name: p.child('name').out,
+      path: p.child('path').out,
     },
     rowset(name, block): {
       local p = path(['dolt_rowset', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             dolt_rowset: {
@@ -65,17 +76,17 @@ local provider = {
           },
         },
       },
-      author_email: p.child('author_email').ref,
-      author_name: p.child('author_name').ref,
-      columns: p.child('columns').ref,
-      repository_path: p.child('repository_path').ref,
-      table_name: p.child('table_name').ref,
-      unique_column: p.child('unique_column').ref,
-      values: p.child('values').ref,
+      author_email: p.child('author_email').out,
+      author_name: p.child('author_name').out,
+      columns: p.child('columns').out,
+      repository_path: p.child('repository_path').out,
+      table_name: p.child('table_name').out,
+      unique_column: p.child('unique_column').out,
+      values: p.child('values').out,
     },
     table(name, block): {
       local p = path(['dolt_table', name]),
-      _: p.ref._ {
+      _: p.out._ {
         block: {
           resource: {
             dolt_table: {
@@ -90,11 +101,11 @@ local provider = {
           },
         },
       },
-      author_email: p.child('author_email').ref,
-      author_name: p.child('author_name').ref,
-      name: p.child('name').ref,
-      query: p.child('query').ref,
-      repository_path: p.child('repository_path').ref,
+      author_email: p.child('author_email').out,
+      author_name: p.child('author_name').out,
+      name: p.child('name').out,
+      query: p.child('query').out,
+      repository_path: p.child('repository_path').out,
     },
   },
 };
