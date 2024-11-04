@@ -1,4 +1,4 @@
-local printNewlines(newlines) = std.join('', std.map(function(index) '\\n', std.range(1, newlines)));
+local printNewlines(newlines) = std.join('', std.map(function(index) '\n', std.range(1, newlines)));
 
 local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
 
@@ -118,11 +118,11 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
     For(id, expr): compspec([forSpec(id, expr)]),
   },
   Local(id, expr, newline=false): {
-    output: 'local %s =%s%s' % [id, if (newline) then '\\n' else ' ', expr.output],
+    output: 'local %s =%s%s' % [id, if (newline) then '\n' else ' ', expr.output],
     arraySep: '; ',
   },
   LocalFunc(id, params, expr, newline=false): {
-    output: 'local %s(%s) =%s%s' % [id, joinExpr(', ', params), if (newline) then '\\n' else ' ', expr.output],
+    output: 'local %s(%s) =%s%s' % [id, joinExpr(', ', params), if (newline) then '\n' else ' ', expr.output],
     arraySep: '; ',
   },
   If(expr): {
@@ -155,14 +155,14 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
   },
   Comment(string): {
     output: '// %s' % [string],
-    sep: '\\n',
+    sep: '\n',
   },
   Newline: {
     output: '',
-    sep: '\\n',
+    sep: '\n',
   },
   Exprs(exprs, newlines=0): {
-    local newlinesString = if newlines == 0 then '' else std.join('', ['\\n' for _ in std.range(1, newlines)]),
+    local newlinesString = if newlines == 0 then '' else std.join('', ['\n' for _ in std.range(1, newlines)]),
     output: std.join(
       '',
       std.mapWithIndex(

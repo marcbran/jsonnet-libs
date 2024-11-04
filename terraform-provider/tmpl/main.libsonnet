@@ -10,7 +10,7 @@ local build = j.Local('build', j.Object([
       .Then(
         j.If(j.Std.objectHas(j.Member(j.Id('val'), '_'), j.String('ref')))
         .Then(j.Member(j.Member(j.Id('val'), '_'), 'ref'))
-        .Else(j.String('"%s"', [j.Std.strReplace(j.Member(j.Member(j.Id('val'), '_'), 'str'), j.String('\n'), j.String('\\n'))]))
+        .Else(j.String('"%s"', [j.Std.strReplace(j.Member(j.Member(j.Id('val'), '_'), 'str'), j.String('\n'), j.String('\\\n'))]))
       )
       .Else(j.Std.mapWithKey(j.Func([j.Id('key'), j.Id('value')], j.Call(j.Member(j.Self, 'expression'), [j.Id('value')])), j.Id('val')))
     )
@@ -19,7 +19,7 @@ local build = j.Local('build', j.Object([
       .Then(j.Std.map(j.Func([j.Id('element')], j.Call(j.Member(j.Self, 'expression'), [j.Id('element')])), j.Id('val')))
       .Else(
         j.If(j.Eq(j.Std.type(j.Id('val')), j.String('string')))
-        .Then(j.String('"%s"', [j.Std.strReplace(j.Id('val'), j.String('\n'), j.String('\\n'))]))
+        .Then(j.String('"%s"', [j.Std.strReplace(j.Id('val'), j.String('\n'), j.String('\\\n'))]))
         .Else(j.Id('val'))
       )
     )

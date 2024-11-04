@@ -222,12 +222,13 @@ func formatJsonnet(provider Provider) (string, error) {
 		return "", err
 	}
 	jsonStr = jsonStr[1 : len(jsonStr)-2]
-	jsonStr = strings.ReplaceAll(jsonStr, "\\\\n", "\n")
-	format, err := formatter.Format("main.jsonnet", jsonStr, formatter.DefaultOptions())
+	jsonStr = strings.ReplaceAll(jsonStr, "\\n", "\n")
+	jsonStr, err = formatter.Format("main.jsonnet", jsonStr, formatter.DefaultOptions())
 	if err != nil {
 		return "", err
 	}
-	return format, nil
+	jsonStr = strings.ReplaceAll(jsonStr, "\\\\\\n", "\\\\n")
+	return jsonStr, nil
 }
 
 func writeJsonnet(provider Provider, jsonnet string, output string) error {
