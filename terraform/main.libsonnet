@@ -23,20 +23,38 @@ local build = {
     else if std.type(val) == 'string' then '%s' % val
     else val,
 
-  requiredProvider(val):
+  providerRequirements(val):
     if (std.type(val) == 'object')
     then
       if (std.objectHas(val, '_'))
-      then std.get(val._, 'requiredProvider', {})
+      then std.get(val._, 'providerRequirements', {})
       else std.foldl(
         function(acc, val) std.mergePatch(acc, val),
-        std.map(function(key) build.requiredProvider(val[key]), std.objectFields(val)),
+        std.map(function(key) build.providerRequirements(val[key]), std.objectFields(val)),
         {}
       )
     else if (std.type(val) == 'array')
     then std.foldl(
       function(acc, val) std.mergePatch(acc, val),
-      std.map(function(element) build.requiredProvider(element), val),
+      std.map(function(element) build.providerRequirements(element), val),
+      {}
+    )
+    else {},
+
+  providerConfiguration(val):
+    if (std.type(val) == 'object')
+    then
+      if (std.objectHas(val, '_'))
+      then std.get(val._, 'providerConfiguration', {})
+      else std.foldl(
+        function(acc, val) std.mergePatch(acc, val),
+        std.map(function(key) build.providerConfiguration(val[key]), std.objectFields(val)),
+        {}
+      )
+    else if (std.type(val) == 'array')
+    then std.foldl(
+      function(acc, val) std.mergePatch(acc, val),
+      std.map(function(element) build.providerConfiguration(element), val),
       {}
     )
     else {},
@@ -45,7 +63,7 @@ local build = {
 local func(name, parameters=[]) = {
   local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
   _: {
-    requiredProvider: build.requiredProvider(parameters),
+    providerRequirements: build.providerRequirements(parameters),
     ref: '%s(%s)' % [name, parameterString],
   },
 };
@@ -58,7 +76,7 @@ local functions = {
 
 local Format(string, values) = {
   _: {
-    requiredProvider: build.requiredProvider(values),
+    providerRequirements: build.providerRequirements(values),
     str: string % [build.template(value) for value in values],
   },
 };
@@ -84,7 +102,7 @@ local Variable(name, block) = {
 
 local Output(name, block) = {
   _: {
-    requiredProvider: build.requiredProvider(block),
+    providerRequirements: build.providerRequirements(block),
     block: {
       output: {
         [name]: std.prune({
@@ -103,7 +121,7 @@ local Output(name, block) = {
 local Local(name, value) = {
   _: {
     ref: 'local.%s' % [name],
-    requiredProvider: build.requiredProvider(value),
+    providerRequirements: build.providerRequirements(value),
     block: {
       locals: {
         [name]: build.template(value),
@@ -141,12 +159,12 @@ local extractBlocks(obj) =
   else [];
 
 local Cfg(resources) =
-  local preamble = {
+  local preamble = [{
     terraform: {
-      required_providers: build.requiredProvider(resources),
+      required_providers: build.providerRequirements(resources),
     },
-  };
-  [preamble] + extractBlocks(resources);
+  }] + std.objectValues(build.providerConfiguration(resources));
+  preamble + extractBlocks(resources);
 
 local terraform = functions {
   Format: Format,

@@ -19,6 +19,23 @@ local localCfg(blocks) = [
   },
 ] + blocks;
 
+local localAliasCfg(blocks) = [
+  {
+    terraform: {
+      required_providers: {
+        'local': { source: 'registry.terraform.io/hashicorp/local', version: '2.5.2' },
+      },
+    },
+  },
+  {
+    provider: {
+      'local': {
+        alias: 'test',
+      },
+    },
+  },
+] + blocks;
+
 local variableTests = {
   name: 'variable',
   tests: [
@@ -354,6 +371,36 @@ local formatTests = {
   ],
 };
 
+local providerTests = {
+  name: 'resource',
+  tests: [
+    {
+      name: 'alias',
+      input::
+        local localAlias = Local.withConfiguration('test', {});
+        [
+          localAlias.resource.file('example_txt', {
+            filename: 'example.txt',
+            content: 'hello',
+          }),
+        ],
+      expected: localAliasCfg([
+        {
+          resource: {
+            local_file: {
+              example_txt: {
+                provider: 'local.test',
+                content: 'hello',
+                filename: 'example.txt',
+              },
+            },
+          },
+        },
+      ]),
+    },
+  ],
+};
+
 local resourceTests = {
   name: 'resource',
   tests: [
@@ -641,6 +688,7 @@ local testGroups = [
   moduleTests,
   functionTests,
   formatTests,
+  providerTests,
   resourceTests,
   dataTests,
 ];

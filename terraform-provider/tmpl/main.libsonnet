@@ -48,16 +48,16 @@ local build = j.Local('build', j.Object([
     )
   ),
   j.FieldFunc(
-    j.String('requiredProvider'),
+    j.String('providerRequirements'),
     [j.Id('val')],
     j.If(j.Eq(j.Std.type(j.Id('val')), j.String('object')))
     .Then(
       j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
-      .Then(j.Member(j.Member(j.Id('val'), '_'), 'requiredProvider'))
+      .Then(j.Member(j.Member(j.Id('val'), '_'), 'providerRequirements'))
       .Else(j.Std.foldl(
         j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
         j.Std.map(
-          j.Func([j.Id('key')], j.Call(j.Member(j.Id('build'), 'requiredProvider'), [j.Index(j.Id('val'), j.Id('key'))])),
+          j.Func([j.Id('key')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Index(j.Id('val'), j.Id('key'))])),
           j.Std.objectFields(j.Id('val'))
         ),
         j.Object([])
@@ -68,7 +68,7 @@ local build = j.Local('build', j.Object([
       .Then(j.Std.foldl(
         j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
         j.Std.map(
-          j.Func([j.Id('key')], j.Call(j.Member(j.Id('build'), 'requiredProvider'), [j.Index(j.Id('val'), j.Id('key'))])),
+          j.Func([j.Id('key')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Index(j.Id('val'), j.Id('key'))])),
           j.Id('val')
         ),
         j.Object([])
@@ -76,153 +76,181 @@ local build = j.Local('build', j.Object([
       .Else(j.Object([]))
     )
   ),
-  /*
-  requiredProvider(val):
-    if (std.type(val) == 'object')
-    then
-      if (std.objectHas(val, '_'))
-      then std.get(val._, 'requiredProvider', {})
-      else std.foldl(
-        function(acc, val) std.mergePatch(acc, val),
-        std.map(function(key) build.requiredProvider(val[key]), std.objectFields(val)),
-        {}
-      )
-    else if (std.type(val) == 'array')
-    then std.foldl(
-      function(acc, val) std.mergePatch(acc, val),
-      std.map(function(element) build.requiredProvider(element), val),
-      {}
-    )
-    else {},
-  */
 ], newlines=1));
 
-local requiredProvider(provider, source, version) = j.Local('requiredProvider', j.Object([
-  j.Field(j.String('_'), j.Object([
-    j.Field(j.String('requiredProvider'), j.Object([
-      j.Field(j.String(provider), j.Object([
-        j.Field(j.String('source'), j.String(source)),
-        j.Field(j.String('version'), j.String(version)),
+local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id('requirements'), j.Id('configuration')], j.Object([
+  j.Local('providerRequirements', j.Object([j.Field(j.FieldNameExpr(j.Id('provider')), j.Id('requirements'))])),
+  j.Local(
+    'providerAlias',
+    j.If(j.Eq(j.Id('configuration'), j.Null)).
+      Then(j.Null).
+      Else(j.String('%s.%s', [j.Id('provider'), j.Member(j.Id('configuration'), 'alias')]))
+  ),
+  j.Local(
+    'providerConfiguration',
+    j.If(j.Eq(j.Id('configuration'), j.Null)).
+      Then(j.Object([])).
+      Else(j.Object([
+      j.Field(j.FieldNameExpr(j.Id('providerAlias')), j.Object([
+        j.Field(j.Id('provider'), j.Object([
+          j.Field(j.FieldNameExpr(j.Id('provider')), j.Id('configuration')),
+        ])),
+      ])),
+    ]))
+  ),
+  j.Local(
+    'providerReference',
+    j.If(j.Eq(j.Id('configuration'), j.Null)).
+      Then(j.Object([])).
+      Else(j.Object([
+      j.Field(j.Id('provider'), j.Id('providerAlias')),
+    ]))
+  ),
+  j.FieldFunc(j.Id('blockType'), [j.Id('blockType')], j.Object([
+    j.Local(
+      'blockTypePath',
+      j.If(j.Eq(j.Id('blockType'), j.String('resource'))).Then(j.Array([])).Else(j.Array([j.String('data')]))
+    ),
+    j.FieldFunc(j.Id('resource'), [j.Id('type'), j.Id('name')], j.Object([
+      j.Local('resourcePath', j.Add(j.Id('blockTypePath'), j.Array([j.Id('type'), j.Id('name')]))),
+      j.FieldFunc(j.Id('_'), [j.Id('block')], j.Object([
+        j.Field(j.Id('providerRequirements'), j.Id('providerRequirements')),
+        j.Field(j.Id('providerConfiguration'), j.Id('providerConfiguration')),
+        j.Field(j.Id('ref'), j.Std.join(j.String('.'), j.Id('resourcePath'))),
+        j.Field(j.Id('block'), j.Object([
+          j.Field(j.FieldNameExpr(j.Id('blockType')), j.Object([
+            j.Field(j.FieldNameExpr(j.Id('type')), j.Object([
+              j.Field(j.FieldNameExpr(j.Id('name')), j.Std.prune(j.Add(j.Id('block'), j.Id('providerReference')))),
+            ], newlines=1)),
+          ], newlines=1)),
+        ], newlines=1)),
       ], newlines=1)),
-    ], newlines=1)),
-  ], newlines=1)),
-], newlines=1));
-
-local path = j.LocalFunc('path', [j.Id('segments')], j.Object([
-  j.FieldFunc(j.String('child'), [j.Id('segment')], j.Call(j.Id('path'), [j.Add(j.Id('segments'), j.Array([j.Id('segment')]))])),
-  j.Field(j.String('out'), j.Add(j.Id('requiredProvider'), j.Object([
-    j.Field(j.String('_'), j.Object([
-      j.Field(j.String('ref'), j.Std.join(j.String('.'), j.Id('segments'))),
-    ]), override='+'),
-  ]))),
-], newlines=1));
-
-local func = j.LocalFunc('func', [j.Id('name'), j.DefaultParam('parameters', j.Array([]))], j.Exprs([
-  j.Local('parameterString', j.Std.join(
-    j.String(', '),
-    j.ArrayComp(j.Call(j.Member(j.Id('build'), 'expression'), [j.Id('parameter')]))
-    .For('parameter', j.Id('parameters'))
-  )),
-  j.Add(j.Id('requiredProvider'), j.Object([
-    j.Field(j.String('_'), j.Object([
-      j.Field(j.String('ref'), j.String('%s(%s)', [j.Id('name'), j.Id('parameterString')])),
-    ]), override='+'),
-  ])),
-], newlines=1), newline=true);
-
-local providerBlock(schema) = [
-  j.FieldFunc(j.String('provider'), [j.Id('block')], j.Object([
-    j.Field(j.String('_'), j.Object([
-      j.Field(j.String('block'), j.Object([
-        j.Field(j.String('provider'), j.Object([
-          j.Field(j.FieldNameExpr(j.Id('name')), j.Std.prune(j.Object([
-            j.Field(j.String('alias'), j.Std.get(j.Id('block'), j.String('alias'), j.Null)),
-          ], newlines=1))),
+      j.FieldFunc(j.Id('field'), [j.Id('fieldName')], j.Object([
+        j.Local('fieldPath', j.Add(j.Id('resourcePath'), j.Array([j.Id('fieldName')]))),
+        j.Field(j.Id('_'), j.Object([
+          j.Field(j.Id('ref'), j.Std.join(j.String('.'), j.Id('fieldPath'))),
         ], newlines=1)),
       ], newlines=1)),
     ], newlines=1)),
   ], newlines=1)),
-];
+  j.FieldFunc(j.Id('func'), [j.Id('name'), j.DefaultParam('parameters', j.Array([]))], j.Object([
+    j.Local('parameterString', j.Std.join(
+      j.String(', '),
+      j.ArrayComp(j.Call(j.Member(j.Id('build'), 'expression'), [j.Id('parameter')]))
+      .For('parameter', j.Id('parameters'))
+    )),
+    j.Field(j.String('_'), j.Object([
+      j.Field(j.Id('providerRequirements'), j.Id('providerRequirements')),
+      j.Field(j.Id('providerConfiguration'), j.Id('providerConfiguration')),
+      j.Field(j.Id('ref'), j.String('provider::%s::%s(%s)', [j.Id('provider'), j.Id('name'), j.Id('parameterString')])),
+    ], newlines=1)),
+  ], newlines=1)),
+], newlines=1));
 
-local resourceBlock(provider, type, name, pathPrefix, resource) =
+local resourceBlock(provider, type, name, resource) =
   j.FieldFunc(
     j.String(std.substr(name, std.length(provider) + 1, std.length(name))),
     [j.Id('name'), j.Id('block')],
     j.Object([
-      j.Local('p', j.Call(j.Id('path'), [j.Array(pathPrefix + [j.String(name), j.Id('name')])])),
-      j.Field(j.String('_'), j.Add(
-        j.Member(j.Member(j.Id('p'), 'out'), '_'),
-        j.Object([
-          j.Field(j.String('block'), j.Object([
-            j.Field(j.String(type), j.Object([
-              j.Field(j.String(name), j.Object([
-                j.Field(
-                  j.FieldNameExpr(j.Id('name')),
-                  j.Std.prune(j.Object(std.flattenArrays([
-                    local attribute = resource.block.attributes[attributeName];
-                    if std.get(attribute, 'computed', false) then [] else
-                      [
-                        j.Field(
-                          j.String(attributeName),
-                          j.Call(j.Member(j.Id('build'), 'template'), [
-                            if std.get(attribute, 'required', false)
-                            then j.Member(j.Id('block'), attributeName)
-                            else j.Std.get(j.Id('block'), j.String(attributeName), j.Null),
-                          ])
-                        ),
-                        j.Newline,
-                      ]
-                    for attributeName in std.objectFields(resource.block.attributes)
-                  ]), newlines=1)),
-                ),
-              ], newlines=1)),
-            ], newlines=1)),
-          ], newlines=1)),
-        ], newlines=1)
-      )),
+      j.Local('resource', j.Call(j.Member(j.Id('blockType'), 'resource'), [j.String(name), j.Id('name')])),
+      j.Field(j.String('_'), j.Call(j.Member(j.Id('resource'), '_'), [
+        j.Object(std.flattenArrays([
+          local attribute = resource.block.attributes[attributeName];
+          if std.get(attribute, 'computed', false) then [] else
+            [
+              j.Field(
+                j.String(attributeName),
+                j.Call(j.Member(j.Id('build'), 'template'), [
+                  if std.get(attribute, 'required', false)
+                  then j.Member(j.Id('block'), attributeName)
+                  else j.Std.get(j.Id('block'), j.String(attributeName)).default(j.Null),
+                ])
+              ),
+              j.Newline,
+            ]
+          for attributeName in std.objectFields(resource.block.attributes)
+        ]), newlines=1),
+      ])),
     ] + [
-      j.Field(j.String(attributeName), j.Member(j.Call(j.Member(j.Id('p'), 'child'), [j.String(attributeName)]), 'out'))
+      j.Field(j.String(attributeName), j.Call(j.Member(j.Id('resource'), 'field'), [j.String(attributeName)]))
       for attributeName in std.objectFields(resource.block.attributes)
     ], newlines=1)
   );
 
-local resourceBlocks(provider, type, pathPrefix, resourceSchemas) = if std.length(std.objectFields(resourceSchemas)) == 0 then [] else [
+local resourceBlocks(provider, type, resourceSchemas) = if std.length(std.objectFields(resourceSchemas)) == 0 then [] else [
   j.Field(j.String(type), j.Object([
-    resourceBlock(provider, type, name, pathPrefix, resourceSchemas[name])
+    j.Local('blockType', j.Call(j.Member(j.Id('provider'), 'blockType'), [j.String(type)])),
+  ] + [
+    resourceBlock(provider, type, name, resourceSchemas[name])
     for name in std.objectFields(resourceSchemas)
   ], newlines=1)),
 ];
 
-local functionBlock(provider, name, func) =
+local functionBlock(name, func) =
   j.FieldFunc(
     j.String(name),
     [j.Id(parameter.name) for parameter in func.parameters],
-    j.Call(j.Id('func'), [j.String('provider::%s::%s' % [provider, name]), j.Array([j.Id(parameter.name) for parameter in func.parameters])]),
+    j.Call(j.Member(j.Id('provider'), 'func'), [j.String(name), j.Array([j.Id(parameter.name) for parameter in func.parameters])]),
   );
 
-local functionBlocks(provider, functions) = if std.length(std.objectFields(functions)) == 0 then [] else [
+local functionBlocks(functions) = if std.length(std.objectFields(functions)) == 0 then [] else [
   j.Field(j.String('func'), j.Object([
-    functionBlock(provider, name, functions[name])
+    functionBlock(name, functions[name])
     for name in std.objectFields(functions)
   ], newlines=1)),
 ];
+
+local providerRequirements(source, version) = j.Local('requirements', j.Object([
+  j.Field(j.String('source'), j.String(source)),
+  j.Field(j.String('version'), j.String(version)),
+], newlines=1));
+
+local providerConfiguration(provider) =
+  local attributes = std.get(provider.block, 'attributes', {});
+  j.FieldFunc(
+    j.Id('withConfiguration'),
+    [j.Id('alias'), j.Id('block')],
+    j.Call(j.Id('provider'), [j.Std.prune(
+      j.Object(std.flattenArrays([[
+        j.Field(j.Id('alias'), j.Id('alias')),
+      ]] + [
+        local attribute = attributes[attributeName];
+        if std.get(attribute, 'computed', false) then [] else
+          [
+            j.Field(
+              j.String(attributeName),
+              j.Call(j.Member(j.Id('build'), 'template'), [
+                if std.get(attribute, 'required', false)
+                then j.Member(j.Id('block'), attributeName)
+                else j.Std.get(j.Id('block'), j.String(attributeName)).default(j.Null),
+              ])
+            ),
+            j.Newline,
+          ]
+        for attributeName in std.objectFields(attributes)
+      ]), newlines=1),
+    )])
+  );
 
 local terraformProvider(provider, source, version, schema) =
   local providerSchema = schema.provider_schemas[std.objectFields(schema.provider_schemas)[0]];
   j.Exprs([
     build,
-    requiredProvider(provider, source, version),
-    path,
-    func,
-    j.Local('provider', j.Object(
-      [j.Local('name', j.String(provider))]
-      + providerBlock(providerSchema.provider)
-      + resourceBlocks(provider, 'resource', [], std.get(providerSchema, 'resource_schemas', {}))
-      + resourceBlocks(provider, 'data', [j.String('data')], std.get(providerSchema, 'data_source_schemas', {}))
-      + functionBlocks(provider, std.get(providerSchema, 'functions', {})),
+    providerTemplate,
+    j.LocalFunc('provider', [j.Id('configuration')], j.Object(
+      [
+        providerRequirements(source, version),
+        j.Local('provider', j.Call(j.Id('providerTemplate'), [j.String(provider), j.Id('requirements'), j.Id('configuration')])),
+      ]
+      + resourceBlocks(provider, 'resource', std.get(providerSchema, 'resource_schemas', {}))
+      + resourceBlocks(provider, 'data', std.get(providerSchema, 'data_source_schemas', {}))
+      + functionBlocks(std.get(providerSchema, 'functions', {})),
       newlines=1
     )),
-    j.Id('provider'),
+    j.Local('providerWithConfiguration', j.Add(j.Call(j.Id('provider'), [j.Null]), j.Object([
+      providerConfiguration(providerSchema.provider),
+    ], newlines=1))),
+    j.Id('providerWithConfiguration'),
   ], newlines=2).output;
 
 terraformProvider
