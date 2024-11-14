@@ -402,7 +402,7 @@ local commentTests = {
         j.Comment('Output the number one'),
         j.Number(1),
       ]),
-      expected: '// Output the number one\\n1',
+      expected: '// Output the number one\n1',
     },
     {
       name: 'in object',
@@ -411,7 +411,7 @@ local commentTests = {
         j.Comment('b is equal to two'),
         j.Field(j.Id('b'), j.Number(2)),
       ]),
-      expected: '{a: 1, // b is equal to two\\nb: 2}',
+      expected: '{a: 1, // b is equal to two\nb: 2}',
     },
     {
       name: 'in array',
@@ -420,7 +420,7 @@ local commentTests = {
         j.Comment('add two to array'),
         j.Number(2),
       ]),
-      expected: '[1, // add two to array\\n2]',
+      expected: '[1, // add two to array\n2]',
     },
   ],
 };

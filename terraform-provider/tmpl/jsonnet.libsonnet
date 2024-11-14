@@ -331,7 +331,11 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
     setMember(x, arr, keyF): $.Call($.Member($.Id('std'), 'setMember'), [x, arr, keyF]),
 
     // Objects
-    get(o, f, default=$.Null, inc_hidden=$.True): $.Call($.Member($.Id('std'), 'get'), [o, f, default, inc_hidden]),
+    get(o, f): $.Call($.Member($.Id('std'), 'get'), [o, f]) + {
+      default(default): $.Call($.Member($.Id('std'), 'get'), [o, f, default]) + {
+        inc_hidden(inc_hidden): $.Call($.Member($.Id('std'), 'get'), [o, f, default, inc_hidden]),
+      },
+    },
     objectHas(o, f): $.Call($.Member($.Id('std'), 'objectHas'), [o, f]),
     objectFields(o): $.Call($.Member($.Id('std'), 'objectFields'), [o]),
     objectValues(o): $.Call($.Member($.Id('std'), 'objectValues'), [o]),
