@@ -6,16 +6,22 @@ local build = {
 
 local providerTemplate(provider, requirements, configuration) = {
   local providerRequirements = { [provider]: requirements },
-  local providerAlias = if configuration == null then null else '%s.%s' % [provider, configuration.alias],
-  local providerConfiguration = if configuration == null then {} else { [providerAlias]: { provider: { [provider]: configuration } } },
-  local providerReference = if configuration == null then {} else { provider: providerAlias },
+  local providerAlias = if configuration == null then null else configuration.alias,
+  local providerWithAlias = if configuration == null then null else '%s.%s' % [provider, providerAlias],
+  local providerConfiguration = if configuration == null then {} else { [providerWithAlias]: { provider: { [provider]: configuration } } },
+  local providerReference = if configuration == null then {} else { provider: providerWithAlias },
   blockType(blockType): {
     local blockTypePath = if blockType == 'resource' then [] else ['data'],
     resource(type, name): {
+      local resourceType = std.substr(type, std.length(provider) + 1, std.length(type)),
       local resourcePath = blockTypePath + [type, name],
       _(block): {
         providerRequirements: providerRequirements,
         providerConfiguration: providerConfiguration,
+        provider: provider,
+        providerAlias: providerAlias,
+        resourceType: resourceType,
+        name: name,
         ref: std.join('.', resourcePath),
         block: {
           [blockType]: {

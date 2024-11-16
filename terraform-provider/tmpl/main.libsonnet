@@ -84,14 +84,20 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
     'providerAlias',
     j.If(j.Eq(j.Id('configuration'), j.Null)).
       Then(j.Null).
-      Else(j.String('%s.%s', [j.Id('provider'), j.Member(j.Id('configuration'), 'alias')]))
+      Else(j.Member(j.Id('configuration'), 'alias'))
+  ),
+  j.Local(
+    'providerWithAlias',
+    j.If(j.Eq(j.Id('configuration'), j.Null)).
+      Then(j.Null).
+      Else(j.String('%s.%s', [j.Id('provider'), j.Id('providerAlias')]))
   ),
   j.Local(
     'providerConfiguration',
     j.If(j.Eq(j.Id('configuration'), j.Null)).
       Then(j.Object([])).
       Else(j.Object([
-      j.Field(j.FieldNameExpr(j.Id('providerAlias')), j.Object([
+      j.Field(j.FieldNameExpr(j.Id('providerWithAlias')), j.Object([
         j.Field(j.Id('provider'), j.Object([
           j.Field(j.FieldNameExpr(j.Id('provider')), j.Id('configuration')),
         ])),
@@ -103,7 +109,7 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
     j.If(j.Eq(j.Id('configuration'), j.Null)).
       Then(j.Object([])).
       Else(j.Object([
-      j.Field(j.Id('provider'), j.Id('providerAlias')),
+      j.Field(j.Id('provider'), j.Id('providerWithAlias')),
     ]))
   ),
   j.FieldFunc(j.Id('blockType'), [j.Id('blockType')], j.Object([
@@ -112,10 +118,15 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
       j.If(j.Eq(j.Id('blockType'), j.String('resource'))).Then(j.Array([])).Else(j.Array([j.String('data')]))
     ),
     j.FieldFunc(j.Id('resource'), [j.Id('type'), j.Id('name')], j.Object([
+      j.Local('resourceType', j.Std.substr(j.Id('type'), j.Add(j.Std.length(j.Id('provider')), j.Number(1)), j.Std.length(j.Id('type')))),
       j.Local('resourcePath', j.Add(j.Id('blockTypePath'), j.Array([j.Id('type'), j.Id('name')]))),
       j.FieldFunc(j.Id('_'), [j.Id('block')], j.Object([
         j.Field(j.Id('providerRequirements'), j.Id('providerRequirements')),
         j.Field(j.Id('providerConfiguration'), j.Id('providerConfiguration')),
+        j.Field(j.Id('provider'), j.Id('provider')),
+        j.Field(j.Id('providerAlias'), j.Id('providerAlias')),
+        j.Field(j.Id('resourceType'), j.Id('resourceType')),
+        j.Field(j.Id('name'), j.Id('name')),
         j.Field(j.Id('ref'), j.Std.join(j.String('.'), j.Id('resourcePath'))),
         j.Field(j.Id('block'), j.Object([
           j.Field(j.FieldNameExpr(j.Id('blockType')), j.Object([
