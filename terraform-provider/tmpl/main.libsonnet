@@ -120,7 +120,16 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
     j.FieldFunc(j.Id('resource'), [j.Id('type'), j.Id('name')], j.Object([
       j.Local('resourceType', j.Std.substr(j.Id('type'), j.Add(j.Std.length(j.Id('provider')), j.Number(1)), j.Std.length(j.Id('type')))),
       j.Local('resourcePath', j.Add(j.Id('blockTypePath'), j.Array([j.Id('type'), j.Id('name')]))),
-      j.FieldFunc(j.Id('_'), [j.Id('block')], j.Object([
+      j.FieldFunc(j.Id('_'), [j.Id('rawBlock'), j.Id('block')], j.Object([
+        j.Local('metaBlock', j.Object([
+          j.Field(
+            j.String(attributeName),
+            j.Call(j.Member(j.Id('build'), 'template'), [
+              j.Std.get(j.Id('rawBlock'), j.String(attributeName)).default(j.Null),
+            ])
+          )
+          for attributeName in ['depends_on', 'count', 'for_each']
+        ], newlines=1)),
         j.Field(j.Id('providerRequirements'), j.Id('providerRequirements')),
         j.Field(j.Id('providerConfiguration'), j.Id('providerConfiguration')),
         j.Field(j.Id('provider'), j.Id('provider')),
@@ -131,7 +140,7 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
         j.Field(j.Id('block'), j.Object([
           j.Field(j.FieldNameExpr(j.Id('blockType')), j.Object([
             j.Field(j.FieldNameExpr(j.Id('type')), j.Object([
-              j.Field(j.FieldNameExpr(j.Id('name')), j.Std.prune(j.Add(j.Id('block'), j.Id('providerReference')))),
+              j.Field(j.FieldNameExpr(j.Id('name')), j.Std.prune(j.Add(j.Add(j.Id('metaBlock'), j.Id('block')), j.Id('providerReference')))),
             ], newlines=1)),
           ], newlines=1)),
         ], newlines=1)),
@@ -165,6 +174,7 @@ local resourceBlock(provider, type, name, resource) =
     j.Object([
       j.Local('resource', j.Call(j.Member(j.Id('blockType'), 'resource'), [j.String(name), j.Id('name')])),
       j.Field(j.String('_'), j.Call(j.Member(j.Id('resource'), '_'), [
+        j.Id('block'),
         j.Object(std.flattenArrays([
           local attribute = resource.block.attributes[attributeName];
           if std.get(attribute, 'computed', false) then [] else

@@ -15,7 +15,12 @@ local providerTemplate(provider, requirements, configuration) = {
     resource(type, name): {
       local resourceType = std.substr(type, std.length(provider) + 1, std.length(type)),
       local resourcePath = blockTypePath + [type, name],
-      _(block): {
+      _(rawBlock, block): {
+        local metaBlock = {
+          depends_on: build.template(std.get(rawBlock, 'depends_on', null)),
+          count: build.template(std.get(rawBlock, 'count', null)),
+          for_each: build.template(std.get(rawBlock, 'for_each', null)),
+        },
         providerRequirements: providerRequirements,
         providerConfiguration: providerConfiguration,
         provider: provider,
@@ -26,7 +31,7 @@ local providerTemplate(provider, requirements, configuration) = {
         block: {
           [blockType]: {
             [type]: {
-              [name]: std.prune(block + providerReference),
+              [name]: std.prune(metaBlock + block + providerReference),
             },
           },
         },
@@ -59,7 +64,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('resource'),
     aadb2c_directory(name, block): {
       local resource = blockType.resource('azurerm_aadb2c_directory', name),
-      _: resource._({
+      _: resource._(block, {
         data_residency_location: build.template(block.data_residency_location),
         domain_name: build.template(block.domain_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -80,7 +85,7 @@ local provider(configuration) = {
     },
     active_directory_domain_service(name, block): {
       local resource = blockType.resource('azurerm_active_directory_domain_service', name),
-      _: resource._({
+      _: resource._(block, {
         domain_configuration_type: build.template(std.get(block, 'domain_configuration_type', null)),
         domain_name: build.template(block.domain_name),
         filtered_sync_enabled: build.template(std.get(block, 'filtered_sync_enabled', null)),
@@ -107,7 +112,7 @@ local provider(configuration) = {
     },
     active_directory_domain_service_replica_set(name, block): {
       local resource = blockType.resource('azurerm_active_directory_domain_service_replica_set', name),
-      _: resource._({
+      _: resource._(block, {
         domain_service_id: build.template(block.domain_service_id),
         location: build.template(block.location),
         subnet_id: build.template(block.subnet_id),
@@ -122,7 +127,7 @@ local provider(configuration) = {
     },
     active_directory_domain_service_trust(name, block): {
       local resource = blockType.resource('azurerm_active_directory_domain_service_trust', name),
-      _: resource._({
+      _: resource._(block, {
         domain_service_id: build.template(block.domain_service_id),
         name: build.template(block.name),
         password: build.template(block.password),
@@ -138,7 +143,7 @@ local provider(configuration) = {
     },
     advanced_threat_protection(name, block): {
       local resource = blockType.resource('azurerm_advanced_threat_protection', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
         target_resource_id: build.template(block.target_resource_id),
       }),
@@ -148,7 +153,7 @@ local provider(configuration) = {
     },
     advisor_suppression(name, block): {
       local resource = blockType.resource('azurerm_advisor_suppression', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recommendation_id: build.template(block.recommendation_id),
         resource_id: build.template(block.resource_id),
@@ -163,7 +168,7 @@ local provider(configuration) = {
     },
     ai_services(name, block): {
       local resource = blockType.resource('azurerm_ai_services', name),
-      _: resource._({
+      _: resource._(block, {
         custom_subdomain_name: build.template(std.get(block, 'custom_subdomain_name', null)),
         fqdns: build.template(std.get(block, 'fqdns', null)),
         local_authentication_enabled: build.template(std.get(block, 'local_authentication_enabled', null)),
@@ -192,7 +197,7 @@ local provider(configuration) = {
     },
     analysis_services_server(name, block): {
       local resource = blockType.resource('azurerm_analysis_services_server', name),
-      _: resource._({
+      _: resource._(block, {
         admin_users: build.template(std.get(block, 'admin_users', null)),
         backup_blob_container_uri: build.template(std.get(block, 'backup_blob_container_uri', null)),
         location: build.template(block.location),
@@ -217,7 +222,7 @@ local provider(configuration) = {
     },
     api_connection(name, block): {
       local resource = blockType.resource('azurerm_api_connection', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         managed_api_id: build.template(block.managed_api_id),
         name: build.template(block.name),
@@ -235,7 +240,7 @@ local provider(configuration) = {
     },
     api_management(name, block): {
       local resource = blockType.resource('azurerm_api_management', name),
-      _: resource._({
+      _: resource._(block, {
         client_certificate_enabled: build.template(std.get(block, 'client_certificate_enabled', null)),
         gateway_disabled: build.template(std.get(block, 'gateway_disabled', null)),
         location: build.template(block.location),
@@ -278,7 +283,7 @@ local provider(configuration) = {
     },
     api_management_api(name, block): {
       local resource = blockType.resource('azurerm_api_management_api', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -313,7 +318,7 @@ local provider(configuration) = {
     },
     api_management_api_diagnostic(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_diagnostic', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_logger_id: build.template(block.api_management_logger_id),
         api_management_name: build.template(block.api_management_name),
         api_name: build.template(block.api_name),
@@ -336,7 +341,7 @@ local provider(configuration) = {
     },
     api_management_api_operation(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_operation', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         api_name: build.template(block.api_name),
         description: build.template(std.get(block, 'description', null)),
@@ -358,7 +363,7 @@ local provider(configuration) = {
     },
     api_management_api_operation_policy(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_operation_policy', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         api_name: build.template(block.api_name),
         operation_id: build.template(block.operation_id),
@@ -375,7 +380,7 @@ local provider(configuration) = {
     },
     api_management_api_operation_tag(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_operation_tag', name),
-      _: resource._({
+      _: resource._(block, {
         api_operation_id: build.template(block.api_operation_id),
         display_name: build.template(block.display_name),
         name: build.template(block.name),
@@ -387,7 +392,7 @@ local provider(configuration) = {
     },
     api_management_api_policy(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_policy', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         api_name: build.template(block.api_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -402,7 +407,7 @@ local provider(configuration) = {
     },
     api_management_api_release(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_release', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         name: build.template(block.name),
         notes: build.template(std.get(block, 'notes', null)),
@@ -414,7 +419,7 @@ local provider(configuration) = {
     },
     api_management_api_schema(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_schema', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         api_name: build.template(block.api_name),
         components: build.template(std.get(block, 'components', null)),
@@ -436,7 +441,7 @@ local provider(configuration) = {
     },
     api_management_api_tag(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_tag', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         name: build.template(block.name),
       }),
@@ -446,7 +451,7 @@ local provider(configuration) = {
     },
     api_management_api_tag_description(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_tag_description', name),
-      _: resource._({
+      _: resource._(block, {
         api_tag_id: build.template(block.api_tag_id),
         description: build.template(std.get(block, 'description', null)),
         external_documentation_description: build.template(std.get(block, 'external_documentation_description', null)),
@@ -460,7 +465,7 @@ local provider(configuration) = {
     },
     api_management_api_version_set(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_version_set', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -482,7 +487,7 @@ local provider(configuration) = {
     },
     api_management_authorization_server(name, block): {
       local resource = blockType.resource('azurerm_api_management_authorization_server', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         authorization_endpoint: build.template(block.authorization_endpoint),
         authorization_methods: build.template(block.authorization_methods),
@@ -524,7 +529,7 @@ local provider(configuration) = {
     },
     api_management_backend(name, block): {
       local resource = blockType.resource('azurerm_api_management_backend', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -546,7 +551,7 @@ local provider(configuration) = {
     },
     api_management_certificate(name, block): {
       local resource = blockType.resource('azurerm_api_management_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         data: build.template(std.get(block, 'data', null)),
         key_vault_identity_client_id: build.template(std.get(block, 'key_vault_identity_client_id', null)),
@@ -569,7 +574,7 @@ local provider(configuration) = {
     },
     api_management_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_api_management_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
       }),
       api_management_id: resource.field('api_management_id'),
@@ -577,7 +582,7 @@ local provider(configuration) = {
     },
     api_management_diagnostic(name, block): {
       local resource = blockType.resource('azurerm_api_management_diagnostic', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_logger_id: build.template(block.api_management_logger_id),
         api_management_name: build.template(block.api_management_name),
         identifier: build.template(block.identifier),
@@ -598,7 +603,7 @@ local provider(configuration) = {
     },
     api_management_email_template(name, block): {
       local resource = blockType.resource('azurerm_api_management_email_template', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         body: build.template(block.body),
         resource_group_name: build.template(block.resource_group_name),
@@ -616,7 +621,7 @@ local provider(configuration) = {
     },
     api_management_gateway(name, block): {
       local resource = blockType.resource('azurerm_api_management_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -628,7 +633,7 @@ local provider(configuration) = {
     },
     api_management_gateway_api(name, block): {
       local resource = blockType.resource('azurerm_api_management_gateway_api', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         gateway_id: build.template(block.gateway_id),
       }),
@@ -638,7 +643,7 @@ local provider(configuration) = {
     },
     api_management_gateway_certificate_authority(name, block): {
       local resource = blockType.resource('azurerm_api_management_gateway_certificate_authority', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         certificate_name: build.template(block.certificate_name),
         gateway_name: build.template(block.gateway_name),
@@ -652,7 +657,7 @@ local provider(configuration) = {
     },
     api_management_gateway_host_name_configuration(name, block): {
       local resource = blockType.resource('azurerm_api_management_gateway_host_name_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         certificate_id: build.template(block.certificate_id),
         gateway_name: build.template(block.gateway_name),
@@ -676,7 +681,7 @@ local provider(configuration) = {
     },
     api_management_global_schema(name, block): {
       local resource = blockType.resource('azurerm_api_management_global_schema', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         description: build.template(std.get(block, 'description', null)),
         resource_group_name: build.template(block.resource_group_name),
@@ -694,7 +699,7 @@ local provider(configuration) = {
     },
     api_management_group(name, block): {
       local resource = blockType.resource('azurerm_api_management_group', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -714,7 +719,7 @@ local provider(configuration) = {
     },
     api_management_group_user(name, block): {
       local resource = blockType.resource('azurerm_api_management_group_user', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         group_name: build.template(block.group_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -728,7 +733,7 @@ local provider(configuration) = {
     },
     api_management_identity_provider_aad(name, block): {
       local resource = blockType.resource('azurerm_api_management_identity_provider_aad', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_tenants: build.template(block.allowed_tenants),
         api_management_name: build.template(block.api_management_name),
         client_id: build.template(block.client_id),
@@ -748,7 +753,7 @@ local provider(configuration) = {
     },
     api_management_identity_provider_aadb2c(name, block): {
       local resource = blockType.resource('azurerm_api_management_identity_provider_aadb2c', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_tenant: build.template(block.allowed_tenant),
         api_management_name: build.template(block.api_management_name),
         authority: build.template(block.authority),
@@ -778,7 +783,7 @@ local provider(configuration) = {
     },
     api_management_identity_provider_facebook(name, block): {
       local resource = blockType.resource('azurerm_api_management_identity_provider_facebook', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         app_id: build.template(block.app_id),
         app_secret: build.template(block.app_secret),
@@ -792,7 +797,7 @@ local provider(configuration) = {
     },
     api_management_identity_provider_google(name, block): {
       local resource = blockType.resource('azurerm_api_management_identity_provider_google', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
@@ -806,7 +811,7 @@ local provider(configuration) = {
     },
     api_management_identity_provider_microsoft(name, block): {
       local resource = blockType.resource('azurerm_api_management_identity_provider_microsoft', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
@@ -820,7 +825,7 @@ local provider(configuration) = {
     },
     api_management_identity_provider_twitter(name, block): {
       local resource = blockType.resource('azurerm_api_management_identity_provider_twitter', name),
-      _: resource._({
+      _: resource._(block, {
         api_key: build.template(block.api_key),
         api_management_name: build.template(block.api_management_name),
         api_secret_key: build.template(block.api_secret_key),
@@ -834,7 +839,7 @@ local provider(configuration) = {
     },
     api_management_logger(name, block): {
       local resource = blockType.resource('azurerm_api_management_logger', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         buffered: build.template(std.get(block, 'buffered', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -852,7 +857,7 @@ local provider(configuration) = {
     },
     api_management_named_value(name, block): {
       local resource = blockType.resource('azurerm_api_management_named_value', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         display_name: build.template(block.display_name),
         name: build.template(block.name),
@@ -872,7 +877,7 @@ local provider(configuration) = {
     },
     api_management_notification_recipient_email(name, block): {
       local resource = blockType.resource('azurerm_api_management_notification_recipient_email', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         email: build.template(block.email),
         notification_type: build.template(block.notification_type),
@@ -884,7 +889,7 @@ local provider(configuration) = {
     },
     api_management_notification_recipient_user(name, block): {
       local resource = blockType.resource('azurerm_api_management_notification_recipient_user', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         notification_type: build.template(block.notification_type),
         user_id: build.template(block.user_id),
@@ -896,7 +901,7 @@ local provider(configuration) = {
     },
     api_management_openid_connect_provider(name, block): {
       local resource = blockType.resource('azurerm_api_management_openid_connect_provider', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
@@ -918,7 +923,7 @@ local provider(configuration) = {
     },
     api_management_policy(name, block): {
       local resource = blockType.resource('azurerm_api_management_policy', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         xml_link: build.template(std.get(block, 'xml_link', null)),
       }),
@@ -929,7 +934,7 @@ local provider(configuration) = {
     },
     api_management_policy_fragment(name, block): {
       local resource = blockType.resource('azurerm_api_management_policy_fragment', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         description: build.template(std.get(block, 'description', null)),
         format: build.template(std.get(block, 'format', null)),
@@ -945,7 +950,7 @@ local provider(configuration) = {
     },
     api_management_product(name, block): {
       local resource = blockType.resource('azurerm_api_management_product', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         approval_required: build.template(std.get(block, 'approval_required', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -971,7 +976,7 @@ local provider(configuration) = {
     },
     api_management_product_api(name, block): {
       local resource = blockType.resource('azurerm_api_management_product_api', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         api_name: build.template(block.api_name),
         product_id: build.template(block.product_id),
@@ -985,7 +990,7 @@ local provider(configuration) = {
     },
     api_management_product_group(name, block): {
       local resource = blockType.resource('azurerm_api_management_product_group', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         group_name: build.template(block.group_name),
         product_id: build.template(block.product_id),
@@ -999,7 +1004,7 @@ local provider(configuration) = {
     },
     api_management_product_policy(name, block): {
       local resource = blockType.resource('azurerm_api_management_product_policy', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         product_id: build.template(block.product_id),
         resource_group_name: build.template(block.resource_group_name),
@@ -1014,7 +1019,7 @@ local provider(configuration) = {
     },
     api_management_product_tag(name, block): {
       local resource = blockType.resource('azurerm_api_management_product_tag', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         api_management_product_id: build.template(block.api_management_product_id),
         name: build.template(block.name),
@@ -1028,7 +1033,7 @@ local provider(configuration) = {
     },
     api_management_redis_cache(name, block): {
       local resource = blockType.resource('azurerm_api_management_redis_cache', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         cache_location: build.template(std.get(block, 'cache_location', null)),
         connection_string: build.template(block.connection_string),
@@ -1046,7 +1051,7 @@ local provider(configuration) = {
     },
     api_management_subscription(name, block): {
       local resource = blockType.resource('azurerm_api_management_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         allow_tracing: build.template(std.get(block, 'allow_tracing', null)),
         api_id: build.template(std.get(block, 'api_id', null)),
         api_management_name: build.template(block.api_management_name),
@@ -1071,7 +1076,7 @@ local provider(configuration) = {
     },
     api_management_tag(name, block): {
       local resource = blockType.resource('azurerm_api_management_tag', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         name: build.template(block.name),
       }),
@@ -1082,7 +1087,7 @@ local provider(configuration) = {
     },
     api_management_user(name, block): {
       local resource = blockType.resource('azurerm_api_management_user', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         confirmation: build.template(std.get(block, 'confirmation', null)),
         email: build.template(block.email),
@@ -1107,7 +1112,7 @@ local provider(configuration) = {
     },
     app_configuration(name, block): {
       local resource = blockType.resource('azurerm_app_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         local_auth_enabled: build.template(std.get(block, 'local_auth_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -1136,7 +1141,7 @@ local provider(configuration) = {
     },
     app_configuration_feature(name, block): {
       local resource = blockType.resource('azurerm_app_configuration_feature', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_store_id: build.template(block.configuration_store_id),
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -1160,7 +1165,7 @@ local provider(configuration) = {
     },
     app_configuration_key(name, block): {
       local resource = blockType.resource('azurerm_app_configuration_key', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_store_id: build.template(block.configuration_store_id),
         key: build.template(block.key),
         label: build.template(std.get(block, 'label', null)),
@@ -1184,7 +1189,7 @@ local provider(configuration) = {
     },
     app_service(name, block): {
       local resource = blockType.resource('azurerm_app_service', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_plan_id: build.template(block.app_service_plan_id),
         client_affinity_enabled: build.template(std.get(block, 'client_affinity_enabled', null)),
         client_cert_enabled: build.template(std.get(block, 'client_cert_enabled', null)),
@@ -1218,7 +1223,7 @@ local provider(configuration) = {
     },
     app_service_active_slot(name, block): {
       local resource = blockType.resource('azurerm_app_service_active_slot', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_name: build.template(block.app_service_name),
         app_service_slot_name: build.template(block.app_service_slot_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -1230,7 +1235,7 @@ local provider(configuration) = {
     },
     app_service_certificate(name, block): {
       local resource = blockType.resource('azurerm_app_service_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_plan_id: build.template(std.get(block, 'app_service_plan_id', null)),
         key_vault_id: build.template(std.get(block, 'key_vault_id', null)),
         key_vault_secret_id: build.template(std.get(block, 'key_vault_secret_id', null)),
@@ -1262,7 +1267,7 @@ local provider(configuration) = {
     },
     app_service_certificate_binding(name, block): {
       local resource = blockType.resource('azurerm_app_service_certificate_binding', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_id: build.template(block.certificate_id),
         hostname_binding_id: build.template(block.hostname_binding_id),
         ssl_state: build.template(block.ssl_state),
@@ -1277,7 +1282,7 @@ local provider(configuration) = {
     },
     app_service_certificate_order(name, block): {
       local resource = blockType.resource('azurerm_app_service_certificate_order', name),
-      _: resource._({
+      _: resource._(block, {
         auto_renew: build.template(std.get(block, 'auto_renew', null)),
         key_size: build.template(std.get(block, 'key_size', null)),
         location: build.template(block.location),
@@ -1310,7 +1315,7 @@ local provider(configuration) = {
     },
     app_service_connection(name, block): {
       local resource = blockType.resource('azurerm_app_service_connection', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_id: build.template(block.app_service_id),
         client_type: build.template(std.get(block, 'client_type', null)),
         name: build.template(block.name),
@@ -1326,7 +1331,7 @@ local provider(configuration) = {
     },
     app_service_custom_hostname_binding(name, block): {
       local resource = blockType.resource('azurerm_app_service_custom_hostname_binding', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_name: build.template(block.app_service_name),
         hostname: build.template(block.hostname),
         resource_group_name: build.template(block.resource_group_name),
@@ -1341,7 +1346,7 @@ local provider(configuration) = {
     },
     app_service_environment_v3(name, block): {
       local resource = blockType.resource('azurerm_app_service_environment_v3', name),
-      _: resource._({
+      _: resource._(block, {
         allow_new_private_endpoint_connections: build.template(std.get(block, 'allow_new_private_endpoint_connections', null)),
         dedicated_host_count: build.template(std.get(block, 'dedicated_host_count', null)),
         internal_load_balancing_mode: build.template(std.get(block, 'internal_load_balancing_mode', null)),
@@ -1374,7 +1379,7 @@ local provider(configuration) = {
     },
     app_service_hybrid_connection(name, block): {
       local resource = blockType.resource('azurerm_app_service_hybrid_connection', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_name: build.template(block.app_service_name),
         hostname: build.template(block.hostname),
         port: build.template(block.port),
@@ -1397,7 +1402,7 @@ local provider(configuration) = {
     },
     app_service_managed_certificate(name, block): {
       local resource = blockType.resource('azurerm_app_service_managed_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         custom_hostname_binding_id: build.template(block.custom_hostname_binding_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -1415,7 +1420,7 @@ local provider(configuration) = {
     },
     app_service_plan(name, block): {
       local resource = blockType.resource('azurerm_app_service_plan', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_environment_id: build.template(std.get(block, 'app_service_environment_id', null)),
         is_xenon: build.template(std.get(block, 'is_xenon', null)),
         kind: build.template(std.get(block, 'kind', null)),
@@ -1443,7 +1448,7 @@ local provider(configuration) = {
     },
     app_service_public_certificate(name, block): {
       local resource = blockType.resource('azurerm_app_service_public_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_name: build.template(block.app_service_name),
         blob: build.template(block.blob),
         certificate_location: build.template(block.certificate_location),
@@ -1460,7 +1465,7 @@ local provider(configuration) = {
     },
     app_service_slot(name, block): {
       local resource = blockType.resource('azurerm_app_service_slot', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_name: build.template(block.app_service_name),
         app_service_plan_id: build.template(block.app_service_plan_id),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -1487,7 +1492,7 @@ local provider(configuration) = {
     },
     app_service_slot_custom_hostname_binding(name, block): {
       local resource = blockType.resource('azurerm_app_service_slot_custom_hostname_binding', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_slot_id: build.template(block.app_service_slot_id),
         hostname: build.template(block.hostname),
       }),
@@ -1500,7 +1505,7 @@ local provider(configuration) = {
     },
     app_service_slot_virtual_network_swift_connection(name, block): {
       local resource = blockType.resource('azurerm_app_service_slot_virtual_network_swift_connection', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_id: build.template(block.app_service_id),
         slot_name: build.template(block.slot_name),
         subnet_id: build.template(block.subnet_id),
@@ -1512,7 +1517,7 @@ local provider(configuration) = {
     },
     app_service_source_control(name, block): {
       local resource = blockType.resource('azurerm_app_service_source_control', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         rollback_enabled: build.template(std.get(block, 'rollback_enabled', null)),
         use_local_git: build.template(std.get(block, 'use_local_git', null)),
@@ -1532,7 +1537,7 @@ local provider(configuration) = {
     },
     app_service_source_control_slot(name, block): {
       local resource = blockType.resource('azurerm_app_service_source_control_slot', name),
-      _: resource._({
+      _: resource._(block, {
         rollback_enabled: build.template(std.get(block, 'rollback_enabled', null)),
         slot_id: build.template(block.slot_id),
         use_local_git: build.template(std.get(block, 'use_local_git', null)),
@@ -1552,7 +1557,7 @@ local provider(configuration) = {
     },
     app_service_source_control_token(name, block): {
       local resource = blockType.resource('azurerm_app_service_source_control_token', name),
-      _: resource._({
+      _: resource._(block, {
         token: build.template(block.token),
         token_secret: build.template(std.get(block, 'token_secret', null)),
         type: build.template(block.type),
@@ -1564,7 +1569,7 @@ local provider(configuration) = {
     },
     app_service_virtual_network_swift_connection(name, block): {
       local resource = blockType.resource('azurerm_app_service_virtual_network_swift_connection', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_id: build.template(block.app_service_id),
         subnet_id: build.template(block.subnet_id),
       }),
@@ -1574,7 +1579,7 @@ local provider(configuration) = {
     },
     application_gateway(name, block): {
       local resource = blockType.resource('azurerm_application_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         enable_http2: build.template(std.get(block, 'enable_http2', null)),
         fips_enabled: build.template(std.get(block, 'fips_enabled', null)),
         firewall_policy_id: build.template(std.get(block, 'firewall_policy_id', null)),
@@ -1599,7 +1604,7 @@ local provider(configuration) = {
     },
     application_insights(name, block): {
       local resource = blockType.resource('azurerm_application_insights', name),
-      _: resource._({
+      _: resource._(block, {
         application_type: build.template(block.application_type),
         daily_data_cap_in_gb: build.template(std.get(block, 'daily_data_cap_in_gb', null)),
         daily_data_cap_notifications_disabled: build.template(std.get(block, 'daily_data_cap_notifications_disabled', null)),
@@ -1638,7 +1643,7 @@ local provider(configuration) = {
     },
     application_insights_analytics_item(name, block): {
       local resource = blockType.resource('azurerm_application_insights_analytics_item', name),
-      _: resource._({
+      _: resource._(block, {
         application_insights_id: build.template(block.application_insights_id),
         content: build.template(block.content),
         function_alias: build.template(std.get(block, 'function_alias', null)),
@@ -1659,7 +1664,7 @@ local provider(configuration) = {
     },
     application_insights_api_key(name, block): {
       local resource = blockType.resource('azurerm_application_insights_api_key', name),
-      _: resource._({
+      _: resource._(block, {
         application_insights_id: build.template(block.application_insights_id),
         name: build.template(block.name),
         read_permissions: build.template(std.get(block, 'read_permissions', null)),
@@ -1674,7 +1679,7 @@ local provider(configuration) = {
     },
     application_insights_smart_detection_rule(name, block): {
       local resource = blockType.resource('azurerm_application_insights_smart_detection_rule', name),
-      _: resource._({
+      _: resource._(block, {
         additional_email_recipients: build.template(std.get(block, 'additional_email_recipients', null)),
         application_insights_id: build.template(block.application_insights_id),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -1690,7 +1695,7 @@ local provider(configuration) = {
     },
     application_insights_standard_web_test(name, block): {
       local resource = blockType.resource('azurerm_application_insights_standard_web_test', name),
-      _: resource._({
+      _: resource._(block, {
         application_insights_id: build.template(block.application_insights_id),
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -1719,7 +1724,7 @@ local provider(configuration) = {
     },
     application_insights_web_test(name, block): {
       local resource = blockType.resource('azurerm_application_insights_web_test', name),
-      _: resource._({
+      _: resource._(block, {
         application_insights_id: build.template(block.application_insights_id),
         configuration: build.template(block.configuration),
         description: build.template(std.get(block, 'description', null)),
@@ -1752,7 +1757,7 @@ local provider(configuration) = {
     },
     application_insights_workbook(name, block): {
       local resource = blockType.resource('azurerm_application_insights_workbook', name),
-      _: resource._({
+      _: resource._(block, {
         category: build.template(std.get(block, 'category', null)),
         data_json: build.template(block.data_json),
         description: build.template(std.get(block, 'description', null)),
@@ -1778,7 +1783,7 @@ local provider(configuration) = {
     },
     application_insights_workbook_template(name, block): {
       local resource = blockType.resource('azurerm_application_insights_workbook_template', name),
-      _: resource._({
+      _: resource._(block, {
         author: build.template(std.get(block, 'author', null)),
         localized: build.template(std.get(block, 'localized', null)),
         location: build.template(block.location),
@@ -1800,7 +1805,7 @@ local provider(configuration) = {
     },
     application_load_balancer(name, block): {
       local resource = blockType.resource('azurerm_application_load_balancer', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -1815,7 +1820,7 @@ local provider(configuration) = {
     },
     application_load_balancer_frontend(name, block): {
       local resource = blockType.resource('azurerm_application_load_balancer_frontend', name),
-      _: resource._({
+      _: resource._(block, {
         application_load_balancer_id: build.template(block.application_load_balancer_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1828,7 +1833,7 @@ local provider(configuration) = {
     },
     application_load_balancer_subnet_association(name, block): {
       local resource = blockType.resource('azurerm_application_load_balancer_subnet_association', name),
-      _: resource._({
+      _: resource._(block, {
         application_load_balancer_id: build.template(block.application_load_balancer_id),
         name: build.template(block.name),
         subnet_id: build.template(block.subnet_id),
@@ -1842,7 +1847,7 @@ local provider(configuration) = {
     },
     application_security_group(name, block): {
       local resource = blockType.resource('azurerm_application_security_group', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -1856,7 +1861,7 @@ local provider(configuration) = {
     },
     arc_kubernetes_cluster(name, block): {
       local resource = blockType.resource('azurerm_arc_kubernetes_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         agent_public_key_certificate: build.template(block.agent_public_key_certificate),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -1879,7 +1884,7 @@ local provider(configuration) = {
     },
     arc_kubernetes_cluster_extension(name, block): {
       local resource = blockType.resource('azurerm_arc_kubernetes_cluster_extension', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         configuration_protected_settings: build.template(std.get(block, 'configuration_protected_settings', null)),
         configuration_settings: build.template(std.get(block, 'configuration_settings', null)),
@@ -1901,7 +1906,7 @@ local provider(configuration) = {
     },
     arc_kubernetes_flux_configuration(name, block): {
       local resource = blockType.resource('azurerm_arc_kubernetes_flux_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         continuous_reconciliation_enabled: build.template(std.get(block, 'continuous_reconciliation_enabled', null)),
         name: build.template(block.name),
@@ -1917,7 +1922,7 @@ local provider(configuration) = {
     },
     arc_machine(name, block): {
       local resource = blockType.resource('azurerm_arc_machine', name),
-      _: resource._({
+      _: resource._(block, {
         kind: build.template(block.kind),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -1931,7 +1936,7 @@ local provider(configuration) = {
     },
     arc_machine_automanage_configuration_assignment(name, block): {
       local resource = blockType.resource('azurerm_arc_machine_automanage_configuration_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         arc_machine_id: build.template(block.arc_machine_id),
         configuration_id: build.template(block.configuration_id),
       }),
@@ -1941,7 +1946,7 @@ local provider(configuration) = {
     },
     arc_machine_extension(name, block): {
       local resource = blockType.resource('azurerm_arc_machine_extension', name),
-      _: resource._({
+      _: resource._(block, {
         arc_machine_id: build.template(block.arc_machine_id),
         automatic_upgrade_enabled: build.template(std.get(block, 'automatic_upgrade_enabled', null)),
         force_update_tag: build.template(std.get(block, 'force_update_tag', null)),
@@ -1969,7 +1974,7 @@ local provider(configuration) = {
     },
     arc_private_link_scope(name, block): {
       local resource = blockType.resource('azurerm_arc_private_link_scope', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         public_network_access_enabled: build.template(std.get(block, 'public_network_access_enabled', null)),
@@ -1985,7 +1990,7 @@ local provider(configuration) = {
     },
     arc_resource_bridge_appliance(name, block): {
       local resource = blockType.resource('azurerm_arc_resource_bridge_appliance', name),
-      _: resource._({
+      _: resource._(block, {
         distro: build.template(block.distro),
         infrastructure_provider: build.template(block.infrastructure_provider),
         location: build.template(block.location),
@@ -2005,7 +2010,7 @@ local provider(configuration) = {
     },
     attestation_provider(name, block): {
       local resource = blockType.resource('azurerm_attestation_provider', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         open_enclave_policy_base64: build.template(std.get(block, 'open_enclave_policy_base64', null)),
@@ -2031,7 +2036,7 @@ local provider(configuration) = {
     },
     automanage_configuration(name, block): {
       local resource = blockType.resource('azurerm_automanage_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_enabled: build.template(std.get(block, 'automation_account_enabled', null)),
         boot_diagnostics_enabled: build.template(std.get(block, 'boot_diagnostics_enabled', null)),
         defender_for_cloud_enabled: build.template(std.get(block, 'defender_for_cloud_enabled', null)),
@@ -2057,7 +2062,7 @@ local provider(configuration) = {
     },
     automation_account(name, block): {
       local resource = blockType.resource('azurerm_automation_account', name),
-      _: resource._({
+      _: resource._(block, {
         local_authentication_enabled: build.template(std.get(block, 'local_authentication_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -2082,7 +2087,7 @@ local provider(configuration) = {
     },
     automation_certificate(name, block): {
       local resource = blockType.resource('azurerm_automation_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         base64: build.template(block.base64),
         description: build.template(std.get(block, 'description', null)),
@@ -2101,7 +2106,7 @@ local provider(configuration) = {
     },
     automation_connection(name, block): {
       local resource = blockType.resource('azurerm_automation_connection', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -2119,7 +2124,7 @@ local provider(configuration) = {
     },
     automation_connection_certificate(name, block): {
       local resource = blockType.resource('azurerm_automation_connection_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         automation_certificate_name: build.template(block.automation_certificate_name),
         description: build.template(std.get(block, 'description', null)),
@@ -2137,7 +2142,7 @@ local provider(configuration) = {
     },
     automation_connection_classic_certificate(name, block): {
       local resource = blockType.resource('azurerm_automation_connection_classic_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         certificate_asset_name: build.template(block.certificate_asset_name),
         description: build.template(std.get(block, 'description', null)),
@@ -2157,7 +2162,7 @@ local provider(configuration) = {
     },
     automation_connection_service_principal(name, block): {
       local resource = blockType.resource('azurerm_automation_connection_service_principal', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         automation_account_name: build.template(block.automation_account_name),
         certificate_thumbprint: build.template(block.certificate_thumbprint),
@@ -2179,7 +2184,7 @@ local provider(configuration) = {
     },
     automation_connection_type(name, block): {
       local resource = blockType.resource('azurerm_automation_connection_type', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         is_global: build.template(std.get(block, 'is_global', null)),
         name: build.template(block.name),
@@ -2193,7 +2198,7 @@ local provider(configuration) = {
     },
     automation_credential(name, block): {
       local resource = blockType.resource('azurerm_automation_credential', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -2211,7 +2216,7 @@ local provider(configuration) = {
     },
     automation_dsc_configuration(name, block): {
       local resource = blockType.resource('azurerm_automation_dsc_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         content_embedded: build.template(block.content_embedded),
         description: build.template(std.get(block, 'description', null)),
@@ -2234,7 +2239,7 @@ local provider(configuration) = {
     },
     automation_dsc_nodeconfiguration(name, block): {
       local resource = blockType.resource('azurerm_automation_dsc_nodeconfiguration', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         content_embedded: build.template(block.content_embedded),
         name: build.template(block.name),
@@ -2249,7 +2254,7 @@ local provider(configuration) = {
     },
     automation_hybrid_runbook_worker(name, block): {
       local resource = blockType.resource('azurerm_automation_hybrid_runbook_worker', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         resource_group_name: build.template(block.resource_group_name),
         vm_resource_id: build.template(block.vm_resource_id),
@@ -2270,7 +2275,7 @@ local provider(configuration) = {
     },
     automation_hybrid_runbook_worker_group(name, block): {
       local resource = blockType.resource('azurerm_automation_hybrid_runbook_worker_group', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         credential_name: build.template(std.get(block, 'credential_name', null)),
         name: build.template(block.name),
@@ -2284,7 +2289,7 @@ local provider(configuration) = {
     },
     automation_job_schedule(name, block): {
       local resource = blockType.resource('azurerm_automation_job_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         parameters: build.template(std.get(block, 'parameters', null)),
         resource_group_name: build.template(block.resource_group_name),
@@ -2304,7 +2309,7 @@ local provider(configuration) = {
     },
     automation_module(name, block): {
       local resource = blockType.resource('azurerm_automation_module', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -2316,7 +2321,7 @@ local provider(configuration) = {
     },
     automation_powershell72_module(name, block): {
       local resource = blockType.resource('azurerm_automation_powershell72_module', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_id: build.template(block.automation_account_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2328,7 +2333,7 @@ local provider(configuration) = {
     },
     automation_python3_package(name, block): {
       local resource = blockType.resource('azurerm_automation_python3_package', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         content_uri: build.template(block.content_uri),
         content_version: build.template(std.get(block, 'content_version', null)),
@@ -2350,7 +2355,7 @@ local provider(configuration) = {
     },
     automation_runbook(name, block): {
       local resource = blockType.resource('azurerm_automation_runbook', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
@@ -2378,7 +2383,7 @@ local provider(configuration) = {
     },
     automation_schedule(name, block): {
       local resource = blockType.resource('azurerm_automation_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         frequency: build.template(block.frequency),
@@ -2403,7 +2408,7 @@ local provider(configuration) = {
     },
     automation_software_update_configuration(name, block): {
       local resource = blockType.resource('azurerm_automation_software_update_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_id: build.template(block.automation_account_id),
         duration: build.template(std.get(block, 'duration', null)),
         name: build.template(block.name),
@@ -2421,7 +2426,7 @@ local provider(configuration) = {
     },
     automation_source_control(name, block): {
       local resource = blockType.resource('azurerm_automation_source_control', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_sync: build.template(std.get(block, 'automatic_sync', null)),
         automation_account_id: build.template(block.automation_account_id),
         branch: build.template(std.get(block, 'branch', null)),
@@ -2445,7 +2450,7 @@ local provider(configuration) = {
     },
     automation_variable_bool(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_bool', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         encrypted: build.template(std.get(block, 'encrypted', null)),
@@ -2463,7 +2468,7 @@ local provider(configuration) = {
     },
     automation_variable_datetime(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_datetime', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         encrypted: build.template(std.get(block, 'encrypted', null)),
@@ -2481,7 +2486,7 @@ local provider(configuration) = {
     },
     automation_variable_int(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_int', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         encrypted: build.template(std.get(block, 'encrypted', null)),
@@ -2499,7 +2504,7 @@ local provider(configuration) = {
     },
     automation_variable_object(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_object', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         encrypted: build.template(std.get(block, 'encrypted', null)),
@@ -2517,7 +2522,7 @@ local provider(configuration) = {
     },
     automation_variable_string(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_string', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         description: build.template(std.get(block, 'description', null)),
         encrypted: build.template(std.get(block, 'encrypted', null)),
@@ -2535,7 +2540,7 @@ local provider(configuration) = {
     },
     automation_watcher(name, block): {
       local resource = blockType.resource('azurerm_automation_watcher', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_id: build.template(block.automation_account_id),
         description: build.template(std.get(block, 'description', null)),
         etag: build.template(std.get(block, 'etag', null)),
@@ -2562,7 +2567,7 @@ local provider(configuration) = {
     },
     automation_webhook(name, block): {
       local resource = blockType.resource('azurerm_automation_webhook', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         enabled: build.template(std.get(block, 'enabled', null)),
         expiry_time: build.template(block.expiry_time),
@@ -2585,7 +2590,7 @@ local provider(configuration) = {
     },
     availability_set(name, block): {
       local resource = blockType.resource('azurerm_availability_set', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         managed: build.template(std.get(block, 'managed', null)),
         name: build.template(block.name),
@@ -2607,7 +2612,7 @@ local provider(configuration) = {
     },
     backup_container_storage_account(name, block): {
       local resource = blockType.resource('azurerm_backup_container_storage_account', name),
-      _: resource._({
+      _: resource._(block, {
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
         storage_account_id: build.template(block.storage_account_id),
@@ -2619,7 +2624,7 @@ local provider(configuration) = {
     },
     backup_policy_file_share(name, block): {
       local resource = blockType.resource('azurerm_backup_policy_file_share', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -2633,7 +2638,7 @@ local provider(configuration) = {
     },
     backup_policy_vm(name, block): {
       local resource = blockType.resource('azurerm_backup_policy_vm', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_type: build.template(std.get(block, 'policy_type', null)),
         recovery_vault_name: build.template(block.recovery_vault_name),
@@ -2650,7 +2655,7 @@ local provider(configuration) = {
     },
     backup_policy_vm_workload(name, block): {
       local resource = blockType.resource('azurerm_backup_policy_vm_workload', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -2664,7 +2669,7 @@ local provider(configuration) = {
     },
     backup_protected_file_share(name, block): {
       local resource = blockType.resource('azurerm_backup_protected_file_share', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(block.backup_policy_id),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -2680,7 +2685,7 @@ local provider(configuration) = {
     },
     backup_protected_vm(name, block): {
       local resource = blockType.resource('azurerm_backup_protected_vm', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(std.get(block, 'backup_policy_id', null)),
         exclude_disk_luns: build.template(std.get(block, 'exclude_disk_luns', null)),
         include_disk_luns: build.template(std.get(block, 'include_disk_luns', null)),
@@ -2698,7 +2703,7 @@ local provider(configuration) = {
     },
     bastion_host(name, block): {
       local resource = blockType.resource('azurerm_bastion_host', name),
-      _: resource._({
+      _: resource._(block, {
         copy_paste_enabled: build.template(std.get(block, 'copy_paste_enabled', null)),
         file_copy_enabled: build.template(std.get(block, 'file_copy_enabled', null)),
         ip_connect_enabled: build.template(std.get(block, 'ip_connect_enabled', null)),
@@ -2735,7 +2740,7 @@ local provider(configuration) = {
     },
     batch_account(name, block): {
       local resource = blockType.resource('azurerm_batch_account', name),
-      _: resource._({
+      _: resource._(block, {
         encryption: build.template(std.get(block, 'encryption', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -2765,7 +2770,7 @@ local provider(configuration) = {
     },
     batch_application(name, block): {
       local resource = blockType.resource('azurerm_batch_application', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         allow_updates: build.template(std.get(block, 'allow_updates', null)),
         default_version: build.template(std.get(block, 'default_version', null)),
@@ -2783,7 +2788,7 @@ local provider(configuration) = {
     },
     batch_certificate(name, block): {
       local resource = blockType.resource('azurerm_batch_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         certificate: build.template(block.certificate),
         format: build.template(block.format),
@@ -2805,7 +2810,7 @@ local provider(configuration) = {
     },
     batch_job(name, block): {
       local resource = blockType.resource('azurerm_batch_job', name),
-      _: resource._({
+      _: resource._(block, {
         batch_pool_id: build.template(block.batch_pool_id),
         common_environment_properties: build.template(std.get(block, 'common_environment_properties', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -2823,7 +2828,7 @@ local provider(configuration) = {
     },
     batch_pool(name, block): {
       local resource = blockType.resource('azurerm_batch_pool', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         display_name: build.template(std.get(block, 'display_name', null)),
         inter_node_communication: build.template(std.get(block, 'inter_node_communication', null)),
@@ -2855,7 +2860,7 @@ local provider(configuration) = {
     },
     billing_account_cost_management_export(name, block): {
       local resource = blockType.resource('azurerm_billing_account_cost_management_export', name),
-      _: resource._({
+      _: resource._(block, {
         active: build.template(std.get(block, 'active', null)),
         billing_account_id: build.template(block.billing_account_id),
         name: build.template(block.name),
@@ -2873,7 +2878,7 @@ local provider(configuration) = {
     },
     blueprint_assignment(name, block): {
       local resource = blockType.resource('azurerm_blueprint_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         lock_exclude_actions: build.template(std.get(block, 'lock_exclude_actions', null)),
         lock_exclude_principals: build.template(std.get(block, 'lock_exclude_principals', null)),
@@ -2901,7 +2906,7 @@ local provider(configuration) = {
     },
     bot_channel_alexa(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_alexa', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         location: build.template(block.location),
         resource_group_name: build.template(block.resource_group_name),
@@ -2915,7 +2920,7 @@ local provider(configuration) = {
     },
     bot_channel_direct_line_speech(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_direct_line_speech', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         cognitive_account_id: build.template(std.get(block, 'cognitive_account_id', null)),
         cognitive_service_access_key: build.template(block.cognitive_service_access_key),
@@ -2937,7 +2942,7 @@ local provider(configuration) = {
     },
     bot_channel_directline(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_directline', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         location: build.template(block.location),
         resource_group_name: build.template(block.resource_group_name),
@@ -2949,7 +2954,7 @@ local provider(configuration) = {
     },
     bot_channel_email(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_email', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         email_address: build.template(block.email_address),
         email_password: build.template(std.get(block, 'email_password', null)),
@@ -2967,7 +2972,7 @@ local provider(configuration) = {
     },
     bot_channel_facebook(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_facebook', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         facebook_application_id: build.template(block.facebook_application_id),
         facebook_application_secret: build.template(block.facebook_application_secret),
@@ -2983,7 +2988,7 @@ local provider(configuration) = {
     },
     bot_channel_line(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_line', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         location: build.template(block.location),
         resource_group_name: build.template(block.resource_group_name),
@@ -2995,7 +3000,7 @@ local provider(configuration) = {
     },
     bot_channel_ms_teams(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_ms_teams', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         deployment_environment: build.template(std.get(block, 'deployment_environment', null)),
         enable_calling: build.template(std.get(block, 'enable_calling', null)),
@@ -3012,7 +3017,7 @@ local provider(configuration) = {
     },
     bot_channel_slack(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_slack', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
@@ -3034,7 +3039,7 @@ local provider(configuration) = {
     },
     bot_channel_sms(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_sms', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         location: build.template(block.location),
         phone_number: build.template(block.phone_number),
@@ -3052,7 +3057,7 @@ local provider(configuration) = {
     },
     bot_channel_web_chat(name, block): {
       local resource = blockType.resource('azurerm_bot_channel_web_chat', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         location: build.template(block.location),
         resource_group_name: build.template(block.resource_group_name),
@@ -3064,7 +3069,7 @@ local provider(configuration) = {
     },
     bot_channels_registration(name, block): {
       local resource = blockType.resource('azurerm_bot_channels_registration', name),
-      _: resource._({
+      _: resource._(block, {
         cmk_key_vault_url: build.template(std.get(block, 'cmk_key_vault_url', null)),
         description: build.template(std.get(block, 'description', null)),
         developer_app_insights_api_key: build.template(std.get(block, 'developer_app_insights_api_key', null)),
@@ -3101,7 +3106,7 @@ local provider(configuration) = {
     },
     bot_connection(name, block): {
       local resource = blockType.resource('azurerm_bot_connection', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
@@ -3125,7 +3130,7 @@ local provider(configuration) = {
     },
     bot_service_azure_bot(name, block): {
       local resource = blockType.resource('azurerm_bot_service_azure_bot', name),
-      _: resource._({
+      _: resource._(block, {
         cmk_key_vault_key_url: build.template(std.get(block, 'cmk_key_vault_key_url', null)),
         developer_app_insights_api_key: build.template(std.get(block, 'developer_app_insights_api_key', null)),
         developer_app_insights_application_id: build.template(std.get(block, 'developer_app_insights_application_id', null)),
@@ -3172,7 +3177,7 @@ local provider(configuration) = {
     },
     bot_web_app(name, block): {
       local resource = blockType.resource('azurerm_bot_web_app', name),
-      _: resource._({
+      _: resource._(block, {
         developer_app_insights_api_key: build.template(std.get(block, 'developer_app_insights_api_key', null)),
         developer_app_insights_application_id: build.template(std.get(block, 'developer_app_insights_application_id', null)),
         developer_app_insights_key: build.template(std.get(block, 'developer_app_insights_key', null)),
@@ -3203,7 +3208,7 @@ local provider(configuration) = {
     },
     capacity_reservation(name, block): {
       local resource = blockType.resource('azurerm_capacity_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_reservation_group_id: build.template(block.capacity_reservation_group_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -3217,7 +3222,7 @@ local provider(configuration) = {
     },
     capacity_reservation_group(name, block): {
       local resource = blockType.resource('azurerm_capacity_reservation_group', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -3233,7 +3238,7 @@ local provider(configuration) = {
     },
     cdn_endpoint(name, block): {
       local resource = blockType.resource('azurerm_cdn_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         content_types_to_compress: build.template(std.get(block, 'content_types_to_compress', null)),
         is_compression_enabled: build.template(std.get(block, 'is_compression_enabled', null)),
         is_http_allowed: build.template(std.get(block, 'is_http_allowed', null)),
@@ -3268,7 +3273,7 @@ local provider(configuration) = {
     },
     cdn_endpoint_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_cdn_endpoint_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_endpoint_id: build.template(block.cdn_endpoint_id),
         host_name: build.template(block.host_name),
         name: build.template(block.name),
@@ -3280,7 +3285,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_profile_id: build.template(block.cdn_frontdoor_profile_id),
         dns_zone_id: build.template(std.get(block, 'dns_zone_id', null)),
         host_name: build.template(block.host_name),
@@ -3296,7 +3301,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_custom_domain_association(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_custom_domain_association', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_custom_domain_id: build.template(block.cdn_frontdoor_custom_domain_id),
         cdn_frontdoor_route_ids: build.template(block.cdn_frontdoor_route_ids),
       }),
@@ -3306,7 +3311,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_endpoint(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_profile_id: build.template(block.cdn_frontdoor_profile_id),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -3321,7 +3326,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_firewall_policy(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         custom_block_response_body: build.template(std.get(block, 'custom_block_response_body', null)),
         custom_block_response_status_code: build.template(std.get(block, 'custom_block_response_status_code', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -3348,7 +3353,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_origin(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_origin', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_origin_group_id: build.template(block.cdn_frontdoor_origin_group_id),
         certificate_name_check_enabled: build.template(block.certificate_name_check_enabled),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -3374,7 +3379,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_origin_group(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_origin_group', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_profile_id: build.template(block.cdn_frontdoor_profile_id),
         name: build.template(block.name),
         restore_traffic_time_to_healed_or_new_endpoint_in_minutes: build.template(std.get(block, 'restore_traffic_time_to_healed_or_new_endpoint_in_minutes', null)),
@@ -3388,7 +3393,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_profile(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_profile', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         response_timeout_seconds: build.template(std.get(block, 'response_timeout_seconds', null)),
@@ -3405,7 +3410,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_route(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_route', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_custom_domain_ids: build.template(std.get(block, 'cdn_frontdoor_custom_domain_ids', null)),
         cdn_frontdoor_endpoint_id: build.template(block.cdn_frontdoor_endpoint_id),
         cdn_frontdoor_origin_group_id: build.template(block.cdn_frontdoor_origin_group_id),
@@ -3437,7 +3442,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_rule(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_rule', name),
-      _: resource._({
+      _: resource._(block, {
         behavior_on_match: build.template(std.get(block, 'behavior_on_match', null)),
         cdn_frontdoor_rule_set_id: build.template(block.cdn_frontdoor_rule_set_id),
         name: build.template(block.name),
@@ -3452,7 +3457,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_rule_set(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_rule_set', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_profile_id: build.template(block.cdn_frontdoor_profile_id),
         name: build.template(block.name),
       }),
@@ -3462,7 +3467,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_secret(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_secret', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_profile_id: build.template(block.cdn_frontdoor_profile_id),
         name: build.template(block.name),
       }),
@@ -3473,7 +3478,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_security_policy(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_security_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cdn_frontdoor_profile_id: build.template(block.cdn_frontdoor_profile_id),
         name: build.template(block.name),
       }),
@@ -3483,7 +3488,7 @@ local provider(configuration) = {
     },
     cdn_profile(name, block): {
       local resource = blockType.resource('azurerm_cdn_profile', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -3499,7 +3504,7 @@ local provider(configuration) = {
     },
     chaos_studio_capability(name, block): {
       local resource = blockType.resource('azurerm_chaos_studio_capability', name),
-      _: resource._({
+      _: resource._(block, {
         capability_type: build.template(block.capability_type),
         chaos_studio_target_id: build.template(block.chaos_studio_target_id),
       }),
@@ -3510,7 +3515,7 @@ local provider(configuration) = {
     },
     chaos_studio_experiment(name, block): {
       local resource = blockType.resource('azurerm_chaos_studio_experiment', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -3522,7 +3527,7 @@ local provider(configuration) = {
     },
     chaos_studio_target(name, block): {
       local resource = blockType.resource('azurerm_chaos_studio_target', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         target_resource_id: build.template(block.target_resource_id),
         target_type: build.template(block.target_type),
@@ -3534,7 +3539,7 @@ local provider(configuration) = {
     },
     cognitive_account(name, block): {
       local resource = blockType.resource('azurerm_cognitive_account', name),
-      _: resource._({
+      _: resource._(block, {
         custom_question_answering_search_service_id: build.template(std.get(block, 'custom_question_answering_search_service_id', null)),
         custom_question_answering_search_service_key: build.template(std.get(block, 'custom_question_answering_search_service_key', null)),
         custom_subdomain_name: build.template(std.get(block, 'custom_subdomain_name', null)),
@@ -3581,7 +3586,7 @@ local provider(configuration) = {
     },
     cognitive_account_customer_managed_key(name, block): {
       local resource = blockType.resource('azurerm_cognitive_account_customer_managed_key', name),
-      _: resource._({
+      _: resource._(block, {
         cognitive_account_id: build.template(block.cognitive_account_id),
         identity_client_id: build.template(std.get(block, 'identity_client_id', null)),
         key_vault_key_id: build.template(block.key_vault_key_id),
@@ -3593,7 +3598,7 @@ local provider(configuration) = {
     },
     cognitive_deployment(name, block): {
       local resource = blockType.resource('azurerm_cognitive_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         cognitive_account_id: build.template(block.cognitive_account_id),
         name: build.template(block.name),
         rai_policy_name: build.template(std.get(block, 'rai_policy_name', null)),
@@ -3607,7 +3612,7 @@ local provider(configuration) = {
     },
     communication_service(name, block): {
       local resource = blockType.resource('azurerm_communication_service', name),
-      _: resource._({
+      _: resource._(block, {
         data_location: build.template(std.get(block, 'data_location', null)),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -3625,7 +3630,7 @@ local provider(configuration) = {
     },
     communication_service_email_domain_association(name, block): {
       local resource = blockType.resource('azurerm_communication_service_email_domain_association', name),
-      _: resource._({
+      _: resource._(block, {
         communication_service_id: build.template(block.communication_service_id),
         email_service_domain_id: build.template(block.email_service_domain_id),
       }),
@@ -3635,7 +3640,7 @@ local provider(configuration) = {
     },
     confidential_ledger(name, block): {
       local resource = blockType.resource('azurerm_confidential_ledger', name),
-      _: resource._({
+      _: resource._(block, {
         ledger_type: build.template(block.ledger_type),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -3653,7 +3658,7 @@ local provider(configuration) = {
     },
     consumption_budget_management_group(name, block): {
       local resource = blockType.resource('azurerm_consumption_budget_management_group', name),
-      _: resource._({
+      _: resource._(block, {
         amount: build.template(block.amount),
         management_group_id: build.template(block.management_group_id),
         name: build.template(block.name),
@@ -3668,7 +3673,7 @@ local provider(configuration) = {
     },
     consumption_budget_resource_group(name, block): {
       local resource = blockType.resource('azurerm_consumption_budget_resource_group', name),
-      _: resource._({
+      _: resource._(block, {
         amount: build.template(block.amount),
         name: build.template(block.name),
         resource_group_id: build.template(block.resource_group_id),
@@ -3683,7 +3688,7 @@ local provider(configuration) = {
     },
     consumption_budget_subscription(name, block): {
       local resource = blockType.resource('azurerm_consumption_budget_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         amount: build.template(block.amount),
         name: build.template(block.name),
         subscription_id: build.template(block.subscription_id),
@@ -3698,7 +3703,7 @@ local provider(configuration) = {
     },
     container_app(name, block): {
       local resource = blockType.resource('azurerm_container_app', name),
-      _: resource._({
+      _: resource._(block, {
         container_app_environment_id: build.template(block.container_app_environment_id),
         max_inactive_revisions: build.template(std.get(block, 'max_inactive_revisions', null)),
         name: build.template(block.name),
@@ -3723,7 +3728,7 @@ local provider(configuration) = {
     },
     container_app_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_container_app_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_binding_type: build.template(std.get(block, 'certificate_binding_type', null)),
         container_app_environment_certificate_id: build.template(std.get(block, 'container_app_environment_certificate_id', null)),
         container_app_id: build.template(block.container_app_id),
@@ -3738,7 +3743,7 @@ local provider(configuration) = {
     },
     container_app_environment(name, block): {
       local resource = blockType.resource('azurerm_container_app_environment', name),
-      _: resource._({
+      _: resource._(block, {
         dapr_application_insights_connection_string: build.template(std.get(block, 'dapr_application_insights_connection_string', null)),
         infrastructure_resource_group_name: build.template(std.get(block, 'infrastructure_resource_group_name', null)),
         infrastructure_subnet_id: build.template(std.get(block, 'infrastructure_subnet_id', null)),
@@ -3772,7 +3777,7 @@ local provider(configuration) = {
     },
     container_app_environment_certificate(name, block): {
       local resource = blockType.resource('azurerm_container_app_environment_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_blob_base64: build.template(block.certificate_blob_base64),
         certificate_password: build.template(block.certificate_password),
         container_app_environment_id: build.template(block.container_app_environment_id),
@@ -3793,7 +3798,7 @@ local provider(configuration) = {
     },
     container_app_environment_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_container_app_environment_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_blob_base64: build.template(block.certificate_blob_base64),
         certificate_password: build.template(block.certificate_password),
         container_app_environment_id: build.template(block.container_app_environment_id),
@@ -3807,7 +3812,7 @@ local provider(configuration) = {
     },
     container_app_environment_dapr_component(name, block): {
       local resource = blockType.resource('azurerm_container_app_environment_dapr_component', name),
-      _: resource._({
+      _: resource._(block, {
         component_type: build.template(block.component_type),
         container_app_environment_id: build.template(block.container_app_environment_id),
         ignore_errors: build.template(std.get(block, 'ignore_errors', null)),
@@ -3827,7 +3832,7 @@ local provider(configuration) = {
     },
     container_app_environment_storage(name, block): {
       local resource = blockType.resource('azurerm_container_app_environment_storage', name),
-      _: resource._({
+      _: resource._(block, {
         access_key: build.template(block.access_key),
         access_mode: build.template(block.access_mode),
         account_name: build.template(block.account_name),
@@ -3845,7 +3850,7 @@ local provider(configuration) = {
     },
     container_app_job(name, block): {
       local resource = blockType.resource('azurerm_container_app_job', name),
-      _: resource._({
+      _: resource._(block, {
         container_app_environment_id: build.template(block.container_app_environment_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -3869,7 +3874,7 @@ local provider(configuration) = {
     },
     container_connected_registry(name, block): {
       local resource = blockType.resource('azurerm_container_connected_registry', name),
-      _: resource._({
+      _: resource._(block, {
         audit_log_enabled: build.template(std.get(block, 'audit_log_enabled', null)),
         client_token_ids: build.template(std.get(block, 'client_token_ids', null)),
         container_registry_id: build.template(block.container_registry_id),
@@ -3897,7 +3902,7 @@ local provider(configuration) = {
     },
     container_group(name, block): {
       local resource = blockType.resource('azurerm_container_group', name),
-      _: resource._({
+      _: resource._(block, {
         dns_name_label: build.template(std.get(block, 'dns_name_label', null)),
         dns_name_label_reuse_policy: build.template(std.get(block, 'dns_name_label_reuse_policy', null)),
         ip_address_type: build.template(std.get(block, 'ip_address_type', null)),
@@ -3937,7 +3942,7 @@ local provider(configuration) = {
     },
     container_registry(name, block): {
       local resource = blockType.resource('azurerm_container_registry', name),
-      _: resource._({
+      _: resource._(block, {
         admin_enabled: build.template(std.get(block, 'admin_enabled', null)),
         anonymous_pull_enabled: build.template(std.get(block, 'anonymous_pull_enabled', null)),
         data_endpoint_enabled: build.template(std.get(block, 'data_endpoint_enabled', null)),
@@ -3978,7 +3983,7 @@ local provider(configuration) = {
     },
     container_registry_agent_pool(name, block): {
       local resource = blockType.resource('azurerm_container_registry_agent_pool', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_name: build.template(block.container_registry_name),
         instance_count: build.template(std.get(block, 'instance_count', null)),
         location: build.template(block.location),
@@ -4000,7 +4005,7 @@ local provider(configuration) = {
     },
     container_registry_cache_rule(name, block): {
       local resource = blockType.resource('azurerm_container_registry_cache_rule', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_id: build.template(block.container_registry_id),
         credential_set_id: build.template(std.get(block, 'credential_set_id', null)),
         name: build.template(block.name),
@@ -4016,7 +4021,7 @@ local provider(configuration) = {
     },
     container_registry_scope_map(name, block): {
       local resource = blockType.resource('azurerm_container_registry_scope_map', name),
-      _: resource._({
+      _: resource._(block, {
         actions: build.template(block.actions),
         container_registry_name: build.template(block.container_registry_name),
         description: build.template(std.get(block, 'description', null)),
@@ -4032,7 +4037,7 @@ local provider(configuration) = {
     },
     container_registry_task(name, block): {
       local resource = blockType.resource('azurerm_container_registry_task', name),
-      _: resource._({
+      _: resource._(block, {
         agent_pool_name: build.template(std.get(block, 'agent_pool_name', null)),
         container_registry_id: build.template(block.container_registry_id),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -4054,7 +4059,7 @@ local provider(configuration) = {
     },
     container_registry_task_schedule_run_now(name, block): {
       local resource = blockType.resource('azurerm_container_registry_task_schedule_run_now', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_task_id: build.template(block.container_registry_task_id),
       }),
       container_registry_task_id: resource.field('container_registry_task_id'),
@@ -4062,7 +4067,7 @@ local provider(configuration) = {
     },
     container_registry_token(name, block): {
       local resource = blockType.resource('azurerm_container_registry_token', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_name: build.template(block.container_registry_name),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -4078,7 +4083,7 @@ local provider(configuration) = {
     },
     container_registry_token_password(name, block): {
       local resource = blockType.resource('azurerm_container_registry_token_password', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_token_id: build.template(block.container_registry_token_id),
       }),
       container_registry_token_id: resource.field('container_registry_token_id'),
@@ -4086,7 +4091,7 @@ local provider(configuration) = {
     },
     container_registry_webhook(name, block): {
       local resource = blockType.resource('azurerm_container_registry_webhook', name),
-      _: resource._({
+      _: resource._(block, {
         actions: build.template(block.actions),
         custom_headers: build.template(std.get(block, 'custom_headers', null)),
         location: build.template(block.location),
@@ -4112,7 +4117,7 @@ local provider(configuration) = {
     },
     cosmosdb_account(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_account', name),
-      _: resource._({
+      _: resource._(block, {
         access_key_metadata_writes_enabled: build.template(std.get(block, 'access_key_metadata_writes_enabled', null)),
         analytical_storage_enabled: build.template(std.get(block, 'analytical_storage_enabled', null)),
         automatic_failover_enabled: build.template(std.get(block, 'automatic_failover_enabled', null)),
@@ -4181,7 +4186,7 @@ local provider(configuration) = {
     },
     cosmosdb_cassandra_cluster(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_cassandra_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_method: build.template(std.get(block, 'authentication_method', null)),
         client_certificate_pems: build.template(std.get(block, 'client_certificate_pems', null)),
         default_admin_password: build.template(block.default_admin_password),
@@ -4213,7 +4218,7 @@ local provider(configuration) = {
     },
     cosmosdb_cassandra_datacenter(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_cassandra_datacenter', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zones_enabled: build.template(std.get(block, 'availability_zones_enabled', null)),
         backup_storage_customer_key_uri: build.template(std.get(block, 'backup_storage_customer_key_uri', null)),
         base64_encoded_yaml_fragment: build.template(std.get(block, 'base64_encoded_yaml_fragment', null)),
@@ -4244,7 +4249,7 @@ local provider(configuration) = {
     },
     cosmosdb_cassandra_keyspace(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_cassandra_keyspace', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -4257,7 +4262,7 @@ local provider(configuration) = {
     },
     cosmosdb_cassandra_table(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_cassandra_table', name),
-      _: resource._({
+      _: resource._(block, {
         analytical_storage_ttl: build.template(std.get(block, 'analytical_storage_ttl', null)),
         cassandra_keyspace_id: build.template(block.cassandra_keyspace_id),
         default_ttl: build.template(std.get(block, 'default_ttl', null)),
@@ -4272,7 +4277,7 @@ local provider(configuration) = {
     },
     cosmosdb_gremlin_database(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_gremlin_database', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -4285,7 +4290,7 @@ local provider(configuration) = {
     },
     cosmosdb_gremlin_graph(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_gremlin_graph', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         analytical_storage_ttl: build.template(std.get(block, 'analytical_storage_ttl', null)),
         database_name: build.template(block.database_name),
@@ -4308,7 +4313,7 @@ local provider(configuration) = {
     },
     cosmosdb_mongo_collection(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_mongo_collection', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         analytical_storage_ttl: build.template(std.get(block, 'analytical_storage_ttl', null)),
         database_name: build.template(block.database_name),
@@ -4330,7 +4335,7 @@ local provider(configuration) = {
     },
     cosmosdb_mongo_database(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_mongo_database', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -4343,7 +4348,7 @@ local provider(configuration) = {
     },
     cosmosdb_mongo_role_definition(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_mongo_role_definition', name),
-      _: resource._({
+      _: resource._(block, {
         cosmos_mongo_database_id: build.template(block.cosmos_mongo_database_id),
         inherited_role_names: build.template(std.get(block, 'inherited_role_names', null)),
         role_name: build.template(block.role_name),
@@ -4355,7 +4360,7 @@ local provider(configuration) = {
     },
     cosmosdb_mongo_user_definition(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_mongo_user_definition', name),
-      _: resource._({
+      _: resource._(block, {
         cosmos_mongo_database_id: build.template(block.cosmos_mongo_database_id),
         inherited_role_names: build.template(std.get(block, 'inherited_role_names', null)),
         password: build.template(block.password),
@@ -4369,7 +4374,7 @@ local provider(configuration) = {
     },
     cosmosdb_postgresql_cluster(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_postgresql_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_login_password: build.template(std.get(block, 'administrator_login_password', null)),
         coordinator_public_ip_access_enabled: build.template(std.get(block, 'coordinator_public_ip_access_enabled', null)),
         coordinator_server_edition: build.template(std.get(block, 'coordinator_server_edition', null)),
@@ -4416,7 +4421,7 @@ local provider(configuration) = {
     },
     cosmosdb_postgresql_coordinator_configuration(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_postgresql_coordinator_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         name: build.template(block.name),
         value: build.template(block.value),
@@ -4428,7 +4433,7 @@ local provider(configuration) = {
     },
     cosmosdb_postgresql_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_postgresql_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         end_ip_address: build.template(block.end_ip_address),
         name: build.template(block.name),
@@ -4442,7 +4447,7 @@ local provider(configuration) = {
     },
     cosmosdb_postgresql_node_configuration(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_postgresql_node_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         name: build.template(block.name),
         value: build.template(block.value),
@@ -4454,7 +4459,7 @@ local provider(configuration) = {
     },
     cosmosdb_postgresql_role(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_postgresql_role', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         name: build.template(block.name),
         password: build.template(block.password),
@@ -4466,7 +4471,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_container(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_container', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         analytical_storage_ttl: build.template(std.get(block, 'analytical_storage_ttl', null)),
         database_name: build.template(block.database_name),
@@ -4491,7 +4496,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_database(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_database', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -4504,7 +4509,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_dedicated_gateway(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_dedicated_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         cosmosdb_account_id: build.template(block.cosmosdb_account_id),
         instance_count: build.template(block.instance_count),
         instance_size: build.template(block.instance_size),
@@ -4516,7 +4521,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_function(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_function', name),
-      _: resource._({
+      _: resource._(block, {
         body: build.template(block.body),
         container_id: build.template(block.container_id),
         name: build.template(block.name),
@@ -4528,7 +4533,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_role_assignment(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_role_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         principal_id: build.template(block.principal_id),
         resource_group_name: build.template(block.resource_group_name),
@@ -4545,7 +4550,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_role_definition(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_role_definition', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         assignable_scopes: build.template(block.assignable_scopes),
         name: build.template(block.name),
@@ -4562,7 +4567,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_stored_procedure(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_stored_procedure', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         body: build.template(block.body),
         container_name: build.template(block.container_name),
@@ -4580,7 +4585,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_trigger(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_trigger', name),
-      _: resource._({
+      _: resource._(block, {
         body: build.template(block.body),
         container_id: build.template(block.container_id),
         name: build.template(block.name),
@@ -4596,7 +4601,7 @@ local provider(configuration) = {
     },
     cosmosdb_table(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_table', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -4609,7 +4614,7 @@ local provider(configuration) = {
     },
     cost_anomaly_alert(name, block): {
       local resource = blockType.resource('azurerm_cost_anomaly_alert', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         email_addresses: build.template(block.email_addresses),
         email_subject: build.template(block.email_subject),
@@ -4626,7 +4631,7 @@ local provider(configuration) = {
     },
     cost_management_scheduled_action(name, block): {
       local resource = blockType.resource('azurerm_cost_management_scheduled_action', name),
-      _: resource._({
+      _: resource._(block, {
         day_of_month: build.template(std.get(block, 'day_of_month', null)),
         days_of_week: build.template(std.get(block, 'days_of_week', null)),
         display_name: build.template(block.display_name),
@@ -4660,7 +4665,7 @@ local provider(configuration) = {
     },
     custom_ip_prefix(name, block): {
       local resource = blockType.resource('azurerm_custom_ip_prefix', name),
-      _: resource._({
+      _: resource._(block, {
         cidr: build.template(block.cidr),
         commissioning_enabled: build.template(std.get(block, 'commissioning_enabled', null)),
         internet_advertising_disabled: build.template(std.get(block, 'internet_advertising_disabled', null)),
@@ -4688,7 +4693,7 @@ local provider(configuration) = {
     },
     custom_provider(name, block): {
       local resource = blockType.resource('azurerm_custom_provider', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -4702,7 +4707,7 @@ local provider(configuration) = {
     },
     dashboard_grafana(name, block): {
       local resource = blockType.resource('azurerm_dashboard_grafana', name),
-      _: resource._({
+      _: resource._(block, {
         api_key_enabled: build.template(std.get(block, 'api_key_enabled', null)),
         auto_generated_domain_name_label_scope: build.template(std.get(block, 'auto_generated_domain_name_label_scope', null)),
         deterministic_outbound_ip_enabled: build.template(std.get(block, 'deterministic_outbound_ip_enabled', null)),
@@ -4733,7 +4738,7 @@ local provider(configuration) = {
     },
     dashboard_grafana_managed_private_endpoint(name, block): {
       local resource = blockType.resource('azurerm_dashboard_grafana_managed_private_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         grafana_id: build.template(block.grafana_id),
         group_ids: build.template(std.get(block, 'group_ids', null)),
         location: build.template(block.location),
@@ -4755,7 +4760,7 @@ local provider(configuration) = {
     },
     data_factory(name, block): {
       local resource = blockType.resource('azurerm_data_factory', name),
-      _: resource._({
+      _: resource._(block, {
         customer_managed_key_id: build.template(std.get(block, 'customer_managed_key_id', null)),
         customer_managed_key_identity_id: build.template(std.get(block, 'customer_managed_key_identity_id', null)),
         location: build.template(block.location),
@@ -4779,7 +4784,7 @@ local provider(configuration) = {
     },
     data_factory_credential_service_principal(name, block): {
       local resource = blockType.resource('azurerm_data_factory_credential_service_principal', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
         description: build.template(std.get(block, 'description', null)),
@@ -4797,7 +4802,7 @@ local provider(configuration) = {
     },
     data_factory_credential_user_managed_identity(name, block): {
       local resource = blockType.resource('azurerm_data_factory_credential_user_managed_identity', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
         description: build.template(std.get(block, 'description', null)),
@@ -4813,7 +4818,7 @@ local provider(configuration) = {
     },
     data_factory_custom_dataset(name, block): {
       local resource = blockType.resource('azurerm_data_factory_custom_dataset', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -4839,7 +4844,7 @@ local provider(configuration) = {
     },
     data_factory_data_flow(name, block): {
       local resource = blockType.resource('azurerm_data_factory_data_flow', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
         description: build.template(std.get(block, 'description', null)),
@@ -4859,7 +4864,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_azure_blob(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_azure_blob', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -4889,7 +4894,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_azure_sql_table(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_azure_sql_table', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -4915,7 +4920,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_binary(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_binary', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -4937,7 +4942,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_cosmosdb_sqlapi(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_cosmosdb_sqlapi', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         collection_name: build.template(std.get(block, 'collection_name', null)),
@@ -4961,7 +4966,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_delimited_text(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_delimited_text', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         column_delimiter: build.template(std.get(block, 'column_delimiter', null)),
@@ -5001,7 +5006,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_http(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_http', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5029,7 +5034,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_json(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_json', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5053,7 +5058,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_mysql(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_mysql', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5077,7 +5082,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_parquet(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_parquet', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         compression_codec: build.template(std.get(block, 'compression_codec', null)),
@@ -5103,7 +5108,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_postgresql(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_postgresql', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5127,7 +5132,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_snowflake(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_snowflake', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5153,7 +5158,7 @@ local provider(configuration) = {
     },
     data_factory_dataset_sql_server_table(name, block): {
       local resource = blockType.resource('azurerm_data_factory_dataset_sql_server_table', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5177,7 +5182,7 @@ local provider(configuration) = {
     },
     data_factory_flowlet_data_flow(name, block): {
       local resource = blockType.resource('azurerm_data_factory_flowlet_data_flow', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
         description: build.template(std.get(block, 'description', null)),
@@ -5197,7 +5202,7 @@ local provider(configuration) = {
     },
     data_factory_integration_runtime_azure(name, block): {
       local resource = blockType.resource('azurerm_data_factory_integration_runtime_azure', name),
-      _: resource._({
+      _: resource._(block, {
         cleanup_enabled: build.template(std.get(block, 'cleanup_enabled', null)),
         compute_type: build.template(std.get(block, 'compute_type', null)),
         core_count: build.template(std.get(block, 'core_count', null)),
@@ -5221,7 +5226,7 @@ local provider(configuration) = {
     },
     data_factory_integration_runtime_azure_ssis(name, block): {
       local resource = blockType.resource('azurerm_data_factory_integration_runtime_azure_ssis', name),
-      _: resource._({
+      _: resource._(block, {
         credential_name: build.template(std.get(block, 'credential_name', null)),
         data_factory_id: build.template(block.data_factory_id),
         description: build.template(std.get(block, 'description', null)),
@@ -5247,7 +5252,7 @@ local provider(configuration) = {
     },
     data_factory_integration_runtime_self_hosted(name, block): {
       local resource = blockType.resource('azurerm_data_factory_integration_runtime_self_hosted', name),
-      _: resource._({
+      _: resource._(block, {
         data_factory_id: build.template(block.data_factory_id),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -5263,7 +5268,7 @@ local provider(configuration) = {
     },
     data_factory_linked_custom_service(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_custom_service', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5285,7 +5290,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_azure_blob_storage(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_azure_blob_storage', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
@@ -5323,7 +5328,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_azure_databricks(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_azure_databricks', name),
-      _: resource._({
+      _: resource._(block, {
         access_token: build.template(std.get(block, 'access_token', null)),
         adb_domain: build.template(block.adb_domain),
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
@@ -5351,7 +5356,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_azure_file_storage(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_azure_file_storage', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(block.connection_string),
@@ -5381,7 +5386,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_azure_function(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_azure_function', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5405,7 +5410,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_azure_search(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_azure_search', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5430,7 +5435,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_azure_sql_database(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_azure_sql_database', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
@@ -5462,7 +5467,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_azure_table_storage(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_azure_table_storage', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(block.connection_string),
@@ -5484,7 +5489,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_cosmosdb(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_cosmosdb', name),
-      _: resource._({
+      _: resource._(block, {
         account_endpoint: build.template(std.get(block, 'account_endpoint', null)),
         account_key: build.template(std.get(block, 'account_key', null)),
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
@@ -5512,7 +5517,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_cosmosdb_mongoapi(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_cosmosdb_mongoapi', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
@@ -5538,7 +5543,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_data_lake_storage_gen2(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_data_lake_storage_gen2', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5570,7 +5575,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_key_vault(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_key_vault', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5592,7 +5597,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_kusto(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_kusto', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5624,7 +5629,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_mysql(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_mysql', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(block.connection_string),
@@ -5646,7 +5651,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_odata(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_odata', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5668,7 +5673,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_odbc(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_odbc', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(block.connection_string),
@@ -5690,7 +5695,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_postgresql(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_postgresql', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(block.connection_string),
@@ -5712,7 +5717,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_sftp(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_sftp', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         authentication_type: build.template(block.authentication_type),
@@ -5746,7 +5751,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_snowflake(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_snowflake', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(block.connection_string),
@@ -5768,7 +5773,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_sql_server(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_sql_server', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
@@ -5792,7 +5797,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_synapse(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_synapse', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         connection_string: build.template(block.connection_string),
@@ -5814,7 +5819,7 @@ local provider(configuration) = {
     },
     data_factory_linked_service_web(name, block): {
       local resource = blockType.resource('azurerm_data_factory_linked_service_web', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         authentication_type: build.template(block.authentication_type),
@@ -5842,7 +5847,7 @@ local provider(configuration) = {
     },
     data_factory_managed_private_endpoint(name, block): {
       local resource = blockType.resource('azurerm_data_factory_managed_private_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         data_factory_id: build.template(block.data_factory_id),
         name: build.template(block.name),
         subresource_name: build.template(std.get(block, 'subresource_name', null)),
@@ -5857,7 +5862,7 @@ local provider(configuration) = {
     },
     data_factory_pipeline(name, block): {
       local resource = blockType.resource('azurerm_data_factory_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         activities_json: build.template(std.get(block, 'activities_json', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         concurrency: build.template(std.get(block, 'concurrency', null)),
@@ -5883,7 +5888,7 @@ local provider(configuration) = {
     },
     data_factory_trigger_blob_event(name, block): {
       local resource = blockType.resource('azurerm_data_factory_trigger_blob_event', name),
-      _: resource._({
+      _: resource._(block, {
         activated: build.template(std.get(block, 'activated', null)),
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
@@ -5911,7 +5916,7 @@ local provider(configuration) = {
     },
     data_factory_trigger_custom_event(name, block): {
       local resource = blockType.resource('azurerm_data_factory_trigger_custom_event', name),
-      _: resource._({
+      _: resource._(block, {
         activated: build.template(std.get(block, 'activated', null)),
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
@@ -5937,7 +5942,7 @@ local provider(configuration) = {
     },
     data_factory_trigger_schedule(name, block): {
       local resource = blockType.resource('azurerm_data_factory_trigger_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         activated: build.template(std.get(block, 'activated', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         data_factory_id: build.template(block.data_factory_id),
@@ -5964,7 +5969,7 @@ local provider(configuration) = {
     },
     data_factory_trigger_tumbling_window(name, block): {
       local resource = blockType.resource('azurerm_data_factory_trigger_tumbling_window', name),
-      _: resource._({
+      _: resource._(block, {
         activated: build.template(std.get(block, 'activated', null)),
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
@@ -5994,7 +5999,7 @@ local provider(configuration) = {
     },
     data_protection_backup_instance_blob_storage(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_instance_blob_storage', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(block.backup_policy_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -6012,7 +6017,7 @@ local provider(configuration) = {
     },
     data_protection_backup_instance_disk(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_instance_disk', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(block.backup_policy_id),
         disk_id: build.template(block.disk_id),
         location: build.template(block.location),
@@ -6030,7 +6035,7 @@ local provider(configuration) = {
     },
     data_protection_backup_instance_kubernetes_cluster(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_instance_kubernetes_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(block.backup_policy_id),
         kubernetes_cluster_id: build.template(block.kubernetes_cluster_id),
         location: build.template(block.location),
@@ -6048,7 +6053,7 @@ local provider(configuration) = {
     },
     data_protection_backup_instance_mysql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_instance_mysql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(block.backup_policy_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -6064,7 +6069,7 @@ local provider(configuration) = {
     },
     data_protection_backup_instance_postgresql(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_instance_postgresql', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(block.backup_policy_id),
         database_credential_key_vault_secret_id: build.template(std.get(block, 'database_credential_key_vault_secret_id', null)),
         database_id: build.template(block.database_id),
@@ -6082,7 +6087,7 @@ local provider(configuration) = {
     },
     data_protection_backup_instance_postgresql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_instance_postgresql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         backup_policy_id: build.template(block.backup_policy_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -6098,7 +6103,7 @@ local provider(configuration) = {
     },
     data_protection_backup_policy_blob_storage(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_policy_blob_storage', name),
-      _: resource._({
+      _: resource._(block, {
         backup_repeating_time_intervals: build.template(std.get(block, 'backup_repeating_time_intervals', null)),
         name: build.template(block.name),
         operational_default_retention_duration: build.template(std.get(block, 'operational_default_retention_duration', null)),
@@ -6116,7 +6121,7 @@ local provider(configuration) = {
     },
     data_protection_backup_policy_disk(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_policy_disk', name),
-      _: resource._({
+      _: resource._(block, {
         backup_repeating_time_intervals: build.template(block.backup_repeating_time_intervals),
         default_retention_duration: build.template(block.default_retention_duration),
         name: build.template(block.name),
@@ -6132,7 +6137,7 @@ local provider(configuration) = {
     },
     data_protection_backup_policy_kubernetes_cluster(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_policy_kubernetes_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         backup_repeating_time_intervals: build.template(block.backup_repeating_time_intervals),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6148,7 +6153,7 @@ local provider(configuration) = {
     },
     data_protection_backup_policy_mysql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_policy_mysql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         backup_repeating_time_intervals: build.template(block.backup_repeating_time_intervals),
         name: build.template(block.name),
         time_zone: build.template(std.get(block, 'time_zone', null)),
@@ -6162,7 +6167,7 @@ local provider(configuration) = {
     },
     data_protection_backup_policy_postgresql(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_policy_postgresql', name),
-      _: resource._({
+      _: resource._(block, {
         backup_repeating_time_intervals: build.template(block.backup_repeating_time_intervals),
         default_retention_duration: build.template(block.default_retention_duration),
         name: build.template(block.name),
@@ -6180,7 +6185,7 @@ local provider(configuration) = {
     },
     data_protection_backup_policy_postgresql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_policy_postgresql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         backup_repeating_time_intervals: build.template(block.backup_repeating_time_intervals),
         name: build.template(block.name),
         time_zone: build.template(std.get(block, 'time_zone', null)),
@@ -6194,7 +6199,7 @@ local provider(configuration) = {
     },
     data_protection_backup_vault(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_vault', name),
-      _: resource._({
+      _: resource._(block, {
         cross_region_restore_enabled: build.template(std.get(block, 'cross_region_restore_enabled', null)),
         datastore_type: build.template(block.datastore_type),
         location: build.template(block.location),
@@ -6218,7 +6223,7 @@ local provider(configuration) = {
     },
     data_protection_resource_guard(name, block): {
       local resource = blockType.resource('azurerm_data_protection_resource_guard', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6234,7 +6239,7 @@ local provider(configuration) = {
     },
     data_share(name, block): {
       local resource = blockType.resource('azurerm_data_share', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         description: build.template(std.get(block, 'description', null)),
         kind: build.template(block.kind),
@@ -6250,7 +6255,7 @@ local provider(configuration) = {
     },
     data_share_account(name, block): {
       local resource = blockType.resource('azurerm_data_share_account', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6264,7 +6269,7 @@ local provider(configuration) = {
     },
     data_share_dataset_blob_storage(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_blob_storage', name),
-      _: resource._({
+      _: resource._(block, {
         container_name: build.template(block.container_name),
         data_share_id: build.template(block.data_share_id),
         file_path: build.template(std.get(block, 'file_path', null)),
@@ -6281,7 +6286,7 @@ local provider(configuration) = {
     },
     data_share_dataset_data_lake_gen2(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_data_lake_gen2', name),
-      _: resource._({
+      _: resource._(block, {
         file_path: build.template(std.get(block, 'file_path', null)),
         file_system_name: build.template(block.file_system_name),
         folder_path: build.template(std.get(block, 'folder_path', null)),
@@ -6300,7 +6305,7 @@ local provider(configuration) = {
     },
     data_share_dataset_kusto_cluster(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_kusto_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         kusto_cluster_id: build.template(block.kusto_cluster_id),
         name: build.template(block.name),
         share_id: build.template(block.share_id),
@@ -6314,7 +6319,7 @@ local provider(configuration) = {
     },
     data_share_dataset_kusto_database(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_kusto_database', name),
-      _: resource._({
+      _: resource._(block, {
         kusto_database_id: build.template(block.kusto_database_id),
         name: build.template(block.name),
         share_id: build.template(block.share_id),
@@ -6328,7 +6333,7 @@ local provider(configuration) = {
     },
     database_migration_project(name, block): {
       local resource = blockType.resource('azurerm_database_migration_project', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6348,7 +6353,7 @@ local provider(configuration) = {
     },
     database_migration_service(name, block): {
       local resource = blockType.resource('azurerm_database_migration_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6366,7 +6371,7 @@ local provider(configuration) = {
     },
     databox_edge_device(name, block): {
       local resource = blockType.resource('azurerm_databox_edge_device', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6383,7 +6388,7 @@ local provider(configuration) = {
     },
     databricks_access_connector(name, block): {
       local resource = blockType.resource('azurerm_databricks_access_connector', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6397,7 +6402,7 @@ local provider(configuration) = {
     },
     databricks_virtual_network_peering(name, block): {
       local resource = blockType.resource('azurerm_databricks_virtual_network_peering', name),
-      _: resource._({
+      _: resource._(block, {
         allow_forwarded_traffic: build.template(std.get(block, 'allow_forwarded_traffic', null)),
         allow_gateway_transit: build.template(std.get(block, 'allow_gateway_transit', null)),
         allow_virtual_network_access: build.template(std.get(block, 'allow_virtual_network_access', null)),
@@ -6423,7 +6428,7 @@ local provider(configuration) = {
     },
     databricks_workspace(name, block): {
       local resource = blockType.resource('azurerm_databricks_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         access_connector_id: build.template(std.get(block, 'access_connector_id', null)),
         customer_managed_key_enabled: build.template(std.get(block, 'customer_managed_key_enabled', null)),
         default_storage_firewall_enabled: build.template(std.get(block, 'default_storage_firewall_enabled', null)),
@@ -6470,7 +6475,7 @@ local provider(configuration) = {
     },
     databricks_workspace_customer_managed_key(name, block): {
       local resource = blockType.resource('azurerm_databricks_workspace_customer_managed_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_key_id: build.template(block.key_vault_key_id),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -6480,7 +6485,7 @@ local provider(configuration) = {
     },
     databricks_workspace_root_dbfs_customer_managed_key(name, block): {
       local resource = blockType.resource('azurerm_databricks_workspace_root_dbfs_customer_managed_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(std.get(block, 'key_vault_id', null)),
         key_vault_key_id: build.template(block.key_vault_key_id),
         workspace_id: build.template(block.workspace_id),
@@ -6492,7 +6497,7 @@ local provider(configuration) = {
     },
     datadog_monitor(name, block): {
       local resource = blockType.resource('azurerm_datadog_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         monitoring_enabled: build.template(std.get(block, 'monitoring_enabled', null)),
         name: build.template(block.name),
@@ -6511,7 +6516,7 @@ local provider(configuration) = {
     },
     datadog_monitor_sso_configuration(name, block): {
       local resource = blockType.resource('azurerm_datadog_monitor_sso_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         datadog_monitor_id: build.template(block.datadog_monitor_id),
         enterprise_application_id: build.template(block.enterprise_application_id),
         name: build.template(std.get(block, 'name', null)),
@@ -6526,7 +6531,7 @@ local provider(configuration) = {
     },
     datadog_monitor_tag_rule(name, block): {
       local resource = blockType.resource('azurerm_datadog_monitor_tag_rule', name),
-      _: resource._({
+      _: resource._(block, {
         datadog_monitor_id: build.template(block.datadog_monitor_id),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -6536,7 +6541,7 @@ local provider(configuration) = {
     },
     dedicated_hardware_security_module(name, block): {
       local resource = blockType.resource('azurerm_dedicated_hardware_security_module', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6556,7 +6561,7 @@ local provider(configuration) = {
     },
     dedicated_host(name, block): {
       local resource = blockType.resource('azurerm_dedicated_host', name),
-      _: resource._({
+      _: resource._(block, {
         auto_replace_on_failure: build.template(std.get(block, 'auto_replace_on_failure', null)),
         dedicated_host_group_id: build.template(block.dedicated_host_group_id),
         license_type: build.template(std.get(block, 'license_type', null)),
@@ -6578,7 +6583,7 @@ local provider(configuration) = {
     },
     dedicated_host_group(name, block): {
       local resource = blockType.resource('azurerm_dedicated_host_group', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_placement_enabled: build.template(std.get(block, 'automatic_placement_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -6598,7 +6603,7 @@ local provider(configuration) = {
     },
     dev_center(name, block): {
       local resource = blockType.resource('azurerm_dev_center', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6613,7 +6618,7 @@ local provider(configuration) = {
     },
     dev_center_attached_network(name, block): {
       local resource = blockType.resource('azurerm_dev_center_attached_network', name),
-      _: resource._({
+      _: resource._(block, {
         dev_center_id: build.template(block.dev_center_id),
         name: build.template(block.name),
         network_connection_id: build.template(block.network_connection_id),
@@ -6625,7 +6630,7 @@ local provider(configuration) = {
     },
     dev_center_catalog(name, block): {
       local resource = blockType.resource('azurerm_dev_center_catalog', name),
-      _: resource._({
+      _: resource._(block, {
         dev_center_id: build.template(block.dev_center_id),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6637,7 +6642,7 @@ local provider(configuration) = {
     },
     dev_center_dev_box_definition(name, block): {
       local resource = blockType.resource('azurerm_dev_center_dev_box_definition', name),
-      _: resource._({
+      _: resource._(block, {
         dev_center_id: build.template(block.dev_center_id),
         image_reference_id: build.template(block.image_reference_id),
         location: build.template(block.location),
@@ -6655,7 +6660,7 @@ local provider(configuration) = {
     },
     dev_center_environment_type(name, block): {
       local resource = blockType.resource('azurerm_dev_center_environment_type', name),
-      _: resource._({
+      _: resource._(block, {
         dev_center_id: build.template(block.dev_center_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6667,7 +6672,7 @@ local provider(configuration) = {
     },
     dev_center_gallery(name, block): {
       local resource = blockType.resource('azurerm_dev_center_gallery', name),
-      _: resource._({
+      _: resource._(block, {
         dev_center_id: build.template(block.dev_center_id),
         name: build.template(block.name),
         shared_gallery_id: build.template(block.shared_gallery_id),
@@ -6679,7 +6684,7 @@ local provider(configuration) = {
     },
     dev_center_network_connection(name, block): {
       local resource = blockType.resource('azurerm_dev_center_network_connection', name),
-      _: resource._({
+      _: resource._(block, {
         domain_join_type: build.template(block.domain_join_type),
         domain_name: build.template(std.get(block, 'domain_name', null)),
         domain_password: build.template(std.get(block, 'domain_password', null)),
@@ -6705,7 +6710,7 @@ local provider(configuration) = {
     },
     dev_center_project(name, block): {
       local resource = blockType.resource('azurerm_dev_center_project', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         dev_center_id: build.template(block.dev_center_id),
         location: build.template(block.location),
@@ -6726,7 +6731,7 @@ local provider(configuration) = {
     },
     dev_center_project_environment_type(name, block): {
       local resource = blockType.resource('azurerm_dev_center_project_environment_type', name),
-      _: resource._({
+      _: resource._(block, {
         creator_role_assignment_roles: build.template(std.get(block, 'creator_role_assignment_roles', null)),
         deployment_target_id: build.template(block.deployment_target_id),
         dev_center_project_id: build.template(block.dev_center_project_id),
@@ -6744,7 +6749,7 @@ local provider(configuration) = {
     },
     dev_center_project_pool(name, block): {
       local resource = blockType.resource('azurerm_dev_center_project_pool', name),
-      _: resource._({
+      _: resource._(block, {
         dev_box_definition_name: build.template(block.dev_box_definition_name),
         dev_center_attached_network_name: build.template(block.dev_center_attached_network_name),
         dev_center_project_id: build.template(block.dev_center_project_id),
@@ -6766,7 +6771,7 @@ local provider(configuration) = {
     },
     dev_test_global_vm_shutdown_schedule(name, block): {
       local resource = blockType.resource('azurerm_dev_test_global_vm_shutdown_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         daily_recurrence_time: build.template(block.daily_recurrence_time),
         enabled: build.template(std.get(block, 'enabled', null)),
         location: build.template(block.location),
@@ -6784,7 +6789,7 @@ local provider(configuration) = {
     },
     dev_test_lab(name, block): {
       local resource = blockType.resource('azurerm_dev_test_lab', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -6804,7 +6809,7 @@ local provider(configuration) = {
     },
     dev_test_linux_virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_dev_test_linux_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         allow_claim: build.template(std.get(block, 'allow_claim', null)),
         disallow_public_ip_address: build.template(std.get(block, 'disallow_public_ip_address', null)),
         lab_name: build.template(block.lab_name),
@@ -6842,7 +6847,7 @@ local provider(configuration) = {
     },
     dev_test_policy(name, block): {
       local resource = blockType.resource('azurerm_dev_test_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         evaluator_type: build.template(block.evaluator_type),
         fact_data: build.template(std.get(block, 'fact_data', null)),
@@ -6866,7 +6871,7 @@ local provider(configuration) = {
     },
     dev_test_schedule(name, block): {
       local resource = blockType.resource('azurerm_dev_test_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         lab_name: build.template(block.lab_name),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -6888,7 +6893,7 @@ local provider(configuration) = {
     },
     dev_test_virtual_network(name, block): {
       local resource = blockType.resource('azurerm_dev_test_virtual_network', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         lab_name: build.template(block.lab_name),
         name: build.template(block.name),
@@ -6905,7 +6910,7 @@ local provider(configuration) = {
     },
     dev_test_windows_virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_dev_test_windows_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         allow_claim: build.template(std.get(block, 'allow_claim', null)),
         disallow_public_ip_address: build.template(std.get(block, 'disallow_public_ip_address', null)),
         lab_name: build.template(block.lab_name),
@@ -6941,7 +6946,7 @@ local provider(configuration) = {
     },
     digital_twins_endpoint_eventgrid(name, block): {
       local resource = blockType.resource('azurerm_digital_twins_endpoint_eventgrid', name),
-      _: resource._({
+      _: resource._(block, {
         dead_letter_storage_secret: build.template(std.get(block, 'dead_letter_storage_secret', null)),
         digital_twins_id: build.template(block.digital_twins_id),
         eventgrid_topic_endpoint: build.template(block.eventgrid_topic_endpoint),
@@ -6959,7 +6964,7 @@ local provider(configuration) = {
     },
     digital_twins_endpoint_eventhub(name, block): {
       local resource = blockType.resource('azurerm_digital_twins_endpoint_eventhub', name),
-      _: resource._({
+      _: resource._(block, {
         dead_letter_storage_secret: build.template(std.get(block, 'dead_letter_storage_secret', null)),
         digital_twins_id: build.template(block.digital_twins_id),
         eventhub_primary_connection_string: build.template(block.eventhub_primary_connection_string),
@@ -6975,7 +6980,7 @@ local provider(configuration) = {
     },
     digital_twins_endpoint_servicebus(name, block): {
       local resource = blockType.resource('azurerm_digital_twins_endpoint_servicebus', name),
-      _: resource._({
+      _: resource._(block, {
         dead_letter_storage_secret: build.template(std.get(block, 'dead_letter_storage_secret', null)),
         digital_twins_id: build.template(block.digital_twins_id),
         name: build.template(block.name),
@@ -6991,7 +6996,7 @@ local provider(configuration) = {
     },
     digital_twins_instance(name, block): {
       local resource = blockType.resource('azurerm_digital_twins_instance', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7006,7 +7011,7 @@ local provider(configuration) = {
     },
     digital_twins_time_series_database_connection(name, block): {
       local resource = blockType.resource('azurerm_digital_twins_time_series_database_connection', name),
-      _: resource._({
+      _: resource._(block, {
         digital_twins_id: build.template(block.digital_twins_id),
         eventhub_consumer_group_name: build.template(std.get(block, 'eventhub_consumer_group_name', null)),
         eventhub_name: build.template(block.eventhub_name),
@@ -7032,7 +7037,7 @@ local provider(configuration) = {
     },
     disk_access(name, block): {
       local resource = blockType.resource('azurerm_disk_access', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7046,7 +7051,7 @@ local provider(configuration) = {
     },
     disk_encryption_set(name, block): {
       local resource = blockType.resource('azurerm_disk_encryption_set', name),
-      _: resource._({
+      _: resource._(block, {
         auto_key_rotation_enabled: build.template(std.get(block, 'auto_key_rotation_enabled', null)),
         encryption_type: build.template(std.get(block, 'encryption_type', null)),
         federated_client_id: build.template(std.get(block, 'federated_client_id', null)),
@@ -7071,7 +7076,7 @@ local provider(configuration) = {
     },
     dns_a_record(name, block): {
       local resource = blockType.resource('azurerm_dns_a_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         records: build.template(std.get(block, 'records', null)),
         resource_group_name: build.template(block.resource_group_name),
@@ -7092,7 +7097,7 @@ local provider(configuration) = {
     },
     dns_aaaa_record(name, block): {
       local resource = blockType.resource('azurerm_dns_aaaa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         records: build.template(std.get(block, 'records', null)),
         resource_group_name: build.template(block.resource_group_name),
@@ -7113,7 +7118,7 @@ local provider(configuration) = {
     },
     dns_caa_record(name, block): {
       local resource = blockType.resource('azurerm_dns_caa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7130,7 +7135,7 @@ local provider(configuration) = {
     },
     dns_cname_record(name, block): {
       local resource = blockType.resource('azurerm_dns_cname_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         record: build.template(std.get(block, 'record', null)),
         resource_group_name: build.template(block.resource_group_name),
@@ -7151,7 +7156,7 @@ local provider(configuration) = {
     },
     dns_mx_record(name, block): {
       local resource = blockType.resource('azurerm_dns_mx_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7168,7 +7173,7 @@ local provider(configuration) = {
     },
     dns_ns_record(name, block): {
       local resource = blockType.resource('azurerm_dns_ns_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         records: build.template(block.records),
         resource_group_name: build.template(block.resource_group_name),
@@ -7187,7 +7192,7 @@ local provider(configuration) = {
     },
     dns_ptr_record(name, block): {
       local resource = blockType.resource('azurerm_dns_ptr_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         records: build.template(block.records),
         resource_group_name: build.template(block.resource_group_name),
@@ -7206,7 +7211,7 @@ local provider(configuration) = {
     },
     dns_srv_record(name, block): {
       local resource = blockType.resource('azurerm_dns_srv_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7223,7 +7228,7 @@ local provider(configuration) = {
     },
     dns_txt_record(name, block): {
       local resource = blockType.resource('azurerm_dns_txt_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7240,7 +7245,7 @@ local provider(configuration) = {
     },
     dns_zone(name, block): {
       local resource = blockType.resource('azurerm_dns_zone', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7255,7 +7260,7 @@ local provider(configuration) = {
     },
     dynatrace_monitor(name, block): {
       local resource = blockType.resource('azurerm_dynatrace_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         marketplace_subscription: build.template(block.marketplace_subscription),
         monitoring_enabled: build.template(std.get(block, 'monitoring_enabled', null)),
@@ -7273,7 +7278,7 @@ local provider(configuration) = {
     },
     elastic_cloud_elasticsearch(name, block): {
       local resource = blockType.resource('azurerm_elastic_cloud_elasticsearch', name),
-      _: resource._({
+      _: resource._(block, {
         elastic_cloud_email_address: build.template(block.elastic_cloud_email_address),
         location: build.template(block.location),
         monitoring_enabled: build.template(std.get(block, 'monitoring_enabled', null)),
@@ -7299,7 +7304,7 @@ local provider(configuration) = {
     },
     elastic_san(name, block): {
       local resource = blockType.resource('azurerm_elastic_san', name),
-      _: resource._({
+      _: resource._(block, {
         base_size_in_tib: build.template(block.base_size_in_tib),
         extended_size_in_tib: build.template(std.get(block, 'extended_size_in_tib', null)),
         location: build.template(block.location),
@@ -7324,7 +7329,7 @@ local provider(configuration) = {
     },
     elastic_san_volume(name, block): {
       local resource = blockType.resource('azurerm_elastic_san_volume', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         size_in_gib: build.template(block.size_in_gib),
         volume_group_id: build.template(block.volume_group_id),
@@ -7340,7 +7345,7 @@ local provider(configuration) = {
     },
     elastic_san_volume_group(name, block): {
       local resource = blockType.resource('azurerm_elastic_san_volume_group', name),
-      _: resource._({
+      _: resource._(block, {
         elastic_san_id: build.template(block.elastic_san_id),
         encryption_type: build.template(std.get(block, 'encryption_type', null)),
         name: build.template(block.name),
@@ -7354,7 +7359,7 @@ local provider(configuration) = {
     },
     email_communication_service(name, block): {
       local resource = blockType.resource('azurerm_email_communication_service', name),
-      _: resource._({
+      _: resource._(block, {
         data_location: build.template(block.data_location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7368,7 +7373,7 @@ local provider(configuration) = {
     },
     email_communication_service_domain(name, block): {
       local resource = blockType.resource('azurerm_email_communication_service_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_management: build.template(block.domain_management),
         email_service_id: build.template(block.email_service_id),
         name: build.template(block.name),
@@ -7387,7 +7392,7 @@ local provider(configuration) = {
     },
     eventgrid_domain(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_domain', name),
-      _: resource._({
+      _: resource._(block, {
         auto_create_topic_with_first_subscription: build.template(std.get(block, 'auto_create_topic_with_first_subscription', null)),
         auto_delete_topic_with_last_subscription: build.template(std.get(block, 'auto_delete_topic_with_last_subscription', null)),
         inbound_ip_rule: build.template(std.get(block, 'inbound_ip_rule', null)),
@@ -7416,7 +7421,7 @@ local provider(configuration) = {
     },
     eventgrid_domain_topic(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_domain_topic', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7428,7 +7433,7 @@ local provider(configuration) = {
     },
     eventgrid_event_subscription(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_event_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         advanced_filtering_on_arrays_enabled: build.template(std.get(block, 'advanced_filtering_on_arrays_enabled', null)),
         event_delivery_schema: build.template(std.get(block, 'event_delivery_schema', null)),
         expiration_time_utc: build.template(std.get(block, 'expiration_time_utc', null)),
@@ -7453,7 +7458,7 @@ local provider(configuration) = {
     },
     eventgrid_system_topic(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_system_topic', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7472,7 +7477,7 @@ local provider(configuration) = {
     },
     eventgrid_system_topic_event_subscription(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_system_topic_event_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         advanced_filtering_on_arrays_enabled: build.template(std.get(block, 'advanced_filtering_on_arrays_enabled', null)),
         event_delivery_schema: build.template(std.get(block, 'event_delivery_schema', null)),
         expiration_time_utc: build.template(std.get(block, 'expiration_time_utc', null)),
@@ -7499,7 +7504,7 @@ local provider(configuration) = {
     },
     eventgrid_topic(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_topic', name),
-      _: resource._({
+      _: resource._(block, {
         inbound_ip_rule: build.template(std.get(block, 'inbound_ip_rule', null)),
         input_schema: build.template(std.get(block, 'input_schema', null)),
         local_auth_enabled: build.template(std.get(block, 'local_auth_enabled', null)),
@@ -7524,7 +7529,7 @@ local provider(configuration) = {
     },
     eventhub(name, block): {
       local resource = blockType.resource('azurerm_eventhub', name),
-      _: resource._({
+      _: resource._(block, {
         message_retention: build.template(block.message_retention),
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
@@ -7543,7 +7548,7 @@ local provider(configuration) = {
     },
     eventhub_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_eventhub_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_name: build.template(block.eventhub_name),
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
@@ -7569,7 +7574,7 @@ local provider(configuration) = {
     },
     eventhub_cluster(name, block): {
       local resource = blockType.resource('azurerm_eventhub_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7585,7 +7590,7 @@ local provider(configuration) = {
     },
     eventhub_consumer_group(name, block): {
       local resource = blockType.resource('azurerm_eventhub_consumer_group', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_name: build.template(block.eventhub_name),
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
@@ -7601,7 +7606,7 @@ local provider(configuration) = {
     },
     eventhub_namespace(name, block): {
       local resource = blockType.resource('azurerm_eventhub_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         auto_inflate_enabled: build.template(std.get(block, 'auto_inflate_enabled', null)),
         capacity: build.template(std.get(block, 'capacity', null)),
         dedicated_cluster_id: build.template(std.get(block, 'dedicated_cluster_id', null)),
@@ -7638,7 +7643,7 @@ local provider(configuration) = {
     },
     eventhub_namespace_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_eventhub_namespace_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
         name: build.template(block.name),
@@ -7662,7 +7667,7 @@ local provider(configuration) = {
     },
     eventhub_namespace_customer_managed_key(name, block): {
       local resource = blockType.resource('azurerm_eventhub_namespace_customer_managed_key', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_namespace_id: build.template(block.eventhub_namespace_id),
         infrastructure_encryption_enabled: build.template(std.get(block, 'infrastructure_encryption_enabled', null)),
         key_vault_key_ids: build.template(block.key_vault_key_ids),
@@ -7676,7 +7681,7 @@ local provider(configuration) = {
     },
     eventhub_namespace_disaster_recovery_config(name, block): {
       local resource = blockType.resource('azurerm_eventhub_namespace_disaster_recovery_config', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
         partner_namespace_id: build.template(block.partner_namespace_id),
@@ -7690,7 +7695,7 @@ local provider(configuration) = {
     },
     eventhub_namespace_schema_group(name, block): {
       local resource = blockType.resource('azurerm_eventhub_namespace_schema_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_id: build.template(block.namespace_id),
         schema_compatibility: build.template(block.schema_compatibility),
@@ -7704,7 +7709,7 @@ local provider(configuration) = {
     },
     express_route_circuit(name, block): {
       local resource = blockType.resource('azurerm_express_route_circuit', name),
-      _: resource._({
+      _: resource._(block, {
         allow_classic_operations: build.template(std.get(block, 'allow_classic_operations', null)),
         authorization_key: build.template(std.get(block, 'authorization_key', null)),
         bandwidth_in_gbps: build.template(std.get(block, 'bandwidth_in_gbps', null)),
@@ -7734,7 +7739,7 @@ local provider(configuration) = {
     },
     express_route_circuit_authorization(name, block): {
       local resource = blockType.resource('azurerm_express_route_circuit_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         express_route_circuit_name: build.template(block.express_route_circuit_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7748,7 +7753,7 @@ local provider(configuration) = {
     },
     express_route_circuit_connection(name, block): {
       local resource = blockType.resource('azurerm_express_route_circuit_connection', name),
-      _: resource._({
+      _: resource._(block, {
         address_prefix_ipv4: build.template(block.address_prefix_ipv4),
         address_prefix_ipv6: build.template(std.get(block, 'address_prefix_ipv6', null)),
         authorization_key: build.template(std.get(block, 'authorization_key', null)),
@@ -7766,7 +7771,7 @@ local provider(configuration) = {
     },
     express_route_circuit_peering(name, block): {
       local resource = blockType.resource('azurerm_express_route_circuit_peering', name),
-      _: resource._({
+      _: resource._(block, {
         express_route_circuit_name: build.template(block.express_route_circuit_name),
         ipv4_enabled: build.template(std.get(block, 'ipv4_enabled', null)),
         peering_type: build.template(block.peering_type),
@@ -7795,7 +7800,7 @@ local provider(configuration) = {
     },
     express_route_connection(name, block): {
       local resource = blockType.resource('azurerm_express_route_connection', name),
-      _: resource._({
+      _: resource._(block, {
         authorization_key: build.template(std.get(block, 'authorization_key', null)),
         enable_internet_security: build.template(std.get(block, 'enable_internet_security', null)),
         express_route_circuit_peering_id: build.template(block.express_route_circuit_peering_id),
@@ -7817,7 +7822,7 @@ local provider(configuration) = {
     },
     express_route_gateway(name, block): {
       local resource = blockType.resource('azurerm_express_route_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         allow_non_virtual_wan_traffic: build.template(std.get(block, 'allow_non_virtual_wan_traffic', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -7837,7 +7842,7 @@ local provider(configuration) = {
     },
     express_route_port(name, block): {
       local resource = blockType.resource('azurerm_express_route_port', name),
-      _: resource._({
+      _: resource._(block, {
         bandwidth_in_gbps: build.template(block.bandwidth_in_gbps),
         billing_type: build.template(std.get(block, 'billing_type', null)),
         encapsulation: build.template(block.encapsulation),
@@ -7862,7 +7867,7 @@ local provider(configuration) = {
     },
     express_route_port_authorization(name, block): {
       local resource = blockType.resource('azurerm_express_route_port_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         express_route_port_name: build.template(block.express_route_port_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -7876,7 +7881,7 @@ local provider(configuration) = {
     },
     extended_custom_location(name, block): {
       local resource = blockType.resource('azurerm_extended_custom_location', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_extension_ids: build.template(block.cluster_extension_ids),
         display_name: build.template(std.get(block, 'display_name', null)),
         host_resource_id: build.template(block.host_resource_id),
@@ -7898,7 +7903,7 @@ local provider(configuration) = {
     },
     federated_identity_credential(name, block): {
       local resource = blockType.resource('azurerm_federated_identity_credential', name),
-      _: resource._({
+      _: resource._(block, {
         audience: build.template(block.audience),
         issuer: build.template(block.issuer),
         name: build.template(block.name),
@@ -7916,7 +7921,7 @@ local provider(configuration) = {
     },
     firewall(name, block): {
       local resource = blockType.resource('azurerm_firewall', name),
-      _: resource._({
+      _: resource._(block, {
         dns_servers: build.template(std.get(block, 'dns_servers', null)),
         firewall_policy_id: build.template(std.get(block, 'firewall_policy_id', null)),
         location: build.template(block.location),
@@ -7944,7 +7949,7 @@ local provider(configuration) = {
     },
     firewall_application_rule_collection(name, block): {
       local resource = blockType.resource('azurerm_firewall_application_rule_collection', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         azure_firewall_name: build.template(block.azure_firewall_name),
         name: build.template(block.name),
@@ -7960,7 +7965,7 @@ local provider(configuration) = {
     },
     firewall_nat_rule_collection(name, block): {
       local resource = blockType.resource('azurerm_firewall_nat_rule_collection', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         azure_firewall_name: build.template(block.azure_firewall_name),
         name: build.template(block.name),
@@ -7976,7 +7981,7 @@ local provider(configuration) = {
     },
     firewall_network_rule_collection(name, block): {
       local resource = blockType.resource('azurerm_firewall_network_rule_collection', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         azure_firewall_name: build.template(block.azure_firewall_name),
         name: build.template(block.name),
@@ -7992,7 +7997,7 @@ local provider(configuration) = {
     },
     firewall_policy(name, block): {
       local resource = blockType.resource('azurerm_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         auto_learn_private_ranges_enabled: build.template(std.get(block, 'auto_learn_private_ranges_enabled', null)),
         base_policy_id: build.template(std.get(block, 'base_policy_id', null)),
         location: build.template(block.location),
@@ -8021,7 +8026,7 @@ local provider(configuration) = {
     },
     firewall_policy_rule_collection_group(name, block): {
       local resource = blockType.resource('azurerm_firewall_policy_rule_collection_group', name),
-      _: resource._({
+      _: resource._(block, {
         firewall_policy_id: build.template(block.firewall_policy_id),
         name: build.template(block.name),
         priority: build.template(block.priority),
@@ -8033,7 +8038,7 @@ local provider(configuration) = {
     },
     fluid_relay_server(name, block): {
       local resource = blockType.resource('azurerm_fluid_relay_server', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -8054,7 +8059,7 @@ local provider(configuration) = {
     },
     frontdoor(name, block): {
       local resource = blockType.resource('azurerm_frontdoor', name),
-      _: resource._({
+      _: resource._(block, {
         friendly_name: build.template(std.get(block, 'friendly_name', null)),
         load_balancer_enabled: build.template(std.get(block, 'load_balancer_enabled', null)),
         name: build.template(block.name),
@@ -8078,7 +8083,7 @@ local provider(configuration) = {
     },
     frontdoor_custom_https_configuration(name, block): {
       local resource = blockType.resource('azurerm_frontdoor_custom_https_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         custom_https_provisioning_enabled: build.template(block.custom_https_provisioning_enabled),
         frontend_endpoint_id: build.template(block.frontend_endpoint_id),
       }),
@@ -8088,7 +8093,7 @@ local provider(configuration) = {
     },
     frontdoor_firewall_policy(name, block): {
       local resource = blockType.resource('azurerm_frontdoor_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         custom_block_response_body: build.template(std.get(block, 'custom_block_response_body', null)),
         custom_block_response_status_code: build.template(std.get(block, 'custom_block_response_status_code', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -8112,7 +8117,7 @@ local provider(configuration) = {
     },
     frontdoor_rules_engine(name, block): {
       local resource = blockType.resource('azurerm_frontdoor_rules_engine', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         frontdoor_name: build.template(block.frontdoor_name),
         name: build.template(block.name),
@@ -8127,7 +8132,7 @@ local provider(configuration) = {
     },
     function_app(name, block): {
       local resource = blockType.resource('azurerm_function_app', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_plan_id: build.template(block.app_service_plan_id),
         client_cert_mode: build.template(std.get(block, 'client_cert_mode', null)),
         daily_memory_time_quota: build.template(std.get(block, 'daily_memory_time_quota', null)),
@@ -8169,7 +8174,7 @@ local provider(configuration) = {
     },
     function_app_active_slot(name, block): {
       local resource = blockType.resource('azurerm_function_app_active_slot', name),
-      _: resource._({
+      _: resource._(block, {
         overwrite_network_config: build.template(std.get(block, 'overwrite_network_config', null)),
         slot_id: build.template(block.slot_id),
       }),
@@ -8180,7 +8185,7 @@ local provider(configuration) = {
     },
     function_app_connection(name, block): {
       local resource = blockType.resource('azurerm_function_app_connection', name),
-      _: resource._({
+      _: resource._(block, {
         client_type: build.template(std.get(block, 'client_type', null)),
         function_app_id: build.template(block.function_app_id),
         name: build.template(block.name),
@@ -8196,7 +8201,7 @@ local provider(configuration) = {
     },
     function_app_function(name, block): {
       local resource = blockType.resource('azurerm_function_app_function', name),
-      _: resource._({
+      _: resource._(block, {
         config_json: build.template(block.config_json),
         enabled: build.template(std.get(block, 'enabled', null)),
         function_app_id: build.template(block.function_app_id),
@@ -8221,7 +8226,7 @@ local provider(configuration) = {
     },
     function_app_hybrid_connection(name, block): {
       local resource = blockType.resource('azurerm_function_app_hybrid_connection', name),
-      _: resource._({
+      _: resource._(block, {
         function_app_id: build.template(block.function_app_id),
         hostname: build.template(block.hostname),
         port: build.template(block.port),
@@ -8242,7 +8247,7 @@ local provider(configuration) = {
     },
     function_app_slot(name, block): {
       local resource = blockType.resource('azurerm_function_app_slot', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_plan_id: build.template(block.app_service_plan_id),
         daily_memory_time_quota: build.template(std.get(block, 'daily_memory_time_quota', null)),
         enable_builtin_logging: build.template(std.get(block, 'enable_builtin_logging', null)),
@@ -8282,7 +8287,7 @@ local provider(configuration) = {
     },
     gallery_application(name, block): {
       local resource = blockType.resource('azurerm_gallery_application', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         end_of_life_date: build.template(std.get(block, 'end_of_life_date', null)),
         eula: build.template(std.get(block, 'eula', null)),
@@ -8308,7 +8313,7 @@ local provider(configuration) = {
     },
     gallery_application_version(name, block): {
       local resource = blockType.resource('azurerm_gallery_application_version', name),
-      _: resource._({
+      _: resource._(block, {
         config_file: build.template(std.get(block, 'config_file', null)),
         enable_health_check: build.template(std.get(block, 'enable_health_check', null)),
         end_of_life_date: build.template(std.get(block, 'end_of_life_date', null)),
@@ -8332,7 +8337,7 @@ local provider(configuration) = {
     },
     graph_services_account(name, block): {
       local resource = blockType.resource('azurerm_graph_services_account', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -8347,7 +8352,7 @@ local provider(configuration) = {
     },
     hdinsight_hadoop_cluster(name, block): {
       local resource = blockType.resource('azurerm_hdinsight_hadoop_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_version: build.template(block.cluster_version),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -8369,7 +8374,7 @@ local provider(configuration) = {
     },
     hdinsight_hbase_cluster(name, block): {
       local resource = blockType.resource('azurerm_hdinsight_hbase_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_version: build.template(block.cluster_version),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -8391,7 +8396,7 @@ local provider(configuration) = {
     },
     hdinsight_interactive_query_cluster(name, block): {
       local resource = blockType.resource('azurerm_hdinsight_interactive_query_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_version: build.template(block.cluster_version),
         encryption_in_transit_enabled: build.template(std.get(block, 'encryption_in_transit_enabled', null)),
         location: build.template(block.location),
@@ -8415,7 +8420,7 @@ local provider(configuration) = {
     },
     hdinsight_kafka_cluster(name, block): {
       local resource = blockType.resource('azurerm_hdinsight_kafka_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_version: build.template(block.cluster_version),
         encryption_in_transit_enabled: build.template(std.get(block, 'encryption_in_transit_enabled', null)),
         location: build.template(block.location),
@@ -8440,7 +8445,7 @@ local provider(configuration) = {
     },
     hdinsight_spark_cluster(name, block): {
       local resource = blockType.resource('azurerm_hdinsight_spark_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_version: build.template(block.cluster_version),
         encryption_in_transit_enabled: build.template(std.get(block, 'encryption_in_transit_enabled', null)),
         location: build.template(block.location),
@@ -8464,7 +8469,7 @@ local provider(configuration) = {
     },
     healthbot(name, block): {
       local resource = blockType.resource('azurerm_healthbot', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -8481,7 +8486,7 @@ local provider(configuration) = {
     },
     healthcare_dicom_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_dicom_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         public_network_access_enabled: build.template(std.get(block, 'public_network_access_enabled', null)),
@@ -8500,7 +8505,7 @@ local provider(configuration) = {
     },
     healthcare_fhir_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_fhir_service', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy_object_ids: build.template(std.get(block, 'access_policy_object_ids', null)),
         configuration_export_storage_account_name: build.template(std.get(block, 'configuration_export_storage_account_name', null)),
         container_registry_login_server_url: build.template(std.get(block, 'container_registry_login_server_url', null)),
@@ -8525,7 +8530,7 @@ local provider(configuration) = {
     },
     healthcare_medtech_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_medtech_service', name),
-      _: resource._({
+      _: resource._(block, {
         device_mapping_json: build.template(block.device_mapping_json),
         eventhub_consumer_group_name: build.template(block.eventhub_consumer_group_name),
         eventhub_name: build.template(block.eventhub_name),
@@ -8547,7 +8552,7 @@ local provider(configuration) = {
     },
     healthcare_medtech_service_fhir_destination(name, block): {
       local resource = blockType.resource('azurerm_healthcare_medtech_service_fhir_destination', name),
-      _: resource._({
+      _: resource._(block, {
         destination_fhir_mapping_json: build.template(block.destination_fhir_mapping_json),
         destination_fhir_service_id: build.template(block.destination_fhir_service_id),
         destination_identity_resolution_type: build.template(block.destination_identity_resolution_type),
@@ -8565,7 +8570,7 @@ local provider(configuration) = {
     },
     healthcare_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_service', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy_object_ids: build.template(std.get(block, 'access_policy_object_ids', null)),
         configuration_export_storage_account_name: build.template(std.get(block, 'configuration_export_storage_account_name', null)),
         cosmosdb_key_vault_key_versionless_id: build.template(std.get(block, 'cosmosdb_key_vault_key_versionless_id', null)),
@@ -8591,7 +8596,7 @@ local provider(configuration) = {
     },
     healthcare_workspace(name, block): {
       local resource = blockType.resource('azurerm_healthcare_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -8606,7 +8611,7 @@ local provider(configuration) = {
     },
     hpc_cache(name, block): {
       local resource = blockType.resource('azurerm_hpc_cache', name),
-      _: resource._({
+      _: resource._(block, {
         automatically_rotate_key_to_latest_enabled: build.template(std.get(block, 'automatically_rotate_key_to_latest_enabled', null)),
         cache_size_in_gb: build.template(block.cache_size_in_gb),
         key_vault_key_id: build.template(std.get(block, 'key_vault_key_id', null)),
@@ -8635,7 +8640,7 @@ local provider(configuration) = {
     },
     hpc_cache_access_policy(name, block): {
       local resource = blockType.resource('azurerm_hpc_cache_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         hpc_cache_id: build.template(block.hpc_cache_id),
         name: build.template(block.name),
       }),
@@ -8645,7 +8650,7 @@ local provider(configuration) = {
     },
     hpc_cache_blob_nfs_target(name, block): {
       local resource = blockType.resource('azurerm_hpc_cache_blob_nfs_target', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy_name: build.template(std.get(block, 'access_policy_name', null)),
         cache_name: build.template(block.cache_name),
         name: build.template(block.name),
@@ -8669,7 +8674,7 @@ local provider(configuration) = {
     },
     hpc_cache_blob_target(name, block): {
       local resource = blockType.resource('azurerm_hpc_cache_blob_target', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy_name: build.template(std.get(block, 'access_policy_name', null)),
         cache_name: build.template(block.cache_name),
         name: build.template(block.name),
@@ -8687,7 +8692,7 @@ local provider(configuration) = {
     },
     hpc_cache_nfs_target(name, block): {
       local resource = blockType.resource('azurerm_hpc_cache_nfs_target', name),
-      _: resource._({
+      _: resource._(block, {
         cache_name: build.template(block.cache_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -8707,7 +8712,7 @@ local provider(configuration) = {
     },
     image(name, block): {
       local resource = blockType.resource('azurerm_image', name),
-      _: resource._({
+      _: resource._(block, {
         hyper_v_generation: build.template(std.get(block, 'hyper_v_generation', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -8727,7 +8732,7 @@ local provider(configuration) = {
     },
     iot_security_device_group(name, block): {
       local resource = blockType.resource('azurerm_iot_security_device_group', name),
-      _: resource._({
+      _: resource._(block, {
         iothub_id: build.template(block.iothub_id),
         name: build.template(block.name),
       }),
@@ -8737,7 +8742,7 @@ local provider(configuration) = {
     },
     iot_security_solution(name, block): {
       local resource = blockType.resource('azurerm_iot_security_solution', name),
-      _: resource._({
+      _: resource._(block, {
         disabled_data_sources: build.template(std.get(block, 'disabled_data_sources', null)),
         display_name: build.template(block.display_name),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -8767,7 +8772,7 @@ local provider(configuration) = {
     },
     iotcentral_application(name, block): {
       local resource = blockType.resource('azurerm_iotcentral_application', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         public_network_access_enabled: build.template(std.get(block, 'public_network_access_enabled', null)),
@@ -8790,7 +8795,7 @@ local provider(configuration) = {
     },
     iotcentral_application_network_rule_set(name, block): {
       local resource = blockType.resource('azurerm_iotcentral_application_network_rule_set', name),
-      _: resource._({
+      _: resource._(block, {
         apply_to_device: build.template(std.get(block, 'apply_to_device', null)),
         default_action: build.template(std.get(block, 'default_action', null)),
         iotcentral_application_id: build.template(block.iotcentral_application_id),
@@ -8802,7 +8807,7 @@ local provider(configuration) = {
     },
     iotcentral_organization(name, block): {
       local resource = blockType.resource('azurerm_iotcentral_organization', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         iotcentral_application_id: build.template(block.iotcentral_application_id),
         organization_id: build.template(block.organization_id),
@@ -8816,7 +8821,7 @@ local provider(configuration) = {
     },
     iothub(name, block): {
       local resource = blockType.resource('azurerm_iothub', name),
-      _: resource._({
+      _: resource._(block, {
         event_hub_partition_count: build.template(std.get(block, 'event_hub_partition_count', null)),
         event_hub_retention_in_days: build.template(std.get(block, 'event_hub_retention_in_days', null)),
         local_authentication_enabled: build.template(std.get(block, 'local_authentication_enabled', null)),
@@ -8851,7 +8856,7 @@ local provider(configuration) = {
     },
     iothub_certificate(name, block): {
       local resource = blockType.resource('azurerm_iothub_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_content: build.template(block.certificate_content),
         iothub_name: build.template(block.iothub_name),
         is_verified: build.template(std.get(block, 'is_verified', null)),
@@ -8867,7 +8872,7 @@ local provider(configuration) = {
     },
     iothub_consumer_group(name, block): {
       local resource = blockType.resource('azurerm_iothub_consumer_group', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_endpoint_name: build.template(block.eventhub_endpoint_name),
         iothub_name: build.template(block.iothub_name),
         name: build.template(block.name),
@@ -8881,7 +8886,7 @@ local provider(configuration) = {
     },
     iothub_device_update_account(name, block): {
       local resource = blockType.resource('azurerm_iothub_device_update_account', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         public_network_access_enabled: build.template(std.get(block, 'public_network_access_enabled', null)),
@@ -8900,7 +8905,7 @@ local provider(configuration) = {
     },
     iothub_device_update_instance(name, block): {
       local resource = blockType.resource('azurerm_iothub_device_update_instance', name),
-      _: resource._({
+      _: resource._(block, {
         device_update_account_id: build.template(block.device_update_account_id),
         diagnostic_enabled: build.template(std.get(block, 'diagnostic_enabled', null)),
         iothub_id: build.template(block.iothub_id),
@@ -8916,7 +8921,7 @@ local provider(configuration) = {
     },
     iothub_dps(name, block): {
       local resource = blockType.resource('azurerm_iothub_dps', name),
-      _: resource._({
+      _: resource._(block, {
         allocation_policy: build.template(std.get(block, 'allocation_policy', null)),
         data_residency_enabled: build.template(std.get(block, 'data_residency_enabled', null)),
         location: build.template(block.location),
@@ -8939,7 +8944,7 @@ local provider(configuration) = {
     },
     iothub_dps_certificate(name, block): {
       local resource = blockType.resource('azurerm_iothub_dps_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_content: build.template(block.certificate_content),
         iot_dps_name: build.template(block.iot_dps_name),
         is_verified: build.template(std.get(block, 'is_verified', null)),
@@ -8955,7 +8960,7 @@ local provider(configuration) = {
     },
     iothub_dps_shared_access_policy(name, block): {
       local resource = blockType.resource('azurerm_iothub_dps_shared_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         enrollment_read: build.template(std.get(block, 'enrollment_read', null)),
         enrollment_write: build.template(std.get(block, 'enrollment_write', null)),
         iothub_dps_name: build.template(block.iothub_dps_name),
@@ -8981,7 +8986,7 @@ local provider(configuration) = {
     },
     iothub_endpoint_cosmosdb_account(name, block): {
       local resource = blockType.resource('azurerm_iothub_endpoint_cosmosdb_account', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(std.get(block, 'authentication_type', null)),
         container_name: build.template(block.container_name),
         database_name: build.template(block.database_name),
@@ -9011,7 +9016,7 @@ local provider(configuration) = {
     },
     iothub_endpoint_eventhub(name, block): {
       local resource = blockType.resource('azurerm_iothub_endpoint_eventhub', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(std.get(block, 'authentication_type', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
         endpoint_uri: build.template(std.get(block, 'endpoint_uri', null)),
@@ -9033,7 +9038,7 @@ local provider(configuration) = {
     },
     iothub_endpoint_servicebus_queue(name, block): {
       local resource = blockType.resource('azurerm_iothub_endpoint_servicebus_queue', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(std.get(block, 'authentication_type', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
         endpoint_uri: build.template(std.get(block, 'endpoint_uri', null)),
@@ -9055,7 +9060,7 @@ local provider(configuration) = {
     },
     iothub_endpoint_servicebus_topic(name, block): {
       local resource = blockType.resource('azurerm_iothub_endpoint_servicebus_topic', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(std.get(block, 'authentication_type', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
         endpoint_uri: build.template(std.get(block, 'endpoint_uri', null)),
@@ -9077,7 +9082,7 @@ local provider(configuration) = {
     },
     iothub_endpoint_storage_container(name, block): {
       local resource = blockType.resource('azurerm_iothub_endpoint_storage_container', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(std.get(block, 'authentication_type', null)),
         batch_frequency_in_seconds: build.template(std.get(block, 'batch_frequency_in_seconds', null)),
         connection_string: build.template(std.get(block, 'connection_string', null)),
@@ -9107,7 +9112,7 @@ local provider(configuration) = {
     },
     iothub_enrichment(name, block): {
       local resource = blockType.resource('azurerm_iothub_enrichment', name),
-      _: resource._({
+      _: resource._(block, {
         endpoint_names: build.template(block.endpoint_names),
         iothub_name: build.template(block.iothub_name),
         key: build.template(block.key),
@@ -9123,7 +9128,7 @@ local provider(configuration) = {
     },
     iothub_fallback_route(name, block): {
       local resource = blockType.resource('azurerm_iothub_fallback_route', name),
-      _: resource._({
+      _: resource._(block, {
         condition: build.template(std.get(block, 'condition', null)),
         enabled: build.template(block.enabled),
         endpoint_names: build.template(block.endpoint_names),
@@ -9141,7 +9146,7 @@ local provider(configuration) = {
     },
     iothub_file_upload(name, block): {
       local resource = blockType.resource('azurerm_iothub_file_upload', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(std.get(block, 'authentication_type', null)),
         connection_string: build.template(block.connection_string),
         container_name: build.template(block.container_name),
@@ -9167,7 +9172,7 @@ local provider(configuration) = {
     },
     iothub_route(name, block): {
       local resource = blockType.resource('azurerm_iothub_route', name),
-      _: resource._({
+      _: resource._(block, {
         condition: build.template(std.get(block, 'condition', null)),
         enabled: build.template(block.enabled),
         endpoint_names: build.template(block.endpoint_names),
@@ -9187,7 +9192,7 @@ local provider(configuration) = {
     },
     iothub_shared_access_policy(name, block): {
       local resource = blockType.resource('azurerm_iothub_shared_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         device_connect: build.template(std.get(block, 'device_connect', null)),
         iothub_name: build.template(block.iothub_name),
         name: build.template(block.name),
@@ -9211,7 +9216,7 @@ local provider(configuration) = {
     },
     ip_group(name, block): {
       local resource = blockType.resource('azurerm_ip_group', name),
-      _: resource._({
+      _: resource._(block, {
         cidrs: build.template(std.get(block, 'cidrs', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -9229,7 +9234,7 @@ local provider(configuration) = {
     },
     ip_group_cidr(name, block): {
       local resource = blockType.resource('azurerm_ip_group_cidr', name),
-      _: resource._({
+      _: resource._(block, {
         cidr: build.template(block.cidr),
         ip_group_id: build.template(block.ip_group_id),
       }),
@@ -9239,7 +9244,7 @@ local provider(configuration) = {
     },
     key_vault(name, block): {
       local resource = blockType.resource('azurerm_key_vault', name),
-      _: resource._({
+      _: resource._(block, {
         enable_rbac_authorization: build.template(std.get(block, 'enable_rbac_authorization', null)),
         enabled_for_deployment: build.template(std.get(block, 'enabled_for_deployment', null)),
         enabled_for_disk_encryption: build.template(std.get(block, 'enabled_for_disk_encryption', null)),
@@ -9273,7 +9278,7 @@ local provider(configuration) = {
     },
     key_vault_access_policy(name, block): {
       local resource = blockType.resource('azurerm_key_vault_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(std.get(block, 'application_id', null)),
         certificate_permissions: build.template(std.get(block, 'certificate_permissions', null)),
         key_permissions: build.template(std.get(block, 'key_permissions', null)),
@@ -9295,7 +9300,7 @@ local provider(configuration) = {
     },
     key_vault_certificate(name, block): {
       local resource = blockType.resource('azurerm_key_vault_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -9317,7 +9322,7 @@ local provider(configuration) = {
     },
     key_vault_certificate_contacts(name, block): {
       local resource = blockType.resource('azurerm_key_vault_certificate_contacts', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
       }),
       id: resource.field('id'),
@@ -9325,7 +9330,7 @@ local provider(configuration) = {
     },
     key_vault_certificate_issuer(name, block): {
       local resource = blockType.resource('azurerm_key_vault_certificate_issuer', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(std.get(block, 'account_id', null)),
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
@@ -9343,7 +9348,7 @@ local provider(configuration) = {
     },
     key_vault_key(name, block): {
       local resource = blockType.resource('azurerm_key_vault_key', name),
-      _: resource._({
+      _: resource._(block, {
         expiration_date: build.template(std.get(block, 'expiration_date', null)),
         key_opts: build.template(block.key_opts),
         key_size: build.template(std.get(block, 'key_size', null)),
@@ -9376,7 +9381,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module', name),
-      _: resource._({
+      _: resource._(block, {
         admin_object_ids: build.template(block.admin_object_ids),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -9408,7 +9413,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module_key(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module_key', name),
-      _: resource._({
+      _: resource._(block, {
         curve: build.template(std.get(block, 'curve', null)),
         expiration_date: build.template(std.get(block, 'expiration_date', null)),
         key_opts: build.template(block.key_opts),
@@ -9433,7 +9438,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module_key_rotation_policy(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module_key_rotation_policy', name),
-      _: resource._({
+      _: resource._(block, {
         expire_after: build.template(block.expire_after),
         managed_hsm_key_id: build.template(block.managed_hsm_key_id),
         time_after_creation: build.template(std.get(block, 'time_after_creation', null)),
@@ -9447,7 +9452,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module_role_assignment(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module_role_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         managed_hsm_id: build.template(block.managed_hsm_id),
         name: build.template(block.name),
         principal_id: build.template(block.principal_id),
@@ -9464,7 +9469,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module_role_definition(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module_role_definition', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         managed_hsm_id: build.template(block.managed_hsm_id),
         name: build.template(block.name),
@@ -9480,7 +9485,7 @@ local provider(configuration) = {
     },
     key_vault_managed_storage_account(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_storage_account', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
         regenerate_key_automatically: build.template(std.get(block, 'regenerate_key_automatically', null)),
@@ -9500,7 +9505,7 @@ local provider(configuration) = {
     },
     key_vault_managed_storage_account_sas_token_definition(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_storage_account_sas_token_definition', name),
-      _: resource._({
+      _: resource._(block, {
         managed_storage_account_id: build.template(block.managed_storage_account_id),
         name: build.template(block.name),
         sas_template_uri: build.template(block.sas_template_uri),
@@ -9519,7 +9524,7 @@ local provider(configuration) = {
     },
     key_vault_secret(name, block): {
       local resource = blockType.resource('azurerm_key_vault_secret', name),
-      _: resource._({
+      _: resource._(block, {
         content_type: build.template(std.get(block, 'content_type', null)),
         expiration_date: build.template(std.get(block, 'expiration_date', null)),
         key_vault_id: build.template(block.key_vault_id),
@@ -9543,7 +9548,7 @@ local provider(configuration) = {
     },
     kubernetes_cluster(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_upgrade_channel: build.template(std.get(block, 'automatic_upgrade_channel', null)),
         azure_policy_enabled: build.template(std.get(block, 'azure_policy_enabled', null)),
         cost_analysis_enabled: build.template(std.get(block, 'cost_analysis_enabled', null)),
@@ -9613,7 +9618,7 @@ local provider(configuration) = {
     },
     kubernetes_cluster_extension(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_cluster_extension', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         configuration_protected_settings: build.template(std.get(block, 'configuration_protected_settings', null)),
         configuration_settings: build.template(std.get(block, 'configuration_settings', null)),
@@ -9636,7 +9641,7 @@ local provider(configuration) = {
     },
     kubernetes_cluster_node_pool(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_cluster_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         auto_scaling_enabled: build.template(std.get(block, 'auto_scaling_enabled', null)),
         capacity_reservation_group_id: build.template(std.get(block, 'capacity_reservation_group_id', null)),
         eviction_policy: build.template(std.get(block, 'eviction_policy', null)),
@@ -9707,7 +9712,7 @@ local provider(configuration) = {
     },
     kubernetes_cluster_trusted_access_role_binding(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_cluster_trusted_access_role_binding', name),
-      _: resource._({
+      _: resource._(block, {
         kubernetes_cluster_id: build.template(block.kubernetes_cluster_id),
         name: build.template(block.name),
         roles: build.template(block.roles),
@@ -9721,7 +9726,7 @@ local provider(configuration) = {
     },
     kubernetes_fleet_manager(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_fleet_manager', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -9735,7 +9740,7 @@ local provider(configuration) = {
     },
     kubernetes_fleet_member(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_fleet_member', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(std.get(block, 'group', null)),
         kubernetes_cluster_id: build.template(block.kubernetes_cluster_id),
         kubernetes_fleet_id: build.template(block.kubernetes_fleet_id),
@@ -9749,7 +9754,7 @@ local provider(configuration) = {
     },
     kubernetes_fleet_update_run(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_fleet_update_run', name),
-      _: resource._({
+      _: resource._(block, {
         fleet_update_strategy_id: build.template(std.get(block, 'fleet_update_strategy_id', null)),
         kubernetes_fleet_manager_id: build.template(block.kubernetes_fleet_manager_id),
         name: build.template(block.name),
@@ -9761,7 +9766,7 @@ local provider(configuration) = {
     },
     kubernetes_fleet_update_strategy(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_fleet_update_strategy', name),
-      _: resource._({
+      _: resource._(block, {
         kubernetes_fleet_manager_id: build.template(block.kubernetes_fleet_manager_id),
         name: build.template(block.name),
       }),
@@ -9771,7 +9776,7 @@ local provider(configuration) = {
     },
     kubernetes_flux_configuration(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_flux_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         continuous_reconciliation_enabled: build.template(std.get(block, 'continuous_reconciliation_enabled', null)),
         name: build.template(block.name),
@@ -9787,7 +9792,7 @@ local provider(configuration) = {
     },
     kusto_attached_database_configuration(name, block): {
       local resource = blockType.resource('azurerm_kusto_attached_database_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         cluster_resource_id: build.template(block.cluster_resource_id),
         database_name: build.template(block.database_name),
@@ -9808,7 +9813,7 @@ local provider(configuration) = {
     },
     kusto_cluster(name, block): {
       local resource = blockType.resource('azurerm_kusto_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_fqdns: build.template(std.get(block, 'allowed_fqdns', null)),
         allowed_ip_ranges: build.template(std.get(block, 'allowed_ip_ranges', null)),
         auto_stop_enabled: build.template(std.get(block, 'auto_stop_enabled', null)),
@@ -9847,7 +9852,7 @@ local provider(configuration) = {
     },
     kusto_cluster_customer_managed_key(name, block): {
       local resource = blockType.resource('azurerm_kusto_cluster_customer_managed_key', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         key_name: build.template(block.key_name),
         key_vault_id: build.template(block.key_vault_id),
@@ -9863,7 +9868,7 @@ local provider(configuration) = {
     },
     kusto_cluster_managed_private_endpoint(name, block): {
       local resource = blockType.resource('azurerm_kusto_cluster_managed_private_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         group_id: build.template(block.group_id),
         name: build.template(block.name),
@@ -9883,7 +9888,7 @@ local provider(configuration) = {
     },
     kusto_cluster_principal_assignment(name, block): {
       local resource = blockType.resource('azurerm_kusto_cluster_principal_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         name: build.template(block.name),
         principal_id: build.template(block.principal_id),
@@ -9905,7 +9910,7 @@ local provider(configuration) = {
     },
     kusto_cosmosdb_data_connection(name, block): {
       local resource = blockType.resource('azurerm_kusto_cosmosdb_data_connection', name),
-      _: resource._({
+      _: resource._(block, {
         cosmosdb_container_id: build.template(block.cosmosdb_container_id),
         kusto_database_id: build.template(block.kusto_database_id),
         location: build.template(block.location),
@@ -9927,7 +9932,7 @@ local provider(configuration) = {
     },
     kusto_database(name, block): {
       local resource = blockType.resource('azurerm_kusto_database', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         hot_cache_period: build.template(std.get(block, 'hot_cache_period', null)),
         location: build.template(block.location),
@@ -9946,7 +9951,7 @@ local provider(configuration) = {
     },
     kusto_database_principal_assignment(name, block): {
       local resource = blockType.resource('azurerm_kusto_database_principal_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         database_name: build.template(block.database_name),
         name: build.template(block.name),
@@ -9970,7 +9975,7 @@ local provider(configuration) = {
     },
     kusto_eventgrid_data_connection(name, block): {
       local resource = blockType.resource('azurerm_kusto_eventgrid_data_connection', name),
-      _: resource._({
+      _: resource._(block, {
         blob_storage_event_type: build.template(std.get(block, 'blob_storage_event_type', null)),
         cluster_name: build.template(block.cluster_name),
         data_format: build.template(std.get(block, 'data_format', null)),
@@ -10008,7 +10013,7 @@ local provider(configuration) = {
     },
     kusto_eventhub_data_connection(name, block): {
       local resource = blockType.resource('azurerm_kusto_eventhub_data_connection', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         compression: build.template(std.get(block, 'compression', null)),
         consumer_group: build.template(block.consumer_group),
@@ -10041,7 +10046,7 @@ local provider(configuration) = {
     },
     kusto_iothub_data_connection(name, block): {
       local resource = blockType.resource('azurerm_kusto_iothub_data_connection', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         consumer_group: build.template(block.consumer_group),
         data_format: build.template(std.get(block, 'data_format', null)),
@@ -10073,7 +10078,7 @@ local provider(configuration) = {
     },
     kusto_script(name, block): {
       local resource = blockType.resource('azurerm_kusto_script', name),
-      _: resource._({
+      _: resource._(block, {
         continue_on_errors_enabled: build.template(std.get(block, 'continue_on_errors_enabled', null)),
         database_id: build.template(block.database_id),
         name: build.template(block.name),
@@ -10092,7 +10097,7 @@ local provider(configuration) = {
     },
     lb(name, block): {
       local resource = blockType.resource('azurerm_lb', name),
-      _: resource._({
+      _: resource._(block, {
         edge_zone: build.template(std.get(block, 'edge_zone', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -10114,7 +10119,7 @@ local provider(configuration) = {
     },
     lb_backend_address_pool(name, block): {
       local resource = blockType.resource('azurerm_lb_backend_address_pool', name),
-      _: resource._({
+      _: resource._(block, {
         loadbalancer_id: build.template(block.loadbalancer_id),
         name: build.template(block.name),
         synchronous_mode: build.template(std.get(block, 'synchronous_mode', null)),
@@ -10132,7 +10137,7 @@ local provider(configuration) = {
     },
     lb_backend_address_pool_address(name, block): {
       local resource = blockType.resource('azurerm_lb_backend_address_pool_address', name),
-      _: resource._({
+      _: resource._(block, {
         backend_address_ip_configuration_id: build.template(std.get(block, 'backend_address_ip_configuration_id', null)),
         backend_address_pool_id: build.template(block.backend_address_pool_id),
         ip_address: build.template(std.get(block, 'ip_address', null)),
@@ -10149,7 +10154,7 @@ local provider(configuration) = {
     },
     lb_nat_pool(name, block): {
       local resource = blockType.resource('azurerm_lb_nat_pool', name),
-      _: resource._({
+      _: resource._(block, {
         backend_port: build.template(block.backend_port),
         floating_ip_enabled: build.template(std.get(block, 'floating_ip_enabled', null)),
         frontend_ip_configuration_name: build.template(block.frontend_ip_configuration_name),
@@ -10178,7 +10183,7 @@ local provider(configuration) = {
     },
     lb_nat_rule(name, block): {
       local resource = blockType.resource('azurerm_lb_nat_rule', name),
-      _: resource._({
+      _: resource._(block, {
         backend_address_pool_id: build.template(std.get(block, 'backend_address_pool_id', null)),
         backend_port: build.template(block.backend_port),
         enable_tcp_reset: build.template(std.get(block, 'enable_tcp_reset', null)),
@@ -10211,7 +10216,7 @@ local provider(configuration) = {
     },
     lb_outbound_rule(name, block): {
       local resource = blockType.resource('azurerm_lb_outbound_rule', name),
-      _: resource._({
+      _: resource._(block, {
         allocated_outbound_ports: build.template(std.get(block, 'allocated_outbound_ports', null)),
         backend_address_pool_id: build.template(block.backend_address_pool_id),
         enable_tcp_reset: build.template(std.get(block, 'enable_tcp_reset', null)),
@@ -10231,7 +10236,7 @@ local provider(configuration) = {
     },
     lb_probe(name, block): {
       local resource = blockType.resource('azurerm_lb_probe', name),
-      _: resource._({
+      _: resource._(block, {
         interval_in_seconds: build.template(std.get(block, 'interval_in_seconds', null)),
         loadbalancer_id: build.template(block.loadbalancer_id),
         name: build.template(block.name),
@@ -10254,7 +10259,7 @@ local provider(configuration) = {
     },
     lb_rule(name, block): {
       local resource = blockType.resource('azurerm_lb_rule', name),
-      _: resource._({
+      _: resource._(block, {
         backend_address_pool_ids: build.template(std.get(block, 'backend_address_pool_ids', null)),
         backend_port: build.template(block.backend_port),
         disable_outbound_snat: build.template(std.get(block, 'disable_outbound_snat', null)),
@@ -10287,7 +10292,7 @@ local provider(configuration) = {
     },
     lighthouse_assignment(name, block): {
       local resource = blockType.resource('azurerm_lighthouse_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         lighthouse_definition_id: build.template(block.lighthouse_definition_id),
         scope: build.template(block.scope),
       }),
@@ -10298,7 +10303,7 @@ local provider(configuration) = {
     },
     lighthouse_definition(name, block): {
       local resource = blockType.resource('azurerm_lighthouse_definition', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         managing_tenant_id: build.template(block.managing_tenant_id),
         name: build.template(block.name),
@@ -10313,7 +10318,7 @@ local provider(configuration) = {
     },
     linux_function_app(name, block): {
       local resource = blockType.resource('azurerm_linux_function_app', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         builtin_logging_enabled: build.template(std.get(block, 'builtin_logging_enabled', null)),
         client_certificate_enabled: build.template(std.get(block, 'client_certificate_enabled', null)),
@@ -10378,7 +10383,7 @@ local provider(configuration) = {
     },
     linux_function_app_slot(name, block): {
       local resource = blockType.resource('azurerm_linux_function_app_slot', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         builtin_logging_enabled: build.template(std.get(block, 'builtin_logging_enabled', null)),
         client_certificate_enabled: build.template(std.get(block, 'client_certificate_enabled', null)),
@@ -10440,7 +10445,7 @@ local provider(configuration) = {
     },
     linux_virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_linux_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         admin_password: build.template(std.get(block, 'admin_password', null)),
         admin_username: build.template(block.admin_username),
         allow_extension_operations: build.template(std.get(block, 'allow_extension_operations', null)),
@@ -10525,7 +10530,7 @@ local provider(configuration) = {
     },
     linux_virtual_machine_scale_set(name, block): {
       local resource = blockType.resource('azurerm_linux_virtual_machine_scale_set', name),
-      _: resource._({
+      _: resource._(block, {
         admin_password: build.template(std.get(block, 'admin_password', null)),
         admin_username: build.template(block.admin_username),
         capacity_reservation_group_id: build.template(std.get(block, 'capacity_reservation_group_id', null)),
@@ -10598,7 +10603,7 @@ local provider(configuration) = {
     },
     linux_web_app(name, block): {
       local resource = blockType.resource('azurerm_linux_web_app', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         client_affinity_enabled: build.template(std.get(block, 'client_affinity_enabled', null)),
         client_certificate_enabled: build.template(std.get(block, 'client_certificate_enabled', null)),
@@ -10647,7 +10652,7 @@ local provider(configuration) = {
     },
     linux_web_app_slot(name, block): {
       local resource = blockType.resource('azurerm_linux_web_app_slot', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_id: build.template(block.app_service_id),
         app_settings: build.template(std.get(block, 'app_settings', null)),
         client_affinity_enabled: build.template(std.get(block, 'client_affinity_enabled', null)),
@@ -10695,7 +10700,7 @@ local provider(configuration) = {
     },
     load_test(name, block): {
       local resource = blockType.resource('azurerm_load_test', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -10712,7 +10717,7 @@ local provider(configuration) = {
     },
     local_network_gateway(name, block): {
       local resource = blockType.resource('azurerm_local_network_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         address_space: build.template(std.get(block, 'address_space', null)),
         gateway_address: build.template(std.get(block, 'gateway_address', null)),
         gateway_fqdn: build.template(std.get(block, 'gateway_fqdn', null)),
@@ -10732,7 +10737,7 @@ local provider(configuration) = {
     },
     log_analytics_cluster(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -10749,7 +10754,7 @@ local provider(configuration) = {
     },
     log_analytics_cluster_customer_managed_key(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_cluster_customer_managed_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_key_id: build.template(block.key_vault_key_id),
         log_analytics_cluster_id: build.template(block.log_analytics_cluster_id),
       }),
@@ -10759,7 +10764,7 @@ local provider(configuration) = {
     },
     log_analytics_data_export_rule(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_data_export_rule', name),
-      _: resource._({
+      _: resource._(block, {
         destination_resource_id: build.template(block.destination_resource_id),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -10778,7 +10783,7 @@ local provider(configuration) = {
     },
     log_analytics_datasource_windows_event(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_datasource_windows_event', name),
-      _: resource._({
+      _: resource._(block, {
         event_log_name: build.template(block.event_log_name),
         event_types: build.template(block.event_types),
         name: build.template(block.name),
@@ -10794,7 +10799,7 @@ local provider(configuration) = {
     },
     log_analytics_datasource_windows_performance_counter(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_datasource_windows_performance_counter', name),
-      _: resource._({
+      _: resource._(block, {
         counter_name: build.template(block.counter_name),
         instance_name: build.template(block.instance_name),
         interval_seconds: build.template(block.interval_seconds),
@@ -10814,7 +10819,7 @@ local provider(configuration) = {
     },
     log_analytics_linked_service(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_linked_service', name),
-      _: resource._({
+      _: resource._(block, {
         resource_group_name: build.template(block.resource_group_name),
         workspace_id: build.template(block.workspace_id),
         write_access_id: build.template(std.get(block, 'write_access_id', null)),
@@ -10828,7 +10833,7 @@ local provider(configuration) = {
     },
     log_analytics_linked_storage_account(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_linked_storage_account', name),
-      _: resource._({
+      _: resource._(block, {
         data_source_type: build.template(block.data_source_type),
         resource_group_name: build.template(block.resource_group_name),
         storage_account_ids: build.template(block.storage_account_ids),
@@ -10842,7 +10847,7 @@ local provider(configuration) = {
     },
     log_analytics_query_pack(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_query_pack', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -10856,7 +10861,7 @@ local provider(configuration) = {
     },
     log_analytics_query_pack_query(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_query_pack_query', name),
-      _: resource._({
+      _: resource._(block, {
         additional_settings_json: build.template(std.get(block, 'additional_settings_json', null)),
         body: build.template(block.body),
         categories: build.template(std.get(block, 'categories', null)),
@@ -10881,7 +10886,7 @@ local provider(configuration) = {
     },
     log_analytics_saved_search(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_saved_search', name),
-      _: resource._({
+      _: resource._(block, {
         category: build.template(block.category),
         display_name: build.template(block.display_name),
         function_alias: build.template(std.get(block, 'function_alias', null)),
@@ -10903,7 +10908,7 @@ local provider(configuration) = {
     },
     log_analytics_solution(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_solution', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         resource_group_name: build.template(block.resource_group_name),
         solution_name: build.template(block.solution_name),
@@ -10921,7 +10926,7 @@ local provider(configuration) = {
     },
     log_analytics_storage_insights(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_storage_insights', name),
-      _: resource._({
+      _: resource._(block, {
         blob_container_names: build.template(std.get(block, 'blob_container_names', null)),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -10941,7 +10946,7 @@ local provider(configuration) = {
     },
     log_analytics_workspace(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         allow_resource_only_permissions: build.template(std.get(block, 'allow_resource_only_permissions', null)),
         cmk_for_query_forced: build.template(std.get(block, 'cmk_for_query_forced', null)),
         daily_quota_gb: build.template(std.get(block, 'daily_quota_gb', null)),
@@ -10978,7 +10983,7 @@ local provider(configuration) = {
     },
     log_analytics_workspace_table(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_workspace_table', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         plan: build.template(std.get(block, 'plan', null)),
         retention_in_days: build.template(std.get(block, 'retention_in_days', null)),
@@ -10994,7 +10999,7 @@ local provider(configuration) = {
     },
     logic_app_action_custom(name, block): {
       local resource = blockType.resource('azurerm_logic_app_action_custom', name),
-      _: resource._({
+      _: resource._(block, {
         body: build.template(block.body),
         logic_app_id: build.template(block.logic_app_id),
         name: build.template(block.name),
@@ -11006,7 +11011,7 @@ local provider(configuration) = {
     },
     logic_app_action_http(name, block): {
       local resource = blockType.resource('azurerm_logic_app_action_http', name),
-      _: resource._({
+      _: resource._(block, {
         body: build.template(std.get(block, 'body', null)),
         headers: build.template(std.get(block, 'headers', null)),
         logic_app_id: build.template(block.logic_app_id),
@@ -11026,7 +11031,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account', name),
-      _: resource._({
+      _: resource._(block, {
         integration_service_environment_id: build.template(std.get(block, 'integration_service_environment_id', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -11044,7 +11049,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_agreement(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_agreement', name),
-      _: resource._({
+      _: resource._(block, {
         agreement_type: build.template(block.agreement_type),
         content: build.template(block.content),
         guest_partner_name: build.template(block.guest_partner_name),
@@ -11066,7 +11071,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_assembly(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_assembly', name),
-      _: resource._({
+      _: resource._(block, {
         assembly_name: build.template(block.assembly_name),
         assembly_version: build.template(std.get(block, 'assembly_version', null)),
         content: build.template(std.get(block, 'content', null)),
@@ -11088,7 +11093,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_batch_configuration(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_batch_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         batch_group_name: build.template(block.batch_group_name),
         integration_account_name: build.template(block.integration_account_name),
         metadata: build.template(std.get(block, 'metadata', null)),
@@ -11104,7 +11109,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_certificate(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         integration_account_name: build.template(block.integration_account_name),
         metadata: build.template(std.get(block, 'metadata', null)),
         name: build.template(block.name),
@@ -11120,7 +11125,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_map(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_map', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         integration_account_name: build.template(block.integration_account_name),
         map_type: build.template(block.map_type),
@@ -11138,7 +11143,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_partner(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_partner', name),
-      _: resource._({
+      _: resource._(block, {
         integration_account_name: build.template(block.integration_account_name),
         metadata: build.template(std.get(block, 'metadata', null)),
         name: build.template(block.name),
@@ -11152,7 +11157,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_schema(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_schema', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         file_name: build.template(std.get(block, 'file_name', null)),
         integration_account_name: build.template(block.integration_account_name),
@@ -11170,7 +11175,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account_session(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account_session', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         integration_account_name: build.template(block.integration_account_name),
         name: build.template(block.name),
@@ -11184,7 +11189,7 @@ local provider(configuration) = {
     },
     logic_app_standard(name, block): {
       local resource = blockType.resource('azurerm_logic_app_standard', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_plan_id: build.template(block.app_service_plan_id),
         bundle_version: build.template(std.get(block, 'bundle_version', null)),
         client_certificate_mode: build.template(std.get(block, 'client_certificate_mode', null)),
@@ -11227,7 +11232,7 @@ local provider(configuration) = {
     },
     logic_app_trigger_custom(name, block): {
       local resource = blockType.resource('azurerm_logic_app_trigger_custom', name),
-      _: resource._({
+      _: resource._(block, {
         body: build.template(block.body),
         logic_app_id: build.template(block.logic_app_id),
         name: build.template(block.name),
@@ -11240,7 +11245,7 @@ local provider(configuration) = {
     },
     logic_app_trigger_http_request(name, block): {
       local resource = blockType.resource('azurerm_logic_app_trigger_http_request', name),
-      _: resource._({
+      _: resource._(block, {
         logic_app_id: build.template(block.logic_app_id),
         method: build.template(std.get(block, 'method', null)),
         name: build.template(block.name),
@@ -11257,7 +11262,7 @@ local provider(configuration) = {
     },
     logic_app_trigger_recurrence(name, block): {
       local resource = blockType.resource('azurerm_logic_app_trigger_recurrence', name),
-      _: resource._({
+      _: resource._(block, {
         frequency: build.template(block.frequency),
         interval: build.template(block.interval),
         logic_app_id: build.template(block.logic_app_id),
@@ -11274,7 +11279,7 @@ local provider(configuration) = {
     },
     logic_app_workflow(name, block): {
       local resource = blockType.resource('azurerm_logic_app_workflow', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         integration_service_environment_id: build.template(std.get(block, 'integration_service_environment_id', null)),
         location: build.template(block.location),
@@ -11307,7 +11312,7 @@ local provider(configuration) = {
     },
     machine_learning_compute_cluster(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_compute_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         local_auth_enabled: build.template(std.get(block, 'local_auth_enabled', null)),
         location: build.template(block.location),
@@ -11335,7 +11340,7 @@ local provider(configuration) = {
     },
     machine_learning_compute_instance(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_compute_instance', name),
-      _: resource._({
+      _: resource._(block, {
         authorization_type: build.template(std.get(block, 'authorization_type', null)),
         description: build.template(std.get(block, 'description', null)),
         local_auth_enabled: build.template(std.get(block, 'local_auth_enabled', null)),
@@ -11359,7 +11364,7 @@ local provider(configuration) = {
     },
     machine_learning_datastore_blobstorage(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_datastore_blobstorage', name),
-      _: resource._({
+      _: resource._(block, {
         account_key: build.template(std.get(block, 'account_key', null)),
         description: build.template(std.get(block, 'description', null)),
         is_default: build.template(std.get(block, 'is_default', null)),
@@ -11383,7 +11388,7 @@ local provider(configuration) = {
     },
     machine_learning_datastore_datalake_gen2(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_datastore_datalake_gen2', name),
-      _: resource._({
+      _: resource._(block, {
         authority_url: build.template(std.get(block, 'authority_url', null)),
         client_id: build.template(std.get(block, 'client_id', null)),
         client_secret: build.template(std.get(block, 'client_secret', null)),
@@ -11410,7 +11415,7 @@ local provider(configuration) = {
     },
     machine_learning_datastore_fileshare(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_datastore_fileshare', name),
-      _: resource._({
+      _: resource._(block, {
         account_key: build.template(std.get(block, 'account_key', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -11433,7 +11438,7 @@ local provider(configuration) = {
     },
     machine_learning_inference_cluster(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_inference_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_purpose: build.template(std.get(block, 'cluster_purpose', null)),
         description: build.template(std.get(block, 'description', null)),
         kubernetes_cluster_id: build.template(block.kubernetes_cluster_id),
@@ -11453,7 +11458,7 @@ local provider(configuration) = {
     },
     machine_learning_synapse_spark(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_synapse_spark', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         local_auth_enabled: build.template(std.get(block, 'local_auth_enabled', null)),
         location: build.template(block.location),
@@ -11473,7 +11478,7 @@ local provider(configuration) = {
     },
     machine_learning_workspace(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         application_insights_id: build.template(block.application_insights_id),
         container_registry_id: build.template(std.get(block, 'container_registry_id', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -11515,7 +11520,7 @@ local provider(configuration) = {
     },
     machine_learning_workspace_network_outbound_rule_fqdn(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_workspace_network_outbound_rule_fqdn', name),
-      _: resource._({
+      _: resource._(block, {
         destination_fqdn: build.template(block.destination_fqdn),
         name: build.template(block.name),
         workspace_id: build.template(block.workspace_id),
@@ -11527,7 +11532,7 @@ local provider(configuration) = {
     },
     maintenance_assignment_dedicated_host(name, block): {
       local resource = blockType.resource('azurerm_maintenance_assignment_dedicated_host', name),
-      _: resource._({
+      _: resource._(block, {
         dedicated_host_id: build.template(block.dedicated_host_id),
         location: build.template(block.location),
         maintenance_configuration_id: build.template(block.maintenance_configuration_id),
@@ -11539,7 +11544,7 @@ local provider(configuration) = {
     },
     maintenance_assignment_dynamic_scope(name, block): {
       local resource = blockType.resource('azurerm_maintenance_assignment_dynamic_scope', name),
-      _: resource._({
+      _: resource._(block, {
         maintenance_configuration_id: build.template(block.maintenance_configuration_id),
         name: build.template(block.name),
       }),
@@ -11549,7 +11554,7 @@ local provider(configuration) = {
     },
     maintenance_assignment_virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_maintenance_assignment_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         maintenance_configuration_id: build.template(block.maintenance_configuration_id),
         virtual_machine_id: build.template(block.virtual_machine_id),
@@ -11561,7 +11566,7 @@ local provider(configuration) = {
     },
     maintenance_assignment_virtual_machine_scale_set(name, block): {
       local resource = blockType.resource('azurerm_maintenance_assignment_virtual_machine_scale_set', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         maintenance_configuration_id: build.template(block.maintenance_configuration_id),
         virtual_machine_scale_set_id: build.template(block.virtual_machine_scale_set_id),
@@ -11573,7 +11578,7 @@ local provider(configuration) = {
     },
     maintenance_configuration(name, block): {
       local resource = blockType.resource('azurerm_maintenance_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         in_guest_user_patch_mode: build.template(std.get(block, 'in_guest_user_patch_mode', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -11595,7 +11600,7 @@ local provider(configuration) = {
     },
     managed_application(name, block): {
       local resource = blockType.resource('azurerm_managed_application', name),
-      _: resource._({
+      _: resource._(block, {
         application_definition_id: build.template(std.get(block, 'application_definition_id', null)),
         kind: build.template(block.kind),
         location: build.template(block.location),
@@ -11617,7 +11622,7 @@ local provider(configuration) = {
     },
     managed_application_definition(name, block): {
       local resource = blockType.resource('azurerm_managed_application_definition', name),
-      _: resource._({
+      _: resource._(block, {
         create_ui_definition: build.template(std.get(block, 'create_ui_definition', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -11645,7 +11650,7 @@ local provider(configuration) = {
     },
     managed_disk(name, block): {
       local resource = blockType.resource('azurerm_managed_disk', name),
-      _: resource._({
+      _: resource._(block, {
         create_option: build.template(block.create_option),
         disk_access_id: build.template(std.get(block, 'disk_access_id', null)),
         disk_encryption_set_id: build.template(std.get(block, 'disk_encryption_set_id', null)),
@@ -11710,7 +11715,7 @@ local provider(configuration) = {
     },
     managed_disk_sas_token(name, block): {
       local resource = blockType.resource('azurerm_managed_disk_sas_token', name),
-      _: resource._({
+      _: resource._(block, {
         access_level: build.template(block.access_level),
         duration_in_seconds: build.template(block.duration_in_seconds),
         managed_disk_id: build.template(block.managed_disk_id),
@@ -11723,7 +11728,7 @@ local provider(configuration) = {
     },
     managed_lustre_file_system(name, block): {
       local resource = blockType.resource('azurerm_managed_lustre_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -11746,7 +11751,7 @@ local provider(configuration) = {
     },
     management_group(name, block): {
       local resource = blockType.resource('azurerm_management_group', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       display_name: resource.field('display_name'),
       id: resource.field('id'),
@@ -11757,7 +11762,7 @@ local provider(configuration) = {
     },
     management_group_policy_assignment(name, block): {
       local resource = blockType.resource('azurerm_management_group_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         enforce: build.template(std.get(block, 'enforce', null)),
@@ -11782,7 +11787,7 @@ local provider(configuration) = {
     },
     management_group_policy_exemption(name, block): {
       local resource = blockType.resource('azurerm_management_group_policy_exemption', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         exemption_category: build.template(block.exemption_category),
@@ -11805,7 +11810,7 @@ local provider(configuration) = {
     },
     management_group_policy_remediation(name, block): {
       local resource = blockType.resource('azurerm_management_group_policy_remediation', name),
-      _: resource._({
+      _: resource._(block, {
         failure_percentage: build.template(std.get(block, 'failure_percentage', null)),
         location_filters: build.template(std.get(block, 'location_filters', null)),
         management_group_id: build.template(block.management_group_id),
@@ -11827,7 +11832,7 @@ local provider(configuration) = {
     },
     management_group_subscription_association(name, block): {
       local resource = blockType.resource('azurerm_management_group_subscription_association', name),
-      _: resource._({
+      _: resource._(block, {
         management_group_id: build.template(block.management_group_id),
         subscription_id: build.template(block.subscription_id),
       }),
@@ -11837,7 +11842,7 @@ local provider(configuration) = {
     },
     management_group_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_management_group_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         debug_level: build.template(std.get(block, 'debug_level', null)),
         location: build.template(block.location),
         management_group_id: build.template(block.management_group_id),
@@ -11858,7 +11863,7 @@ local provider(configuration) = {
     },
     management_lock(name, block): {
       local resource = blockType.resource('azurerm_management_lock', name),
-      _: resource._({
+      _: resource._(block, {
         lock_level: build.template(block.lock_level),
         name: build.template(block.name),
         notes: build.template(std.get(block, 'notes', null)),
@@ -11872,7 +11877,7 @@ local provider(configuration) = {
     },
     maps_account(name, block): {
       local resource = blockType.resource('azurerm_maps_account', name),
-      _: resource._({
+      _: resource._(block, {
         local_authentication_enabled: build.template(std.get(block, 'local_authentication_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -11893,7 +11898,7 @@ local provider(configuration) = {
     },
     maps_creator(name, block): {
       local resource = blockType.resource('azurerm_maps_creator', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         maps_account_id: build.template(block.maps_account_id),
         name: build.template(block.name),
@@ -11909,7 +11914,7 @@ local provider(configuration) = {
     },
     marketplace_agreement(name, block): {
       local resource = blockType.resource('azurerm_marketplace_agreement', name),
-      _: resource._({
+      _: resource._(block, {
         offer: build.template(block.offer),
         plan: build.template(block.plan),
         publisher: build.template(block.publisher),
@@ -11923,7 +11928,7 @@ local provider(configuration) = {
     },
     marketplace_role_assignment(name, block): {
       local resource = blockType.resource('azurerm_marketplace_role_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         condition: build.template(std.get(block, 'condition', null)),
         condition_version: build.template(std.get(block, 'condition_version', null)),
         delegated_managed_identity_resource_id: build.template(std.get(block, 'delegated_managed_identity_resource_id', null)),
@@ -11948,7 +11953,7 @@ local provider(configuration) = {
     },
     mobile_network(name, block): {
       local resource = blockType.resource('azurerm_mobile_network', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         mobile_country_code: build.template(block.mobile_country_code),
         mobile_network_code: build.template(block.mobile_network_code),
@@ -11967,7 +11972,7 @@ local provider(configuration) = {
     },
     mobile_network_attached_data_network(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_attached_data_network', name),
-      _: resource._({
+      _: resource._(block, {
         dns_addresses: build.template(block.dns_addresses),
         location: build.template(block.location),
         mobile_network_data_network_name: build.template(block.mobile_network_data_network_name),
@@ -11995,7 +12000,7 @@ local provider(configuration) = {
     },
     mobile_network_data_network(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_data_network', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         mobile_network_id: build.template(block.mobile_network_id),
@@ -12011,7 +12016,7 @@ local provider(configuration) = {
     },
     mobile_network_packet_core_control_plane(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_packet_core_control_plane', name),
-      _: resource._({
+      _: resource._(block, {
         control_plane_access_ipv4_address: build.template(std.get(block, 'control_plane_access_ipv4_address', null)),
         control_plane_access_ipv4_gateway: build.template(std.get(block, 'control_plane_access_ipv4_gateway', null)),
         control_plane_access_ipv4_subnet: build.template(std.get(block, 'control_plane_access_ipv4_subnet', null)),
@@ -12045,7 +12050,7 @@ local provider(configuration) = {
     },
     mobile_network_packet_core_data_plane(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_packet_core_data_plane', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         mobile_network_packet_core_control_plane_id: build.template(block.mobile_network_packet_core_control_plane_id),
         name: build.template(block.name),
@@ -12067,7 +12072,7 @@ local provider(configuration) = {
     },
     mobile_network_service(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
@@ -12083,7 +12088,7 @@ local provider(configuration) = {
     },
     mobile_network_sim(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_sim', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_key: build.template(block.authentication_key),
         device_type: build.template(std.get(block, 'device_type', null)),
         integrated_circuit_card_identifier: build.template(block.integrated_circuit_card_identifier),
@@ -12108,7 +12113,7 @@ local provider(configuration) = {
     },
     mobile_network_sim_group(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_sim_group', name),
-      _: resource._({
+      _: resource._(block, {
         encryption_key_url: build.template(std.get(block, 'encryption_key_url', null)),
         location: build.template(block.location),
         mobile_network_id: build.template(block.mobile_network_id),
@@ -12124,7 +12129,7 @@ local provider(configuration) = {
     },
     mobile_network_sim_policy(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_sim_policy', name),
-      _: resource._({
+      _: resource._(block, {
         default_slice_id: build.template(block.default_slice_id),
         location: build.template(block.location),
         mobile_network_id: build.template(block.mobile_network_id),
@@ -12144,7 +12149,7 @@ local provider(configuration) = {
     },
     mobile_network_site(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_site', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
@@ -12159,7 +12164,7 @@ local provider(configuration) = {
     },
     mobile_network_slice(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_slice', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         mobile_network_id: build.template(block.mobile_network_id),
@@ -12175,7 +12180,7 @@ local provider(configuration) = {
     },
     mongo_cluster(name, block): {
       local resource = blockType.resource('azurerm_mongo_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_password: build.template(std.get(block, 'administrator_password', null)),
         administrator_username: build.template(std.get(block, 'administrator_username', null)),
         compute_tier: build.template(std.get(block, 'compute_tier', null)),
@@ -12213,7 +12218,7 @@ local provider(configuration) = {
     },
     monitor_aad_diagnostic_setting(name, block): {
       local resource = blockType.resource('azurerm_monitor_aad_diagnostic_setting', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_authorization_rule_id: build.template(std.get(block, 'eventhub_authorization_rule_id', null)),
         eventhub_name: build.template(std.get(block, 'eventhub_name', null)),
         log_analytics_workspace_id: build.template(std.get(block, 'log_analytics_workspace_id', null)),
@@ -12229,7 +12234,7 @@ local provider(configuration) = {
     },
     monitor_action_group(name, block): {
       local resource = blockType.resource('azurerm_monitor_action_group', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         location: build.template(std.get(block, 'location', null)),
         name: build.template(block.name),
@@ -12247,7 +12252,7 @@ local provider(configuration) = {
     },
     monitor_activity_log_alert(name, block): {
       local resource = blockType.resource('azurerm_monitor_activity_log_alert', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         location: build.template(block.location),
@@ -12267,7 +12272,7 @@ local provider(configuration) = {
     },
     monitor_alert_processing_rule_action_group(name, block): {
       local resource = blockType.resource('azurerm_monitor_alert_processing_rule_action_group', name),
-      _: resource._({
+      _: resource._(block, {
         add_action_group_ids: build.template(block.add_action_group_ids),
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -12287,7 +12292,7 @@ local provider(configuration) = {
     },
     monitor_alert_processing_rule_suppression(name, block): {
       local resource = blockType.resource('azurerm_monitor_alert_processing_rule_suppression', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -12305,7 +12310,7 @@ local provider(configuration) = {
     },
     monitor_alert_prometheus_rule_group(name, block): {
       local resource = blockType.resource('azurerm_monitor_alert_prometheus_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(std.get(block, 'cluster_name', null)),
         description: build.template(std.get(block, 'description', null)),
         interval: build.template(std.get(block, 'interval', null)),
@@ -12329,7 +12334,7 @@ local provider(configuration) = {
     },
     monitor_autoscale_setting(name, block): {
       local resource = blockType.resource('azurerm_monitor_autoscale_setting', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -12347,7 +12352,7 @@ local provider(configuration) = {
     },
     monitor_data_collection_endpoint(name, block): {
       local resource = blockType.resource('azurerm_monitor_data_collection_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         kind: build.template(std.get(block, 'kind', null)),
         location: build.template(block.location),
@@ -12370,7 +12375,7 @@ local provider(configuration) = {
     },
     monitor_data_collection_rule(name, block): {
       local resource = blockType.resource('azurerm_monitor_data_collection_rule', name),
-      _: resource._({
+      _: resource._(block, {
         data_collection_endpoint_id: build.template(std.get(block, 'data_collection_endpoint_id', null)),
         description: build.template(std.get(block, 'description', null)),
         kind: build.template(std.get(block, 'kind', null)),
@@ -12391,7 +12396,7 @@ local provider(configuration) = {
     },
     monitor_data_collection_rule_association(name, block): {
       local resource = blockType.resource('azurerm_monitor_data_collection_rule_association', name),
-      _: resource._({
+      _: resource._(block, {
         data_collection_endpoint_id: build.template(std.get(block, 'data_collection_endpoint_id', null)),
         data_collection_rule_id: build.template(std.get(block, 'data_collection_rule_id', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -12407,7 +12412,7 @@ local provider(configuration) = {
     },
     monitor_diagnostic_setting(name, block): {
       local resource = blockType.resource('azurerm_monitor_diagnostic_setting', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_authorization_rule_id: build.template(std.get(block, 'eventhub_authorization_rule_id', null)),
         eventhub_name: build.template(std.get(block, 'eventhub_name', null)),
         log_analytics_workspace_id: build.template(std.get(block, 'log_analytics_workspace_id', null)),
@@ -12428,7 +12433,7 @@ local provider(configuration) = {
     },
     monitor_metric_alert(name, block): {
       local resource = blockType.resource('azurerm_monitor_metric_alert', name),
-      _: resource._({
+      _: resource._(block, {
         auto_mitigate: build.template(std.get(block, 'auto_mitigate', null)),
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -12456,7 +12461,7 @@ local provider(configuration) = {
     },
     monitor_private_link_scope(name, block): {
       local resource = blockType.resource('azurerm_monitor_private_link_scope', name),
-      _: resource._({
+      _: resource._(block, {
         ingestion_access_mode: build.template(std.get(block, 'ingestion_access_mode', null)),
         name: build.template(block.name),
         query_access_mode: build.template(std.get(block, 'query_access_mode', null)),
@@ -12472,7 +12477,7 @@ local provider(configuration) = {
     },
     monitor_private_link_scoped_service(name, block): {
       local resource = blockType.resource('azurerm_monitor_private_link_scoped_service', name),
-      _: resource._({
+      _: resource._(block, {
         linked_resource_id: build.template(block.linked_resource_id),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -12486,7 +12491,7 @@ local provider(configuration) = {
     },
     monitor_scheduled_query_rules_alert(name, block): {
       local resource = blockType.resource('azurerm_monitor_scheduled_query_rules_alert', name),
-      _: resource._({
+      _: resource._(block, {
         authorized_resource_ids: build.template(std.get(block, 'authorized_resource_ids', null)),
         auto_mitigation_enabled: build.template(std.get(block, 'auto_mitigation_enabled', null)),
         data_source_id: build.template(block.data_source_id),
@@ -12522,7 +12527,7 @@ local provider(configuration) = {
     },
     monitor_scheduled_query_rules_alert_v2(name, block): {
       local resource = blockType.resource('azurerm_monitor_scheduled_query_rules_alert_v2', name),
-      _: resource._({
+      _: resource._(block, {
         auto_mitigation_enabled: build.template(std.get(block, 'auto_mitigation_enabled', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -12565,7 +12570,7 @@ local provider(configuration) = {
     },
     monitor_scheduled_query_rules_log(name, block): {
       local resource = blockType.resource('azurerm_monitor_scheduled_query_rules_log', name),
-      _: resource._({
+      _: resource._(block, {
         authorized_resource_ids: build.template(std.get(block, 'authorized_resource_ids', null)),
         data_source_id: build.template(block.data_source_id),
         description: build.template(std.get(block, 'description', null)),
@@ -12587,7 +12592,7 @@ local provider(configuration) = {
     },
     monitor_smart_detector_alert_rule(name, block): {
       local resource = blockType.resource('azurerm_monitor_smart_detector_alert_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         detector_type: build.template(block.detector_type),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -12613,7 +12618,7 @@ local provider(configuration) = {
     },
     monitor_workspace(name, block): {
       local resource = blockType.resource('azurerm_monitor_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         public_network_access_enabled: build.template(std.get(block, 'public_network_access_enabled', null)),
@@ -12632,7 +12637,7 @@ local provider(configuration) = {
     },
     mssql_database(name, block): {
       local resource = blockType.resource('azurerm_mssql_database', name),
-      _: resource._({
+      _: resource._(block, {
         create_mode: build.template(std.get(block, 'create_mode', null)),
         elastic_pool_id: build.template(std.get(block, 'elastic_pool_id', null)),
         geo_backup_enabled: build.template(std.get(block, 'geo_backup_enabled', null)),
@@ -12682,7 +12687,7 @@ local provider(configuration) = {
     },
     mssql_database_extended_auditing_policy(name, block): {
       local resource = blockType.resource('azurerm_mssql_database_extended_auditing_policy', name),
-      _: resource._({
+      _: resource._(block, {
         database_id: build.template(block.database_id),
         enabled: build.template(std.get(block, 'enabled', null)),
         log_monitoring_enabled: build.template(std.get(block, 'log_monitoring_enabled', null)),
@@ -12702,7 +12707,7 @@ local provider(configuration) = {
     },
     mssql_database_vulnerability_assessment_rule_baseline(name, block): {
       local resource = blockType.resource('azurerm_mssql_database_vulnerability_assessment_rule_baseline', name),
-      _: resource._({
+      _: resource._(block, {
         baseline_name: build.template(std.get(block, 'baseline_name', null)),
         database_name: build.template(block.database_name),
         rule_id: build.template(block.rule_id),
@@ -12716,7 +12721,7 @@ local provider(configuration) = {
     },
     mssql_elasticpool(name, block): {
       local resource = blockType.resource('azurerm_mssql_elasticpool', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         maintenance_configuration_name: build.template(std.get(block, 'maintenance_configuration_name', null)),
         name: build.template(block.name),
@@ -12740,7 +12745,7 @@ local provider(configuration) = {
     },
     mssql_failover_group(name, block): {
       local resource = blockType.resource('azurerm_mssql_failover_group', name),
-      _: resource._({
+      _: resource._(block, {
         databases: build.template(std.get(block, 'databases', null)),
         name: build.template(block.name),
         server_id: build.template(block.server_id),
@@ -12755,7 +12760,7 @@ local provider(configuration) = {
     },
     mssql_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_mssql_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         end_ip_address: build.template(block.end_ip_address),
         name: build.template(block.name),
         server_id: build.template(block.server_id),
@@ -12769,7 +12774,7 @@ local provider(configuration) = {
     },
     mssql_job_agent(name, block): {
       local resource = blockType.resource('azurerm_mssql_job_agent', name),
-      _: resource._({
+      _: resource._(block, {
         database_id: build.template(block.database_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -12783,7 +12788,7 @@ local provider(configuration) = {
     },
     mssql_job_credential(name, block): {
       local resource = blockType.resource('azurerm_mssql_job_credential', name),
-      _: resource._({
+      _: resource._(block, {
         job_agent_id: build.template(block.job_agent_id),
         name: build.template(block.name),
         password: build.template(block.password),
@@ -12797,7 +12802,7 @@ local provider(configuration) = {
     },
     mssql_managed_database(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_database', name),
-      _: resource._({
+      _: resource._(block, {
         managed_instance_id: build.template(block.managed_instance_id),
         name: build.template(block.name),
         short_term_retention_days: build.template(std.get(block, 'short_term_retention_days', null)),
@@ -12811,7 +12816,7 @@ local provider(configuration) = {
     },
     mssql_managed_instance(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_instance', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_login: build.template(block.administrator_login),
         administrator_login_password: build.template(block.administrator_login_password),
         collation: build.template(std.get(block, 'collation', null)),
@@ -12861,7 +12866,7 @@ local provider(configuration) = {
     },
     mssql_managed_instance_active_directory_administrator(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_instance_active_directory_administrator', name),
-      _: resource._({
+      _: resource._(block, {
         azuread_authentication_only: build.template(std.get(block, 'azuread_authentication_only', null)),
         login_username: build.template(block.login_username),
         managed_instance_id: build.template(block.managed_instance_id),
@@ -12877,7 +12882,7 @@ local provider(configuration) = {
     },
     mssql_managed_instance_failover_group(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_instance_failover_group', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         managed_instance_id: build.template(block.managed_instance_id),
         name: build.template(block.name),
@@ -12895,7 +12900,7 @@ local provider(configuration) = {
     },
     mssql_managed_instance_security_alert_policy(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_instance_security_alert_policy', name),
-      _: resource._({
+      _: resource._(block, {
         disabled_alerts: build.template(std.get(block, 'disabled_alerts', null)),
         email_account_admins_enabled: build.template(std.get(block, 'email_account_admins_enabled', null)),
         email_addresses: build.template(std.get(block, 'email_addresses', null)),
@@ -12919,7 +12924,7 @@ local provider(configuration) = {
     },
     mssql_managed_instance_transparent_data_encryption(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_instance_transparent_data_encryption', name),
-      _: resource._({
+      _: resource._(block, {
         auto_rotation_enabled: build.template(std.get(block, 'auto_rotation_enabled', null)),
         key_vault_key_id: build.template(std.get(block, 'key_vault_key_id', null)),
         managed_instance_id: build.template(block.managed_instance_id),
@@ -12931,7 +12936,7 @@ local provider(configuration) = {
     },
     mssql_managed_instance_vulnerability_assessment(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_instance_vulnerability_assessment', name),
-      _: resource._({
+      _: resource._(block, {
         managed_instance_id: build.template(block.managed_instance_id),
         storage_account_access_key: build.template(std.get(block, 'storage_account_access_key', null)),
         storage_container_path: build.template(block.storage_container_path),
@@ -12945,7 +12950,7 @@ local provider(configuration) = {
     },
     mssql_outbound_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_mssql_outbound_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         server_id: build.template(block.server_id),
       }),
@@ -12955,7 +12960,7 @@ local provider(configuration) = {
     },
     mssql_server(name, block): {
       local resource = blockType.resource('azurerm_mssql_server', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_login_password: build.template(std.get(block, 'administrator_login_password', null)),
         connection_policy: build.template(std.get(block, 'connection_policy', null)),
         location: build.template(block.location),
@@ -12987,7 +12992,7 @@ local provider(configuration) = {
     },
     mssql_server_dns_alias(name, block): {
       local resource = blockType.resource('azurerm_mssql_server_dns_alias', name),
-      _: resource._({
+      _: resource._(block, {
         mssql_server_id: build.template(block.mssql_server_id),
         name: build.template(block.name),
       }),
@@ -12998,7 +13003,7 @@ local provider(configuration) = {
     },
     mssql_server_extended_auditing_policy(name, block): {
       local resource = blockType.resource('azurerm_mssql_server_extended_auditing_policy', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         log_monitoring_enabled: build.template(std.get(block, 'log_monitoring_enabled', null)),
         predicate_expression: build.template(std.get(block, 'predicate_expression', null)),
@@ -13023,7 +13028,7 @@ local provider(configuration) = {
     },
     mssql_server_microsoft_support_auditing_policy(name, block): {
       local resource = blockType.resource('azurerm_mssql_server_microsoft_support_auditing_policy', name),
-      _: resource._({
+      _: resource._(block, {
         blob_storage_endpoint: build.template(std.get(block, 'blob_storage_endpoint', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         log_monitoring_enabled: build.template(std.get(block, 'log_monitoring_enabled', null)),
@@ -13041,7 +13046,7 @@ local provider(configuration) = {
     },
     mssql_server_security_alert_policy(name, block): {
       local resource = blockType.resource('azurerm_mssql_server_security_alert_policy', name),
-      _: resource._({
+      _: resource._(block, {
         disabled_alerts: build.template(std.get(block, 'disabled_alerts', null)),
         email_account_admins: build.template(std.get(block, 'email_account_admins', null)),
         email_addresses: build.template(std.get(block, 'email_addresses', null)),
@@ -13065,7 +13070,7 @@ local provider(configuration) = {
     },
     mssql_server_transparent_data_encryption(name, block): {
       local resource = blockType.resource('azurerm_mssql_server_transparent_data_encryption', name),
-      _: resource._({
+      _: resource._(block, {
         auto_rotation_enabled: build.template(std.get(block, 'auto_rotation_enabled', null)),
         key_vault_key_id: build.template(std.get(block, 'key_vault_key_id', null)),
         managed_hsm_key_id: build.template(std.get(block, 'managed_hsm_key_id', null)),
@@ -13079,7 +13084,7 @@ local provider(configuration) = {
     },
     mssql_server_vulnerability_assessment(name, block): {
       local resource = blockType.resource('azurerm_mssql_server_vulnerability_assessment', name),
-      _: resource._({
+      _: resource._(block, {
         server_security_alert_policy_id: build.template(block.server_security_alert_policy_id),
         storage_account_access_key: build.template(std.get(block, 'storage_account_access_key', null)),
         storage_container_path: build.template(block.storage_container_path),
@@ -13093,7 +13098,7 @@ local provider(configuration) = {
     },
     mssql_virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_mssql_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         r_services_enabled: build.template(std.get(block, 'r_services_enabled', null)),
         sql_connectivity_port: build.template(std.get(block, 'sql_connectivity_port', null)),
         sql_connectivity_type: build.template(std.get(block, 'sql_connectivity_type', null)),
@@ -13117,7 +13122,7 @@ local provider(configuration) = {
     },
     mssql_virtual_machine_availability_group_listener(name, block): {
       local resource = blockType.resource('azurerm_mssql_virtual_machine_availability_group_listener', name),
-      _: resource._({
+      _: resource._(block, {
         availability_group_name: build.template(std.get(block, 'availability_group_name', null)),
         name: build.template(block.name),
         port: build.template(std.get(block, 'port', null)),
@@ -13131,7 +13136,7 @@ local provider(configuration) = {
     },
     mssql_virtual_machine_group(name, block): {
       local resource = blockType.resource('azurerm_mssql_virtual_machine_group', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13149,7 +13154,7 @@ local provider(configuration) = {
     },
     mssql_virtual_network_rule(name, block): {
       local resource = blockType.resource('azurerm_mssql_virtual_network_rule', name),
-      _: resource._({
+      _: resource._(block, {
         ignore_missing_vnet_service_endpoint: build.template(std.get(block, 'ignore_missing_vnet_service_endpoint', null)),
         name: build.template(block.name),
         server_id: build.template(block.server_id),
@@ -13163,7 +13168,7 @@ local provider(configuration) = {
     },
     mysql_flexible_database(name, block): {
       local resource = blockType.resource('azurerm_mysql_flexible_database', name),
-      _: resource._({
+      _: resource._(block, {
         charset: build.template(block.charset),
         collation: build.template(block.collation),
         name: build.template(block.name),
@@ -13179,7 +13184,7 @@ local provider(configuration) = {
     },
     mysql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_mysql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_password: build.template(std.get(block, 'administrator_password', null)),
         backup_retention_days: build.template(std.get(block, 'backup_retention_days', null)),
         create_mode: build.template(std.get(block, 'create_mode', null)),
@@ -13218,7 +13223,7 @@ local provider(configuration) = {
     },
     mysql_flexible_server_active_directory_administrator(name, block): {
       local resource = blockType.resource('azurerm_mysql_flexible_server_active_directory_administrator', name),
-      _: resource._({
+      _: resource._(block, {
         identity_id: build.template(block.identity_id),
         login: build.template(block.login),
         object_id: build.template(block.object_id),
@@ -13234,7 +13239,7 @@ local provider(configuration) = {
     },
     mysql_flexible_server_configuration(name, block): {
       local resource = blockType.resource('azurerm_mysql_flexible_server_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         server_name: build.template(block.server_name),
@@ -13248,7 +13253,7 @@ local provider(configuration) = {
     },
     mysql_flexible_server_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_mysql_flexible_server_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         end_ip_address: build.template(block.end_ip_address),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13264,7 +13269,7 @@ local provider(configuration) = {
     },
     nat_gateway(name, block): {
       local resource = blockType.resource('azurerm_nat_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         idle_timeout_in_minutes: build.template(std.get(block, 'idle_timeout_in_minutes', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -13285,7 +13290,7 @@ local provider(configuration) = {
     },
     nat_gateway_public_ip_association(name, block): {
       local resource = blockType.resource('azurerm_nat_gateway_public_ip_association', name),
-      _: resource._({
+      _: resource._(block, {
         nat_gateway_id: build.template(block.nat_gateway_id),
         public_ip_address_id: build.template(block.public_ip_address_id),
       }),
@@ -13295,7 +13300,7 @@ local provider(configuration) = {
     },
     nat_gateway_public_ip_prefix_association(name, block): {
       local resource = blockType.resource('azurerm_nat_gateway_public_ip_prefix_association', name),
-      _: resource._({
+      _: resource._(block, {
         nat_gateway_id: build.template(block.nat_gateway_id),
         public_ip_prefix_id: build.template(block.public_ip_prefix_id),
       }),
@@ -13305,7 +13310,7 @@ local provider(configuration) = {
     },
     netapp_account(name, block): {
       local resource = blockType.resource('azurerm_netapp_account', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13319,7 +13324,7 @@ local provider(configuration) = {
     },
     netapp_account_encryption(name, block): {
       local resource = blockType.resource('azurerm_netapp_account_encryption', name),
-      _: resource._({
+      _: resource._(block, {
         encryption_key: build.template(block.encryption_key),
         netapp_account_id: build.template(block.netapp_account_id),
         system_assigned_identity_principal_id: build.template(std.get(block, 'system_assigned_identity_principal_id', null)),
@@ -13333,7 +13338,7 @@ local provider(configuration) = {
     },
     netapp_backup_policy(name, block): {
       local resource = blockType.resource('azurerm_netapp_backup_policy', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         daily_backups_to_keep: build.template(std.get(block, 'daily_backups_to_keep', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -13357,7 +13362,7 @@ local provider(configuration) = {
     },
     netapp_backup_vault(name, block): {
       local resource = blockType.resource('azurerm_netapp_backup_vault', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -13373,7 +13378,7 @@ local provider(configuration) = {
     },
     netapp_pool(name, block): {
       local resource = blockType.resource('azurerm_netapp_pool', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         encryption_type: build.template(std.get(block, 'encryption_type', null)),
         location: build.template(block.location),
@@ -13397,7 +13402,7 @@ local provider(configuration) = {
     },
     netapp_snapshot(name, block): {
       local resource = blockType.resource('azurerm_netapp_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -13415,7 +13420,7 @@ local provider(configuration) = {
     },
     netapp_snapshot_policy(name, block): {
       local resource = blockType.resource('azurerm_netapp_snapshot_policy', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         enabled: build.template(block.enabled),
         location: build.template(block.location),
@@ -13433,7 +13438,7 @@ local provider(configuration) = {
     },
     netapp_volume(name, block): {
       local resource = blockType.resource('azurerm_netapp_volume', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         azure_vmware_data_store_enabled: build.template(std.get(block, 'azure_vmware_data_store_enabled', null)),
         create_from_snapshot_resource_id: build.template(std.get(block, 'create_from_snapshot_resource_id', null)),
@@ -13485,7 +13490,7 @@ local provider(configuration) = {
     },
     netapp_volume_group_sap_hana(name, block): {
       local resource = blockType.resource('azurerm_netapp_volume_group_sap_hana', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         application_identifier: build.template(block.application_identifier),
         group_description: build.template(block.group_description),
@@ -13503,7 +13508,7 @@ local provider(configuration) = {
     },
     netapp_volume_quota_rule(name, block): {
       local resource = blockType.resource('azurerm_netapp_volume_quota_rule', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         quota_size_in_kib: build.template(block.quota_size_in_kib),
@@ -13521,7 +13526,7 @@ local provider(configuration) = {
     },
     network_connection_monitor(name, block): {
       local resource = blockType.resource('azurerm_network_connection_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         network_watcher_id: build.template(block.network_watcher_id),
@@ -13539,7 +13544,7 @@ local provider(configuration) = {
     },
     network_ddos_protection_plan(name, block): {
       local resource = blockType.resource('azurerm_network_ddos_protection_plan', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13554,7 +13559,7 @@ local provider(configuration) = {
     },
     network_function_azure_traffic_collector(name, block): {
       local resource = blockType.resource('azurerm_network_function_azure_traffic_collector', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13570,7 +13575,7 @@ local provider(configuration) = {
     },
     network_function_collector_policy(name, block): {
       local resource = blockType.resource('azurerm_network_function_collector_policy', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -13584,7 +13589,7 @@ local provider(configuration) = {
     },
     network_interface(name, block): {
       local resource = blockType.resource('azurerm_network_interface', name),
-      _: resource._({
+      _: resource._(block, {
         accelerated_networking_enabled: build.template(std.get(block, 'accelerated_networking_enabled', null)),
         auxiliary_mode: build.template(std.get(block, 'auxiliary_mode', null)),
         auxiliary_sku: build.template(std.get(block, 'auxiliary_sku', null)),
@@ -13618,7 +13623,7 @@ local provider(configuration) = {
     },
     network_interface_application_gateway_backend_address_pool_association(name, block): {
       local resource = blockType.resource('azurerm_network_interface_application_gateway_backend_address_pool_association', name),
-      _: resource._({
+      _: resource._(block, {
         backend_address_pool_id: build.template(block.backend_address_pool_id),
         ip_configuration_name: build.template(block.ip_configuration_name),
         network_interface_id: build.template(block.network_interface_id),
@@ -13630,7 +13635,7 @@ local provider(configuration) = {
     },
     network_interface_application_security_group_association(name, block): {
       local resource = blockType.resource('azurerm_network_interface_application_security_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         application_security_group_id: build.template(block.application_security_group_id),
         network_interface_id: build.template(block.network_interface_id),
       }),
@@ -13640,7 +13645,7 @@ local provider(configuration) = {
     },
     network_interface_backend_address_pool_association(name, block): {
       local resource = blockType.resource('azurerm_network_interface_backend_address_pool_association', name),
-      _: resource._({
+      _: resource._(block, {
         backend_address_pool_id: build.template(block.backend_address_pool_id),
         ip_configuration_name: build.template(block.ip_configuration_name),
         network_interface_id: build.template(block.network_interface_id),
@@ -13652,7 +13657,7 @@ local provider(configuration) = {
     },
     network_interface_nat_rule_association(name, block): {
       local resource = blockType.resource('azurerm_network_interface_nat_rule_association', name),
-      _: resource._({
+      _: resource._(block, {
         ip_configuration_name: build.template(block.ip_configuration_name),
         nat_rule_id: build.template(block.nat_rule_id),
         network_interface_id: build.template(block.network_interface_id),
@@ -13664,7 +13669,7 @@ local provider(configuration) = {
     },
     network_interface_security_group_association(name, block): {
       local resource = blockType.resource('azurerm_network_interface_security_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         network_interface_id: build.template(block.network_interface_id),
         network_security_group_id: build.template(block.network_security_group_id),
       }),
@@ -13674,7 +13679,7 @@ local provider(configuration) = {
     },
     network_manager(name, block): {
       local resource = blockType.resource('azurerm_network_manager', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -13693,7 +13698,7 @@ local provider(configuration) = {
     },
     network_manager_admin_rule(name, block): {
       local resource = blockType.resource('azurerm_network_manager_admin_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         admin_rule_collection_id: build.template(block.admin_rule_collection_id),
         description: build.template(std.get(block, 'description', null)),
@@ -13717,7 +13722,7 @@ local provider(configuration) = {
     },
     network_manager_admin_rule_collection(name, block): {
       local resource = blockType.resource('azurerm_network_manager_admin_rule_collection', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         network_group_ids: build.template(block.network_group_ids),
@@ -13731,7 +13736,7 @@ local provider(configuration) = {
     },
     network_manager_connectivity_configuration(name, block): {
       local resource = blockType.resource('azurerm_network_manager_connectivity_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         connectivity_topology: build.template(block.connectivity_topology),
         delete_existing_peering_enabled: build.template(std.get(block, 'delete_existing_peering_enabled', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -13749,7 +13754,7 @@ local provider(configuration) = {
     },
     network_manager_deployment(name, block): {
       local resource = blockType.resource('azurerm_network_manager_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_ids: build.template(block.configuration_ids),
         location: build.template(block.location),
         network_manager_id: build.template(block.network_manager_id),
@@ -13765,7 +13770,7 @@ local provider(configuration) = {
     },
     network_manager_management_group_connection(name, block): {
       local resource = blockType.resource('azurerm_network_manager_management_group_connection', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         management_group_id: build.template(block.management_group_id),
         name: build.template(block.name),
@@ -13780,7 +13785,7 @@ local provider(configuration) = {
     },
     network_manager_network_group(name, block): {
       local resource = blockType.resource('azurerm_network_manager_network_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         network_manager_id: build.template(block.network_manager_id),
@@ -13792,7 +13797,7 @@ local provider(configuration) = {
     },
     network_manager_scope_connection(name, block): {
       local resource = blockType.resource('azurerm_network_manager_scope_connection', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         network_manager_id: build.template(block.network_manager_id),
@@ -13809,7 +13814,7 @@ local provider(configuration) = {
     },
     network_manager_security_admin_configuration(name, block): {
       local resource = blockType.resource('azurerm_network_manager_security_admin_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         apply_on_network_intent_policy_based_services: build.template(std.get(block, 'apply_on_network_intent_policy_based_services', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -13823,7 +13828,7 @@ local provider(configuration) = {
     },
     network_manager_static_member(name, block): {
       local resource = blockType.resource('azurerm_network_manager_static_member', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         network_group_id: build.template(block.network_group_id),
         target_virtual_network_id: build.template(block.target_virtual_network_id),
@@ -13836,7 +13841,7 @@ local provider(configuration) = {
     },
     network_manager_subscription_connection(name, block): {
       local resource = blockType.resource('azurerm_network_manager_subscription_connection', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         network_manager_id: build.template(block.network_manager_id),
@@ -13851,7 +13856,7 @@ local provider(configuration) = {
     },
     network_packet_capture(name, block): {
       local resource = blockType.resource('azurerm_network_packet_capture', name),
-      _: resource._({
+      _: resource._(block, {
         maximum_bytes_per_packet: build.template(std.get(block, 'maximum_bytes_per_packet', null)),
         maximum_bytes_per_session: build.template(std.get(block, 'maximum_bytes_per_session', null)),
         maximum_capture_duration: build.template(std.get(block, 'maximum_capture_duration', null)),
@@ -13871,7 +13876,7 @@ local provider(configuration) = {
     },
     network_profile(name, block): {
       local resource = blockType.resource('azurerm_network_profile', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13886,7 +13891,7 @@ local provider(configuration) = {
     },
     network_security_group(name, block): {
       local resource = blockType.resource('azurerm_network_security_group', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13901,7 +13906,7 @@ local provider(configuration) = {
     },
     network_security_rule(name, block): {
       local resource = blockType.resource('azurerm_network_security_rule', name),
-      _: resource._({
+      _: resource._(block, {
         access: build.template(block.access),
         description: build.template(std.get(block, 'description', null)),
         destination_address_prefix: build.template(std.get(block, 'destination_address_prefix', null)),
@@ -13943,7 +13948,7 @@ local provider(configuration) = {
     },
     network_watcher(name, block): {
       local resource = blockType.resource('azurerm_network_watcher', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -13957,7 +13962,7 @@ local provider(configuration) = {
     },
     network_watcher_flow_log(name, block): {
       local resource = blockType.resource('azurerm_network_watcher_flow_log', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
         name: build.template(block.name),
         network_security_group_id: build.template(block.network_security_group_id),
@@ -13980,7 +13985,7 @@ local provider(configuration) = {
     },
     new_relic_monitor(name, block): {
       local resource = blockType.resource('azurerm_new_relic_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         account_creation_source: build.template(std.get(block, 'account_creation_source', null)),
         ingestion_key: build.template(std.get(block, 'ingestion_key', null)),
         location: build.template(block.location),
@@ -14002,7 +14007,7 @@ local provider(configuration) = {
     },
     new_relic_tag_rule(name, block): {
       local resource = blockType.resource('azurerm_new_relic_tag_rule', name),
-      _: resource._({
+      _: resource._(block, {
         activity_log_enabled: build.template(std.get(block, 'activity_log_enabled', null)),
         azure_active_directory_log_enabled: build.template(std.get(block, 'azure_active_directory_log_enabled', null)),
         metric_enabled: build.template(std.get(block, 'metric_enabled', null)),
@@ -14018,7 +14023,7 @@ local provider(configuration) = {
     },
     nginx_certificate(name, block): {
       local resource = blockType.resource('azurerm_nginx_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_virtual_path: build.template(block.certificate_virtual_path),
         key_vault_secret_id: build.template(block.key_vault_secret_id),
         key_virtual_path: build.template(block.key_virtual_path),
@@ -14034,7 +14039,7 @@ local provider(configuration) = {
     },
     nginx_configuration(name, block): {
       local resource = blockType.resource('azurerm_nginx_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         nginx_deployment_id: build.template(block.nginx_deployment_id),
         package_data: build.template(std.get(block, 'package_data', null)),
         root_file: build.template(block.root_file),
@@ -14046,7 +14051,7 @@ local provider(configuration) = {
     },
     nginx_deployment(name, block): {
       local resource = blockType.resource('azurerm_nginx_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_upgrade_channel: build.template(std.get(block, 'automatic_upgrade_channel', null)),
         capacity: build.template(std.get(block, 'capacity', null)),
         diagnose_support_enabled: build.template(std.get(block, 'diagnose_support_enabled', null)),
@@ -14073,7 +14078,7 @@ local provider(configuration) = {
     },
     notification_hub(name, block): {
       local resource = blockType.resource('azurerm_notification_hub', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
@@ -14089,7 +14094,7 @@ local provider(configuration) = {
     },
     notification_hub_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_notification_hub_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
         name: build.template(block.name),
@@ -14113,7 +14118,7 @@ local provider(configuration) = {
     },
     notification_hub_namespace(name, block): {
       local resource = blockType.resource('azurerm_notification_hub_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -14134,7 +14139,7 @@ local provider(configuration) = {
     },
     oracle_autonomous_database(name, block): {
       local resource = blockType.resource('azurerm_oracle_autonomous_database', name),
-      _: resource._({
+      _: resource._(block, {
         admin_password: build.template(block.admin_password),
         auto_scaling_enabled: build.template(block.auto_scaling_enabled),
         auto_scaling_for_storage_enabled: build.template(block.auto_scaling_for_storage_enabled),
@@ -14181,7 +14186,7 @@ local provider(configuration) = {
     },
     oracle_cloud_vm_cluster(name, block): {
       local resource = blockType.resource('azurerm_oracle_cloud_vm_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         backup_subnet_cidr: build.template(std.get(block, 'backup_subnet_cidr', null)),
         cloud_exadata_infrastructure_id: build.template(block.cloud_exadata_infrastructure_id),
         cpu_core_count: build.template(block.cpu_core_count),
@@ -14233,7 +14238,7 @@ local provider(configuration) = {
     },
     oracle_exadata_infrastructure(name, block): {
       local resource = blockType.resource('azurerm_oracle_exadata_infrastructure', name),
-      _: resource._({
+      _: resource._(block, {
         compute_count: build.template(block.compute_count),
         display_name: build.template(block.display_name),
         location: build.template(block.location),
@@ -14258,7 +14263,7 @@ local provider(configuration) = {
     },
     orbital_contact(name, block): {
       local resource = blockType.resource('azurerm_orbital_contact', name),
-      _: resource._({
+      _: resource._(block, {
         contact_profile_id: build.template(block.contact_profile_id),
         ground_station_name: build.template(block.ground_station_name),
         name: build.template(block.name),
@@ -14276,7 +14281,7 @@ local provider(configuration) = {
     },
     orbital_contact_profile(name, block): {
       local resource = blockType.resource('azurerm_orbital_contact_profile', name),
-      _: resource._({
+      _: resource._(block, {
         auto_tracking: build.template(block.auto_tracking),
         event_hub_uri: build.template(std.get(block, 'event_hub_uri', null)),
         location: build.template(block.location),
@@ -14300,7 +14305,7 @@ local provider(configuration) = {
     },
     orbital_spacecraft(name, block): {
       local resource = blockType.resource('azurerm_orbital_spacecraft', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         norad_id: build.template(block.norad_id),
@@ -14320,7 +14325,7 @@ local provider(configuration) = {
     },
     orchestrated_virtual_machine_scale_set(name, block): {
       local resource = blockType.resource('azurerm_orchestrated_virtual_machine_scale_set', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_reservation_group_id: build.template(std.get(block, 'capacity_reservation_group_id', null)),
         encryption_at_host_enabled: build.template(std.get(block, 'encryption_at_host_enabled', null)),
         eviction_policy: build.template(std.get(block, 'eviction_policy', null)),
@@ -14367,7 +14372,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack', name),
-      _: resource._({
+      _: resource._(block, {
         anti_spyware_profile: build.template(std.get(block, 'anti_spyware_profile', null)),
         anti_virus_profile: build.template(std.get(block, 'anti_virus_profile', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14393,7 +14398,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack_certificate(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         audit_comment: build.template(std.get(block, 'audit_comment', null)),
         description: build.template(std.get(block, 'description', null)),
         key_vault_certificate_id: build.template(std.get(block, 'key_vault_certificate_id', null)),
@@ -14411,7 +14416,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack_fqdn_list(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack_fqdn_list', name),
-      _: resource._({
+      _: resource._(block, {
         audit_comment: build.template(std.get(block, 'audit_comment', null)),
         description: build.template(std.get(block, 'description', null)),
         fully_qualified_domain_names: build.template(block.fully_qualified_domain_names),
@@ -14427,7 +14432,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack_outbound_trust_certificate_association(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack_outbound_trust_certificate_association', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_id: build.template(block.certificate_id),
       }),
       certificate_id: resource.field('certificate_id'),
@@ -14435,7 +14440,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack_outbound_untrust_certificate_association(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack_outbound_untrust_certificate_association', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_id: build.template(block.certificate_id),
       }),
       certificate_id: resource.field('certificate_id'),
@@ -14443,7 +14448,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack_prefix_list(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack_prefix_list', name),
-      _: resource._({
+      _: resource._(block, {
         audit_comment: build.template(std.get(block, 'audit_comment', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -14459,7 +14464,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack_rule(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         applications: build.template(block.applications),
         audit_comment: build.template(std.get(block, 'audit_comment', null)),
@@ -14497,7 +14502,7 @@ local provider(configuration) = {
     },
     palo_alto_next_generation_firewall_virtual_hub_local_rulestack(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_next_generation_firewall_virtual_hub_local_rulestack', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         rulestack_id: build.template(block.rulestack_id),
@@ -14511,7 +14516,7 @@ local provider(configuration) = {
     },
     palo_alto_next_generation_firewall_virtual_hub_panorama(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_next_generation_firewall_virtual_hub_panorama', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         panorama_base64_config: build.template(block.panorama_base64_config),
@@ -14528,7 +14533,7 @@ local provider(configuration) = {
     },
     palo_alto_next_generation_firewall_virtual_network_local_rulestack(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_next_generation_firewall_virtual_network_local_rulestack', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         rulestack_id: build.template(block.rulestack_id),
@@ -14542,7 +14547,7 @@ local provider(configuration) = {
     },
     palo_alto_next_generation_firewall_virtual_network_panorama(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_next_generation_firewall_virtual_network_panorama', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         panorama_base64_config: build.template(block.panorama_base64_config),
@@ -14559,7 +14564,7 @@ local provider(configuration) = {
     },
     palo_alto_virtual_network_appliance(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_virtual_network_appliance', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         virtual_hub_id: build.template(block.virtual_hub_id),
       }),
@@ -14569,7 +14574,7 @@ local provider(configuration) = {
     },
     pim_active_role_assignment(name, block): {
       local resource = blockType.resource('azurerm_pim_active_role_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         principal_id: build.template(block.principal_id),
         role_definition_id: build.template(block.role_definition_id),
         scope: build.template(block.scope),
@@ -14583,7 +14588,7 @@ local provider(configuration) = {
     },
     pim_eligible_role_assignment(name, block): {
       local resource = blockType.resource('azurerm_pim_eligible_role_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         principal_id: build.template(block.principal_id),
         role_definition_id: build.template(block.role_definition_id),
         scope: build.template(block.scope),
@@ -14597,7 +14602,7 @@ local provider(configuration) = {
     },
     point_to_site_vpn_gateway(name, block): {
       local resource = blockType.resource('azurerm_point_to_site_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         dns_servers: build.template(std.get(block, 'dns_servers', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -14621,7 +14626,7 @@ local provider(configuration) = {
     },
     policy_definition(name, block): {
       local resource = blockType.resource('azurerm_policy_definition', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         management_group_id: build.template(std.get(block, 'management_group_id', null)),
@@ -14645,7 +14650,7 @@ local provider(configuration) = {
     },
     policy_set_definition(name, block): {
       local resource = blockType.resource('azurerm_policy_set_definition', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         management_group_id: build.template(std.get(block, 'management_group_id', null)),
@@ -14664,7 +14669,7 @@ local provider(configuration) = {
     },
     policy_virtual_machine_configuration_assignment(name, block): {
       local resource = blockType.resource('azurerm_policy_virtual_machine_configuration_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         virtual_machine_id: build.template(block.virtual_machine_id),
@@ -14676,7 +14681,7 @@ local provider(configuration) = {
     },
     portal_dashboard(name, block): {
       local resource = blockType.resource('azurerm_portal_dashboard', name),
-      _: resource._({
+      _: resource._(block, {
         dashboard_properties: build.template(block.dashboard_properties),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -14692,7 +14697,7 @@ local provider(configuration) = {
     },
     portal_tenant_configuration(name, block): {
       local resource = blockType.resource('azurerm_portal_tenant_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         private_markdown_storage_enforced: build.template(block.private_markdown_storage_enforced),
       }),
       id: resource.field('id'),
@@ -14700,7 +14705,7 @@ local provider(configuration) = {
     },
     postgresql_active_directory_administrator(name, block): {
       local resource = blockType.resource('azurerm_postgresql_active_directory_administrator', name),
-      _: resource._({
+      _: resource._(block, {
         login: build.template(block.login),
         object_id: build.template(block.object_id),
         resource_group_name: build.template(block.resource_group_name),
@@ -14716,7 +14721,7 @@ local provider(configuration) = {
     },
     postgresql_configuration(name, block): {
       local resource = blockType.resource('azurerm_postgresql_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         server_name: build.template(block.server_name),
@@ -14730,7 +14735,7 @@ local provider(configuration) = {
     },
     postgresql_database(name, block): {
       local resource = blockType.resource('azurerm_postgresql_database', name),
-      _: resource._({
+      _: resource._(block, {
         charset: build.template(block.charset),
         collation: build.template(block.collation),
         name: build.template(block.name),
@@ -14746,7 +14751,7 @@ local provider(configuration) = {
     },
     postgresql_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_postgresql_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         end_ip_address: build.template(block.end_ip_address),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -14762,7 +14767,7 @@ local provider(configuration) = {
     },
     postgresql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_postgresql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_password: build.template(std.get(block, 'administrator_password', null)),
         auto_grow_enabled: build.template(std.get(block, 'auto_grow_enabled', null)),
         create_mode: build.template(std.get(block, 'create_mode', null)),
@@ -14804,7 +14809,7 @@ local provider(configuration) = {
     },
     postgresql_flexible_server_active_directory_administrator(name, block): {
       local resource = blockType.resource('azurerm_postgresql_flexible_server_active_directory_administrator', name),
-      _: resource._({
+      _: resource._(block, {
         object_id: build.template(block.object_id),
         principal_name: build.template(block.principal_name),
         principal_type: build.template(block.principal_type),
@@ -14822,7 +14827,7 @@ local provider(configuration) = {
     },
     postgresql_flexible_server_configuration(name, block): {
       local resource = blockType.resource('azurerm_postgresql_flexible_server_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         server_id: build.template(block.server_id),
         value: build.template(block.value),
@@ -14834,7 +14839,7 @@ local provider(configuration) = {
     },
     postgresql_flexible_server_database(name, block): {
       local resource = blockType.resource('azurerm_postgresql_flexible_server_database', name),
-      _: resource._({
+      _: resource._(block, {
         charset: build.template(std.get(block, 'charset', null)),
         collation: build.template(std.get(block, 'collation', null)),
         name: build.template(block.name),
@@ -14848,7 +14853,7 @@ local provider(configuration) = {
     },
     postgresql_flexible_server_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_postgresql_flexible_server_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         end_ip_address: build.template(block.end_ip_address),
         name: build.template(block.name),
         server_id: build.template(block.server_id),
@@ -14862,7 +14867,7 @@ local provider(configuration) = {
     },
     postgresql_flexible_server_virtual_endpoint(name, block): {
       local resource = blockType.resource('azurerm_postgresql_flexible_server_virtual_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         replica_server_id: build.template(block.replica_server_id),
         source_server_id: build.template(block.source_server_id),
@@ -14876,7 +14881,7 @@ local provider(configuration) = {
     },
     postgresql_server(name, block): {
       local resource = blockType.resource('azurerm_postgresql_server', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_login_password: build.template(std.get(block, 'administrator_login_password', null)),
         auto_grow_enabled: build.template(std.get(block, 'auto_grow_enabled', null)),
         create_mode: build.template(std.get(block, 'create_mode', null)),
@@ -14918,7 +14923,7 @@ local provider(configuration) = {
     },
     postgresql_server_key(name, block): {
       local resource = blockType.resource('azurerm_postgresql_server_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_key_id: build.template(block.key_vault_key_id),
         server_id: build.template(block.server_id),
       }),
@@ -14928,7 +14933,7 @@ local provider(configuration) = {
     },
     postgresql_virtual_network_rule(name, block): {
       local resource = blockType.resource('azurerm_postgresql_virtual_network_rule', name),
-      _: resource._({
+      _: resource._(block, {
         ignore_missing_vnet_service_endpoint: build.template(std.get(block, 'ignore_missing_vnet_service_endpoint', null)),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -14944,7 +14949,7 @@ local provider(configuration) = {
     },
     powerbi_embedded(name, block): {
       local resource = blockType.resource('azurerm_powerbi_embedded', name),
-      _: resource._({
+      _: resource._(block, {
         administrators: build.template(block.administrators),
         location: build.template(block.location),
         mode: build.template(std.get(block, 'mode', null)),
@@ -14964,7 +14969,7 @@ local provider(configuration) = {
     },
     private_dns_a_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_a_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         records: build.template(block.records),
         resource_group_name: build.template(block.resource_group_name),
@@ -14983,7 +14988,7 @@ local provider(configuration) = {
     },
     private_dns_aaaa_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_aaaa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         records: build.template(block.records),
         resource_group_name: build.template(block.resource_group_name),
@@ -15002,7 +15007,7 @@ local provider(configuration) = {
     },
     private_dns_cname_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_cname_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         record: build.template(block.record),
         resource_group_name: build.template(block.resource_group_name),
@@ -15021,7 +15026,7 @@ local provider(configuration) = {
     },
     private_dns_mx_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_mx_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -15038,7 +15043,7 @@ local provider(configuration) = {
     },
     private_dns_ptr_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_ptr_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         records: build.template(block.records),
         resource_group_name: build.template(block.resource_group_name),
@@ -15057,7 +15062,7 @@ local provider(configuration) = {
     },
     private_dns_resolver(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -15073,7 +15078,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_dns_forwarding_ruleset(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_dns_forwarding_ruleset', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         private_dns_resolver_outbound_endpoint_ids: build.template(block.private_dns_resolver_outbound_endpoint_ids),
@@ -15089,7 +15094,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_forwarding_rule(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_forwarding_rule', name),
-      _: resource._({
+      _: resource._(block, {
         dns_forwarding_ruleset_id: build.template(block.dns_forwarding_ruleset_id),
         domain_name: build.template(block.domain_name),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -15105,7 +15110,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_inbound_endpoint(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_inbound_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         private_dns_resolver_id: build.template(block.private_dns_resolver_id),
@@ -15119,7 +15124,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_outbound_endpoint(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_outbound_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         private_dns_resolver_id: build.template(block.private_dns_resolver_id),
@@ -15135,7 +15140,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_virtual_network_link(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_virtual_network_link', name),
-      _: resource._({
+      _: resource._(block, {
         dns_forwarding_ruleset_id: build.template(block.dns_forwarding_ruleset_id),
         metadata: build.template(std.get(block, 'metadata', null)),
         name: build.template(block.name),
@@ -15149,7 +15154,7 @@ local provider(configuration) = {
     },
     private_dns_srv_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_srv_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -15166,7 +15171,7 @@ local provider(configuration) = {
     },
     private_dns_txt_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_txt_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -15183,7 +15188,7 @@ local provider(configuration) = {
     },
     private_dns_zone(name, block): {
       local resource = blockType.resource('azurerm_private_dns_zone', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -15199,7 +15204,7 @@ local provider(configuration) = {
     },
     private_dns_zone_virtual_network_link(name, block): {
       local resource = blockType.resource('azurerm_private_dns_zone_virtual_network_link', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         private_dns_zone_name: build.template(block.private_dns_zone_name),
         registration_enabled: build.template(std.get(block, 'registration_enabled', null)),
@@ -15217,7 +15222,7 @@ local provider(configuration) = {
     },
     private_endpoint(name, block): {
       local resource = blockType.resource('azurerm_private_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         custom_network_interface_name: build.template(std.get(block, 'custom_network_interface_name', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -15238,7 +15243,7 @@ local provider(configuration) = {
     },
     private_endpoint_application_security_group_association(name, block): {
       local resource = blockType.resource('azurerm_private_endpoint_application_security_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         application_security_group_id: build.template(block.application_security_group_id),
         private_endpoint_id: build.template(block.private_endpoint_id),
       }),
@@ -15248,7 +15253,7 @@ local provider(configuration) = {
     },
     private_link_service(name, block): {
       local resource = blockType.resource('azurerm_private_link_service', name),
-      _: resource._({
+      _: resource._(block, {
         auto_approval_subscription_ids: build.template(std.get(block, 'auto_approval_subscription_ids', null)),
         enable_proxy_protocol: build.template(std.get(block, 'enable_proxy_protocol', null)),
         fqdns: build.template(std.get(block, 'fqdns', null)),
@@ -15273,7 +15278,7 @@ local provider(configuration) = {
     },
     proximity_placement_group(name, block): {
       local resource = blockType.resource('azurerm_proximity_placement_group', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_vm_sizes: build.template(std.get(block, 'allowed_vm_sizes', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -15291,7 +15296,7 @@ local provider(configuration) = {
     },
     public_ip(name, block): {
       local resource = blockType.resource('azurerm_public_ip', name),
-      _: resource._({
+      _: resource._(block, {
         allocation_method: build.template(block.allocation_method),
         ddos_protection_mode: build.template(std.get(block, 'ddos_protection_mode', null)),
         ddos_protection_plan_id: build.template(std.get(block, 'ddos_protection_plan_id', null)),
@@ -15335,7 +15340,7 @@ local provider(configuration) = {
     },
     public_ip_prefix(name, block): {
       local resource = blockType.resource('azurerm_public_ip_prefix', name),
-      _: resource._({
+      _: resource._(block, {
         ip_version: build.template(std.get(block, 'ip_version', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -15360,7 +15365,7 @@ local provider(configuration) = {
     },
     purview_account(name, block): {
       local resource = blockType.resource('azurerm_purview_account', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         public_network_enabled: build.template(std.get(block, 'public_network_enabled', null)),
@@ -15383,7 +15388,7 @@ local provider(configuration) = {
     },
     recovery_services_vault(name, block): {
       local resource = blockType.resource('azurerm_recovery_services_vault', name),
-      _: resource._({
+      _: resource._(block, {
         classic_vmware_replication_enabled: build.template(std.get(block, 'classic_vmware_replication_enabled', null)),
         cross_region_restore_enabled: build.template(std.get(block, 'cross_region_restore_enabled', null)),
         location: build.template(block.location),
@@ -15410,7 +15415,7 @@ local provider(configuration) = {
     },
     recovery_services_vault_resource_guard_association(name, block): {
       local resource = blockType.resource('azurerm_recovery_services_vault_resource_guard_association', name),
-      _: resource._({
+      _: resource._(block, {
         resource_guard_id: build.template(block.resource_guard_id),
         vault_id: build.template(block.vault_id),
       }),
@@ -15420,7 +15425,7 @@ local provider(configuration) = {
     },
     redhat_openshift_cluster(name, block): {
       local resource = blockType.resource('azurerm_redhat_openshift_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -15435,7 +15440,7 @@ local provider(configuration) = {
     },
     redis_cache(name, block): {
       local resource = blockType.resource('azurerm_redis_cache', name),
-      _: resource._({
+      _: resource._(block, {
         access_keys_authentication_enabled: build.template(std.get(block, 'access_keys_authentication_enabled', null)),
         capacity: build.template(block.capacity),
         family: build.template(block.family),
@@ -15483,7 +15488,7 @@ local provider(configuration) = {
     },
     redis_cache_access_policy(name, block): {
       local resource = blockType.resource('azurerm_redis_cache_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         permissions: build.template(block.permissions),
         redis_cache_id: build.template(block.redis_cache_id),
@@ -15495,7 +15500,7 @@ local provider(configuration) = {
     },
     redis_cache_access_policy_assignment(name, block): {
       local resource = blockType.resource('azurerm_redis_cache_access_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy_name: build.template(block.access_policy_name),
         name: build.template(block.name),
         object_id: build.template(block.object_id),
@@ -15511,7 +15516,7 @@ local provider(configuration) = {
     },
     redis_enterprise_cluster(name, block): {
       local resource = blockType.resource('azurerm_redis_enterprise_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         minimum_tls_version: build.template(std.get(block, 'minimum_tls_version', null)),
         name: build.template(block.name),
@@ -15532,7 +15537,7 @@ local provider(configuration) = {
     },
     redis_enterprise_database(name, block): {
       local resource = blockType.resource('azurerm_redis_enterprise_database', name),
-      _: resource._({
+      _: resource._(block, {
         client_protocol: build.template(std.get(block, 'client_protocol', null)),
         cluster_id: build.template(block.cluster_id),
         clustering_policy: build.template(std.get(block, 'clustering_policy', null)),
@@ -15556,7 +15561,7 @@ local provider(configuration) = {
     },
     redis_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_redis_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         end_ip: build.template(block.end_ip),
         name: build.template(block.name),
         redis_cache_name: build.template(block.redis_cache_name),
@@ -15572,7 +15577,7 @@ local provider(configuration) = {
     },
     redis_linked_server(name, block): {
       local resource = blockType.resource('azurerm_redis_linked_server', name),
-      _: resource._({
+      _: resource._(block, {
         linked_redis_cache_id: build.template(block.linked_redis_cache_id),
         linked_redis_cache_location: build.template(block.linked_redis_cache_location),
         resource_group_name: build.template(block.resource_group_name),
@@ -15590,7 +15595,7 @@ local provider(configuration) = {
     },
     relay_hybrid_connection(name, block): {
       local resource = blockType.resource('azurerm_relay_hybrid_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         relay_namespace_name: build.template(block.relay_namespace_name),
         requires_client_authorization: build.template(std.get(block, 'requires_client_authorization', null)),
@@ -15606,7 +15611,7 @@ local provider(configuration) = {
     },
     relay_hybrid_connection_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_relay_hybrid_connection_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         hybrid_connection_name: build.template(block.hybrid_connection_name),
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
@@ -15630,7 +15635,7 @@ local provider(configuration) = {
     },
     relay_namespace(name, block): {
       local resource = blockType.resource('azurerm_relay_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -15651,7 +15656,7 @@ local provider(configuration) = {
     },
     relay_namespace_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_relay_namespace_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
         name: build.template(block.name),
@@ -15673,7 +15678,7 @@ local provider(configuration) = {
     },
     resource_deployment_script_azure_cli(name, block): {
       local resource = blockType.resource('azurerm_resource_deployment_script_azure_cli', name),
-      _: resource._({
+      _: resource._(block, {
         cleanup_preference: build.template(std.get(block, 'cleanup_preference', null)),
         command_line: build.template(std.get(block, 'command_line', null)),
         force_update_tag: build.template(std.get(block, 'force_update_tag', null)),
@@ -15706,7 +15711,7 @@ local provider(configuration) = {
     },
     resource_deployment_script_azure_power_shell(name, block): {
       local resource = blockType.resource('azurerm_resource_deployment_script_azure_power_shell', name),
-      _: resource._({
+      _: resource._(block, {
         cleanup_preference: build.template(std.get(block, 'cleanup_preference', null)),
         command_line: build.template(std.get(block, 'command_line', null)),
         force_update_tag: build.template(std.get(block, 'force_update_tag', null)),
@@ -15739,7 +15744,7 @@ local provider(configuration) = {
     },
     resource_group(name, block): {
       local resource = blockType.resource('azurerm_resource_group', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         managed_by: build.template(std.get(block, 'managed_by', null)),
         name: build.template(block.name),
@@ -15753,7 +15758,7 @@ local provider(configuration) = {
     },
     resource_group_cost_management_export(name, block): {
       local resource = blockType.resource('azurerm_resource_group_cost_management_export', name),
-      _: resource._({
+      _: resource._(block, {
         active: build.template(std.get(block, 'active', null)),
         name: build.template(block.name),
         recurrence_period_end_date: build.template(block.recurrence_period_end_date),
@@ -15771,7 +15776,7 @@ local provider(configuration) = {
     },
     resource_group_cost_management_view(name, block): {
       local resource = blockType.resource('azurerm_resource_group_cost_management_view', name),
-      _: resource._({
+      _: resource._(block, {
         accumulated: build.template(block.accumulated),
         chart_type: build.template(block.chart_type),
         display_name: build.template(block.display_name),
@@ -15791,7 +15796,7 @@ local provider(configuration) = {
     },
     resource_group_policy_assignment(name, block): {
       local resource = blockType.resource('azurerm_resource_group_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         enforce: build.template(std.get(block, 'enforce', null)),
@@ -15816,7 +15821,7 @@ local provider(configuration) = {
     },
     resource_group_policy_exemption(name, block): {
       local resource = blockType.resource('azurerm_resource_group_policy_exemption', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         exemption_category: build.template(block.exemption_category),
@@ -15839,7 +15844,7 @@ local provider(configuration) = {
     },
     resource_group_policy_remediation(name, block): {
       local resource = blockType.resource('azurerm_resource_group_policy_remediation', name),
-      _: resource._({
+      _: resource._(block, {
         failure_percentage: build.template(std.get(block, 'failure_percentage', null)),
         location_filters: build.template(std.get(block, 'location_filters', null)),
         name: build.template(block.name),
@@ -15863,7 +15868,7 @@ local provider(configuration) = {
     },
     resource_group_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_resource_group_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         debug_level: build.template(std.get(block, 'debug_level', null)),
         deployment_mode: build.template(block.deployment_mode),
         name: build.template(block.name),
@@ -15884,7 +15889,7 @@ local provider(configuration) = {
     },
     resource_management_private_link(name, block): {
       local resource = blockType.resource('azurerm_resource_management_private_link', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -15896,7 +15901,7 @@ local provider(configuration) = {
     },
     resource_management_private_link_association(name, block): {
       local resource = blockType.resource('azurerm_resource_management_private_link_association', name),
-      _: resource._({
+      _: resource._(block, {
         management_group_id: build.template(block.management_group_id),
         name: build.template(std.get(block, 'name', null)),
         public_network_access_enabled: build.template(block.public_network_access_enabled),
@@ -15911,7 +15916,7 @@ local provider(configuration) = {
     },
     resource_policy_assignment(name, block): {
       local resource = blockType.resource('azurerm_resource_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         enforce: build.template(std.get(block, 'enforce', null)),
@@ -15936,7 +15941,7 @@ local provider(configuration) = {
     },
     resource_policy_exemption(name, block): {
       local resource = blockType.resource('azurerm_resource_policy_exemption', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         exemption_category: build.template(block.exemption_category),
@@ -15959,7 +15964,7 @@ local provider(configuration) = {
     },
     resource_policy_remediation(name, block): {
       local resource = blockType.resource('azurerm_resource_policy_remediation', name),
-      _: resource._({
+      _: resource._(block, {
         failure_percentage: build.template(std.get(block, 'failure_percentage', null)),
         location_filters: build.template(std.get(block, 'location_filters', null)),
         name: build.template(block.name),
@@ -15983,7 +15988,7 @@ local provider(configuration) = {
     },
     resource_provider_registration(name, block): {
       local resource = blockType.resource('azurerm_resource_provider_registration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -15991,7 +15996,7 @@ local provider(configuration) = {
     },
     restore_point_collection(name, block): {
       local resource = blockType.resource('azurerm_restore_point_collection', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -16007,7 +16012,7 @@ local provider(configuration) = {
     },
     role_assignment(name, block): {
       local resource = blockType.resource('azurerm_role_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         condition: build.template(std.get(block, 'condition', null)),
         condition_version: build.template(std.get(block, 'condition_version', null)),
         delegated_managed_identity_resource_id: build.template(std.get(block, 'delegated_managed_identity_resource_id', null)),
@@ -16030,7 +16035,7 @@ local provider(configuration) = {
     },
     role_definition(name, block): {
       local resource = blockType.resource('azurerm_role_definition', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         scope: build.template(block.scope),
@@ -16045,7 +16050,7 @@ local provider(configuration) = {
     },
     role_management_policy(name, block): {
       local resource = blockType.resource('azurerm_role_management_policy', name),
-      _: resource._({
+      _: resource._(block, {
         role_definition_id: build.template(block.role_definition_id),
         scope: build.template(block.scope),
       }),
@@ -16057,7 +16062,7 @@ local provider(configuration) = {
     },
     route(name, block): {
       local resource = blockType.resource('azurerm_route', name),
-      _: resource._({
+      _: resource._(block, {
         address_prefix: build.template(block.address_prefix),
         name: build.template(block.name),
         next_hop_in_ip_address: build.template(std.get(block, 'next_hop_in_ip_address', null)),
@@ -16075,7 +16080,7 @@ local provider(configuration) = {
     },
     route_filter(name, block): {
       local resource = blockType.resource('azurerm_route_filter', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -16090,7 +16095,7 @@ local provider(configuration) = {
     },
     route_map(name, block): {
       local resource = blockType.resource('azurerm_route_map', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         virtual_hub_id: build.template(block.virtual_hub_id),
       }),
@@ -16100,7 +16105,7 @@ local provider(configuration) = {
     },
     route_server(name, block): {
       local resource = blockType.resource('azurerm_route_server', name),
-      _: resource._({
+      _: resource._(block, {
         branch_to_branch_traffic_enabled: build.template(std.get(block, 'branch_to_branch_traffic_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -16125,7 +16130,7 @@ local provider(configuration) = {
     },
     route_server_bgp_connection(name, block): {
       local resource = blockType.resource('azurerm_route_server_bgp_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         peer_asn: build.template(block.peer_asn),
         peer_ip: build.template(block.peer_ip),
@@ -16139,7 +16144,7 @@ local provider(configuration) = {
     },
     route_table(name, block): {
       local resource = blockType.resource('azurerm_route_table', name),
-      _: resource._({
+      _: resource._(block, {
         bgp_route_propagation_enabled: build.template(std.get(block, 'bgp_route_propagation_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -16157,7 +16162,7 @@ local provider(configuration) = {
     },
     search_service(name, block): {
       local resource = blockType.resource('azurerm_search_service', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_ips: build.template(std.get(block, 'allowed_ips', null)),
         authentication_failure_mode: build.template(std.get(block, 'authentication_failure_mode', null)),
         customer_managed_key_enforcement_enabled: build.template(std.get(block, 'customer_managed_key_enforcement_enabled', null)),
@@ -16194,7 +16199,7 @@ local provider(configuration) = {
     },
     search_shared_private_link_service(name, block): {
       local resource = blockType.resource('azurerm_search_shared_private_link_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         request_message: build.template(std.get(block, 'request_message', null)),
         search_service_id: build.template(block.search_service_id),
@@ -16211,7 +16216,7 @@ local provider(configuration) = {
     },
     security_center_assessment(name, block): {
       local resource = blockType.resource('azurerm_security_center_assessment', name),
-      _: resource._({
+      _: resource._(block, {
         additional_data: build.template(std.get(block, 'additional_data', null)),
         assessment_policy_id: build.template(block.assessment_policy_id),
         target_resource_id: build.template(block.target_resource_id),
@@ -16223,7 +16228,7 @@ local provider(configuration) = {
     },
     security_center_assessment_policy(name, block): {
       local resource = blockType.resource('azurerm_security_center_assessment_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         display_name: build.template(block.display_name),
         implementation_effort: build.template(std.get(block, 'implementation_effort', null)),
@@ -16245,7 +16250,7 @@ local provider(configuration) = {
     },
     security_center_auto_provisioning(name, block): {
       local resource = blockType.resource('azurerm_security_center_auto_provisioning', name),
-      _: resource._({
+      _: resource._(block, {
         auto_provision: build.template(block.auto_provision),
       }),
       auto_provision: resource.field('auto_provision'),
@@ -16253,7 +16258,7 @@ local provider(configuration) = {
     },
     security_center_automation(name, block): {
       local resource = blockType.resource('azurerm_security_center_automation', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         location: build.template(block.location),
@@ -16273,7 +16278,7 @@ local provider(configuration) = {
     },
     security_center_contact(name, block): {
       local resource = blockType.resource('azurerm_security_center_contact', name),
-      _: resource._({
+      _: resource._(block, {
         alert_notifications: build.template(block.alert_notifications),
         alerts_to_admins: build.template(block.alerts_to_admins),
         email: build.template(block.email),
@@ -16289,7 +16294,7 @@ local provider(configuration) = {
     },
     security_center_server_vulnerability_assessment_virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_security_center_server_vulnerability_assessment_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         virtual_machine_id: build.template(block.virtual_machine_id),
       }),
       id: resource.field('id'),
@@ -16297,7 +16302,7 @@ local provider(configuration) = {
     },
     security_center_server_vulnerability_assessments_setting(name, block): {
       local resource = blockType.resource('azurerm_security_center_server_vulnerability_assessments_setting', name),
-      _: resource._({
+      _: resource._(block, {
         vulnerability_assessment_provider: build.template(block.vulnerability_assessment_provider),
       }),
       id: resource.field('id'),
@@ -16305,7 +16310,7 @@ local provider(configuration) = {
     },
     security_center_setting(name, block): {
       local resource = blockType.resource('azurerm_security_center_setting', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
         setting_name: build.template(block.setting_name),
       }),
@@ -16315,7 +16320,7 @@ local provider(configuration) = {
     },
     security_center_storage_defender(name, block): {
       local resource = blockType.resource('azurerm_security_center_storage_defender', name),
-      _: resource._({
+      _: resource._(block, {
         malware_scanning_on_upload_cap_gb_per_month: build.template(std.get(block, 'malware_scanning_on_upload_cap_gb_per_month', null)),
         malware_scanning_on_upload_enabled: build.template(std.get(block, 'malware_scanning_on_upload_enabled', null)),
         override_subscription_settings_enabled: build.template(std.get(block, 'override_subscription_settings_enabled', null)),
@@ -16333,7 +16338,7 @@ local provider(configuration) = {
     },
     security_center_subscription_pricing(name, block): {
       local resource = blockType.resource('azurerm_security_center_subscription_pricing', name),
-      _: resource._({
+      _: resource._(block, {
         resource_type: build.template(std.get(block, 'resource_type', null)),
         subplan: build.template(std.get(block, 'subplan', null)),
         tier: build.template(block.tier),
@@ -16345,7 +16350,7 @@ local provider(configuration) = {
     },
     security_center_workspace(name, block): {
       local resource = blockType.resource('azurerm_security_center_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         scope: build.template(block.scope),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -16355,7 +16360,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_anomaly_built_in(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_anomaly_built_in', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         mode: build.template(block.mode),
@@ -16381,7 +16386,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_anomaly_duplicate(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_anomaly_duplicate', name),
-      _: resource._({
+      _: resource._(block, {
         built_in_rule_id: build.template(block.built_in_rule_id),
         display_name: build.template(block.display_name),
         enabled: build.template(block.enabled),
@@ -16407,7 +16412,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_fusion(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_fusion', name),
-      _: resource._({
+      _: resource._(block, {
         alert_rule_template_guid: build.template(block.alert_rule_template_guid),
         enabled: build.template(std.get(block, 'enabled', null)),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
@@ -16421,7 +16426,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_machine_learning_behavior_analytics(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_machine_learning_behavior_analytics', name),
-      _: resource._({
+      _: resource._(block, {
         alert_rule_template_guid: build.template(block.alert_rule_template_guid),
         enabled: build.template(std.get(block, 'enabled', null)),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
@@ -16435,7 +16440,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_ms_security_incident(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_ms_security_incident', name),
-      _: resource._({
+      _: resource._(block, {
         alert_rule_template_guid: build.template(std.get(block, 'alert_rule_template_guid', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -16461,7 +16466,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_nrt(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_nrt', name),
-      _: resource._({
+      _: resource._(block, {
         alert_rule_template_guid: build.template(std.get(block, 'alert_rule_template_guid', null)),
         alert_rule_template_version: build.template(std.get(block, 'alert_rule_template_version', null)),
         custom_details: build.template(std.get(block, 'custom_details', null)),
@@ -16495,7 +16500,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_scheduled(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_scheduled', name),
-      _: resource._({
+      _: resource._(block, {
         alert_rule_template_guid: build.template(std.get(block, 'alert_rule_template_guid', null)),
         alert_rule_template_version: build.template(std.get(block, 'alert_rule_template_version', null)),
         custom_details: build.template(std.get(block, 'custom_details', null)),
@@ -16537,7 +16542,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_threat_intelligence(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_threat_intelligence', name),
-      _: resource._({
+      _: resource._(block, {
         alert_rule_template_guid: build.template(block.alert_rule_template_guid),
         enabled: build.template(std.get(block, 'enabled', null)),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
@@ -16551,7 +16556,7 @@ local provider(configuration) = {
     },
     sentinel_automation_rule(name, block): {
       local resource = blockType.resource('azurerm_sentinel_automation_rule', name),
-      _: resource._({
+      _: resource._(block, {
         condition_json: build.template(std.get(block, 'condition_json', null)),
         display_name: build.template(block.display_name),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -16575,7 +16580,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_aws_cloud_trail(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_aws_cloud_trail', name),
-      _: resource._({
+      _: resource._(block, {
         aws_role_arn: build.template(block.aws_role_arn),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
@@ -16587,7 +16592,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_aws_s3(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_aws_s3', name),
-      _: resource._({
+      _: resource._(block, {
         aws_role_arn: build.template(block.aws_role_arn),
         destination_table: build.template(block.destination_table),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
@@ -16603,7 +16608,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_azure_active_directory(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_azure_active_directory', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16614,7 +16619,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_azure_advanced_threat_protection(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_azure_advanced_threat_protection', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16625,7 +16630,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_azure_security_center(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_azure_security_center', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16636,7 +16641,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_dynamics_365(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_dynamics_365', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16647,7 +16652,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_iot(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_iot', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16658,7 +16663,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_microsoft_cloud_app_security(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_microsoft_cloud_app_security', name),
-      _: resource._({
+      _: resource._(block, {
         alerts_enabled: build.template(std.get(block, 'alerts_enabled', null)),
         discovery_logs_enabled: build.template(std.get(block, 'discovery_logs_enabled', null)),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
@@ -16673,7 +16678,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_microsoft_defender_advanced_threat_protection(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_microsoft_defender_advanced_threat_protection', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16684,7 +16689,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_microsoft_threat_intelligence(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_microsoft_threat_intelligence', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         microsoft_emerging_threat_feed_lookback_date: build.template(block.microsoft_emerging_threat_feed_lookback_date),
         name: build.template(block.name),
@@ -16697,7 +16702,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_microsoft_threat_protection(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_microsoft_threat_protection', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16708,7 +16713,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_office_365(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_office_365', name),
-      _: resource._({
+      _: resource._(block, {
         exchange_enabled: build.template(std.get(block, 'exchange_enabled', null)),
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
@@ -16725,7 +16730,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_office_365_project(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_office_365_project', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16736,7 +16741,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_office_atp(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_office_atp', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16747,7 +16752,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_office_irm(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_office_irm', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16758,7 +16763,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_office_power_bi(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_office_power_bi', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -16769,7 +16774,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_threat_intelligence(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_threat_intelligence', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         lookback_date: build.template(std.get(block, 'lookback_date', null)),
         name: build.template(block.name),
@@ -16782,7 +16787,7 @@ local provider(configuration) = {
     },
     sentinel_data_connector_threat_intelligence_taxii(name, block): {
       local resource = blockType.resource('azurerm_sentinel_data_connector_threat_intelligence_taxii', name),
-      _: resource._({
+      _: resource._(block, {
         api_root_url: build.template(block.api_root_url),
         collection_id: build.template(block.collection_id),
         display_name: build.template(block.display_name),
@@ -16807,7 +16812,7 @@ local provider(configuration) = {
     },
     sentinel_log_analytics_workspace_onboarding(name, block): {
       local resource = blockType.resource('azurerm_sentinel_log_analytics_workspace_onboarding', name),
-      _: resource._({
+      _: resource._(block, {
         customer_managed_key_enabled: build.template(std.get(block, 'customer_managed_key_enabled', null)),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -16817,7 +16822,7 @@ local provider(configuration) = {
     },
     sentinel_metadata(name, block): {
       local resource = blockType.resource('azurerm_sentinel_metadata', name),
-      _: resource._({
+      _: resource._(block, {
         content_id: build.template(block.content_id),
         content_schema_version: build.template(std.get(block, 'content_schema_version', null)),
         custom_version: build.template(std.get(block, 'custom_version', null)),
@@ -16857,7 +16862,7 @@ local provider(configuration) = {
     },
     sentinel_threat_intelligence_indicator(name, block): {
       local resource = blockType.resource('azurerm_sentinel_threat_intelligence_indicator', name),
-      _: resource._({
+      _: resource._(block, {
         confidence: build.template(std.get(block, 'confidence', null)),
         created_by: build.template(std.get(block, 'created_by', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -16904,7 +16909,7 @@ local provider(configuration) = {
     },
     sentinel_watchlist(name, block): {
       local resource = blockType.resource('azurerm_sentinel_watchlist', name),
-      _: resource._({
+      _: resource._(block, {
         default_duration: build.template(std.get(block, 'default_duration', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -16924,7 +16929,7 @@ local provider(configuration) = {
     },
     sentinel_watchlist_item(name, block): {
       local resource = blockType.resource('azurerm_sentinel_watchlist_item', name),
-      _: resource._({
+      _: resource._(block, {
         properties: build.template(block.properties),
         watchlist_id: build.template(block.watchlist_id),
       }),
@@ -16935,7 +16940,7 @@ local provider(configuration) = {
     },
     service_fabric_cluster(name, block): {
       local resource = blockType.resource('azurerm_service_fabric_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         add_on_features: build.template(std.get(block, 'add_on_features', null)),
         location: build.template(block.location),
         management_endpoint: build.template(block.management_endpoint),
@@ -16965,7 +16970,7 @@ local provider(configuration) = {
     },
     service_fabric_managed_cluster(name, block): {
       local resource = blockType.resource('azurerm_service_fabric_managed_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         backup_service_enabled: build.template(std.get(block, 'backup_service_enabled', null)),
         client_connection_port: build.template(block.client_connection_port),
         dns_service_enabled: build.template(std.get(block, 'dns_service_enabled', null)),
@@ -16996,7 +17001,7 @@ local provider(configuration) = {
     },
     service_plan(name, block): {
       local resource = blockType.resource('azurerm_service_plan', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_environment_id: build.template(std.get(block, 'app_service_environment_id', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -17024,7 +17029,7 @@ local provider(configuration) = {
     },
     servicebus_namespace(name, block): {
       local resource = blockType.resource('azurerm_servicebus_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         capacity: build.template(std.get(block, 'capacity', null)),
         local_auth_enabled: build.template(std.get(block, 'local_auth_enabled', null)),
         location: build.template(block.location),
@@ -17055,7 +17060,7 @@ local provider(configuration) = {
     },
     servicebus_namespace_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_servicebus_namespace_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
         name: build.template(block.name),
@@ -17077,7 +17082,7 @@ local provider(configuration) = {
     },
     servicebus_namespace_disaster_recovery_config(name, block): {
       local resource = blockType.resource('azurerm_servicebus_namespace_disaster_recovery_config', name),
-      _: resource._({
+      _: resource._(block, {
         alias_authorization_rule_id: build.template(std.get(block, 'alias_authorization_rule_id', null)),
         name: build.template(block.name),
         partner_namespace_id: build.template(block.partner_namespace_id),
@@ -17095,7 +17100,7 @@ local provider(configuration) = {
     },
     servicebus_queue(name, block): {
       local resource = blockType.resource('azurerm_servicebus_queue', name),
-      _: resource._({
+      _: resource._(block, {
         batched_operations_enabled: build.template(std.get(block, 'batched_operations_enabled', null)),
         dead_lettering_on_message_expiration: build.template(std.get(block, 'dead_lettering_on_message_expiration', null)),
         duplicate_detection_history_time_window: build.template(std.get(block, 'duplicate_detection_history_time_window', null)),
@@ -17133,7 +17138,7 @@ local provider(configuration) = {
     },
     servicebus_queue_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_servicebus_queue_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
         name: build.template(block.name),
@@ -17155,7 +17160,7 @@ local provider(configuration) = {
     },
     servicebus_subscription(name, block): {
       local resource = blockType.resource('azurerm_servicebus_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         auto_delete_on_idle: build.template(std.get(block, 'auto_delete_on_idle', null)),
         batched_operations_enabled: build.template(std.get(block, 'batched_operations_enabled', null)),
         client_scoped_subscription_enabled: build.template(std.get(block, 'client_scoped_subscription_enabled', null)),
@@ -17189,7 +17194,7 @@ local provider(configuration) = {
     },
     servicebus_subscription_rule(name, block): {
       local resource = blockType.resource('azurerm_servicebus_subscription_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(std.get(block, 'action', null)),
         filter_type: build.template(block.filter_type),
         name: build.template(block.name),
@@ -17206,7 +17211,7 @@ local provider(configuration) = {
     },
     servicebus_topic(name, block): {
       local resource = blockType.resource('azurerm_servicebus_topic', name),
-      _: resource._({
+      _: resource._(block, {
         auto_delete_on_idle: build.template(std.get(block, 'auto_delete_on_idle', null)),
         batched_operations_enabled: build.template(std.get(block, 'batched_operations_enabled', null)),
         default_message_ttl: build.template(std.get(block, 'default_message_ttl', null)),
@@ -17236,7 +17241,7 @@ local provider(configuration) = {
     },
     servicebus_topic_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_servicebus_topic_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
         name: build.template(block.name),
@@ -17258,7 +17263,7 @@ local provider(configuration) = {
     },
     shared_image(name, block): {
       local resource = blockType.resource('azurerm_shared_image', name),
-      _: resource._({
+      _: resource._(block, {
         accelerated_network_support_enabled: build.template(std.get(block, 'accelerated_network_support_enabled', null)),
         architecture: build.template(std.get(block, 'architecture', null)),
         confidential_vm_enabled: build.template(std.get(block, 'confidential_vm_enabled', null)),
@@ -17316,7 +17321,7 @@ local provider(configuration) = {
     },
     shared_image_gallery(name, block): {
       local resource = blockType.resource('azurerm_shared_image_gallery', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -17333,7 +17338,7 @@ local provider(configuration) = {
     },
     shared_image_version(name, block): {
       local resource = blockType.resource('azurerm_shared_image_version', name),
-      _: resource._({
+      _: resource._(block, {
         blob_uri: build.template(std.get(block, 'blob_uri', null)),
         deletion_of_replicated_locations_enabled: build.template(std.get(block, 'deletion_of_replicated_locations_enabled', null)),
         end_of_life_date: build.template(std.get(block, 'end_of_life_date', null)),
@@ -17367,7 +17372,7 @@ local provider(configuration) = {
     },
     signalr_service(name, block): {
       local resource = blockType.resource('azurerm_signalr_service', name),
-      _: resource._({
+      _: resource._(block, {
         aad_auth_enabled: build.template(std.get(block, 'aad_auth_enabled', null)),
         connectivity_logs_enabled: build.template(std.get(block, 'connectivity_logs_enabled', null)),
         http_request_logs_enabled: build.template(std.get(block, 'http_request_logs_enabled', null)),
@@ -17409,7 +17414,7 @@ local provider(configuration) = {
     },
     signalr_service_custom_certificate(name, block): {
       local resource = blockType.resource('azurerm_signalr_service_custom_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         custom_certificate_id: build.template(block.custom_certificate_id),
         name: build.template(block.name),
         signalr_service_id: build.template(block.signalr_service_id),
@@ -17422,7 +17427,7 @@ local provider(configuration) = {
     },
     signalr_service_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_signalr_service_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         name: build.template(block.name),
         signalr_custom_certificate_id: build.template(block.signalr_custom_certificate_id),
@@ -17436,7 +17441,7 @@ local provider(configuration) = {
     },
     signalr_service_network_acl(name, block): {
       local resource = blockType.resource('azurerm_signalr_service_network_acl', name),
-      _: resource._({
+      _: resource._(block, {
         default_action: build.template(block.default_action),
         signalr_service_id: build.template(block.signalr_service_id),
       }),
@@ -17446,7 +17451,7 @@ local provider(configuration) = {
     },
     signalr_shared_private_link_resource(name, block): {
       local resource = blockType.resource('azurerm_signalr_shared_private_link_resource', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         request_message: build.template(std.get(block, 'request_message', null)),
         signalr_service_id: build.template(block.signalr_service_id),
@@ -17463,7 +17468,7 @@ local provider(configuration) = {
     },
     site_recovery_fabric(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_fabric', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
@@ -17477,7 +17482,7 @@ local provider(configuration) = {
     },
     site_recovery_hyperv_network_mapping(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_hyperv_network_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_id: build.template(block.recovery_vault_id),
         source_network_name: build.template(block.source_network_name),
@@ -17493,7 +17498,7 @@ local provider(configuration) = {
     },
     site_recovery_hyperv_replication_policy(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_hyperv_replication_policy', name),
-      _: resource._({
+      _: resource._(block, {
         application_consistent_snapshot_frequency_in_hours: build.template(block.application_consistent_snapshot_frequency_in_hours),
         name: build.template(block.name),
         recovery_point_retention_in_hours: build.template(block.recovery_point_retention_in_hours),
@@ -17509,7 +17514,7 @@ local provider(configuration) = {
     },
     site_recovery_hyperv_replication_policy_association(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_hyperv_replication_policy_association', name),
-      _: resource._({
+      _: resource._(block, {
         hyperv_site_id: build.template(block.hyperv_site_id),
         name: build.template(block.name),
         policy_id: build.template(block.policy_id),
@@ -17521,7 +17526,7 @@ local provider(configuration) = {
     },
     site_recovery_network_mapping(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_network_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -17541,7 +17546,7 @@ local provider(configuration) = {
     },
     site_recovery_protection_container(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_protection_container', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_fabric_name: build.template(block.recovery_fabric_name),
         recovery_vault_name: build.template(block.recovery_vault_name),
@@ -17555,7 +17560,7 @@ local provider(configuration) = {
     },
     site_recovery_protection_container_mapping(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_protection_container_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_fabric_name: build.template(block.recovery_fabric_name),
         recovery_replication_policy_id: build.template(block.recovery_replication_policy_id),
@@ -17575,7 +17580,7 @@ local provider(configuration) = {
     },
     site_recovery_replicated_vm(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_replicated_vm', name),
-      _: resource._({
+      _: resource._(block, {
         multi_vm_group_name: build.template(std.get(block, 'multi_vm_group_name', null)),
         name: build.template(block.name),
         recovery_replication_policy_id: build.template(block.recovery_replication_policy_id),
@@ -17623,7 +17628,7 @@ local provider(configuration) = {
     },
     site_recovery_replication_policy(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_replication_policy', name),
-      _: resource._({
+      _: resource._(block, {
         application_consistent_snapshot_frequency_in_minutes: build.template(block.application_consistent_snapshot_frequency_in_minutes),
         name: build.template(block.name),
         recovery_point_retention_in_minutes: build.template(block.recovery_point_retention_in_minutes),
@@ -17639,7 +17644,7 @@ local provider(configuration) = {
     },
     site_recovery_replication_recovery_plan(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_replication_recovery_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_id: build.template(block.recovery_vault_id),
         source_recovery_fabric_id: build.template(block.source_recovery_fabric_id),
@@ -17653,7 +17658,7 @@ local provider(configuration) = {
     },
     site_recovery_services_vault_hyperv_site(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_services_vault_hyperv_site', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_id: build.template(block.recovery_vault_id),
       }),
@@ -17663,7 +17668,7 @@ local provider(configuration) = {
     },
     site_recovery_vmware_replicated_vm(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_vmware_replicated_vm', name),
-      _: resource._({
+      _: resource._(block, {
         appliance_name: build.template(block.appliance_name),
         default_log_storage_account_id: build.template(std.get(block, 'default_log_storage_account_id', null)),
         default_recovery_disk_type: build.template(std.get(block, 'default_recovery_disk_type', null)),
@@ -17709,7 +17714,7 @@ local provider(configuration) = {
     },
     site_recovery_vmware_replication_policy(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_vmware_replication_policy', name),
-      _: resource._({
+      _: resource._(block, {
         application_consistent_snapshot_frequency_in_minutes: build.template(block.application_consistent_snapshot_frequency_in_minutes),
         name: build.template(block.name),
         recovery_point_retention_in_minutes: build.template(block.recovery_point_retention_in_minutes),
@@ -17723,7 +17728,7 @@ local provider(configuration) = {
     },
     site_recovery_vmware_replication_policy_association(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_vmware_replication_policy_association', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_id: build.template(block.policy_id),
         recovery_vault_id: build.template(block.recovery_vault_id),
@@ -17735,7 +17740,7 @@ local provider(configuration) = {
     },
     snapshot(name, block): {
       local resource = blockType.resource('azurerm_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         create_option: build.template(block.create_option),
         disk_access_id: build.template(std.get(block, 'disk_access_id', null)),
         incremental_enabled: build.template(std.get(block, 'incremental_enabled', null)),
@@ -17767,7 +17772,7 @@ local provider(configuration) = {
     },
     source_control_token(name, block): {
       local resource = blockType.resource('azurerm_source_control_token', name),
-      _: resource._({
+      _: resource._(block, {
         token: build.template(block.token),
         token_secret: build.template(std.get(block, 'token_secret', null)),
         type: build.template(block.type),
@@ -17779,7 +17784,7 @@ local provider(configuration) = {
     },
     spatial_anchors_account(name, block): {
       local resource = blockType.resource('azurerm_spatial_anchors_account', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -17795,7 +17800,7 @@ local provider(configuration) = {
     },
     spring_cloud_accelerator(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_accelerator', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         spring_cloud_service_id: build.template(block.spring_cloud_service_id),
       }),
@@ -17805,7 +17810,7 @@ local provider(configuration) = {
     },
     spring_cloud_active_deployment(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_active_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         deployment_name: build.template(block.deployment_name),
         spring_cloud_app_id: build.template(block.spring_cloud_app_id),
       }),
@@ -17815,7 +17820,7 @@ local provider(configuration) = {
     },
     spring_cloud_api_portal(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_api_portal', name),
-      _: resource._({
+      _: resource._(block, {
         api_try_out_enabled: build.template(std.get(block, 'api_try_out_enabled', null)),
         gateway_ids: build.template(std.get(block, 'gateway_ids', null)),
         https_only_enabled: build.template(std.get(block, 'https_only_enabled', null)),
@@ -17836,7 +17841,7 @@ local provider(configuration) = {
     },
     spring_cloud_api_portal_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_api_portal_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         spring_cloud_api_portal_id: build.template(block.spring_cloud_api_portal_id),
         thumbprint: build.template(std.get(block, 'thumbprint', null)),
@@ -17848,7 +17853,7 @@ local provider(configuration) = {
     },
     spring_cloud_app(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_app', name),
-      _: resource._({
+      _: resource._(block, {
         https_only: build.template(std.get(block, 'https_only', null)),
         is_public: build.template(std.get(block, 'is_public', null)),
         name: build.template(block.name),
@@ -17871,7 +17876,7 @@ local provider(configuration) = {
     },
     spring_cloud_app_cosmosdb_association(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_app_cosmosdb_association', name),
-      _: resource._({
+      _: resource._(block, {
         api_type: build.template(block.api_type),
         cosmosdb_access_key: build.template(block.cosmosdb_access_key),
         cosmosdb_account_id: build.template(block.cosmosdb_account_id),
@@ -17897,7 +17902,7 @@ local provider(configuration) = {
     },
     spring_cloud_app_dynamics_application_performance_monitoring(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_app_dynamics_application_performance_monitoring', name),
-      _: resource._({
+      _: resource._(block, {
         agent_account_access_key: build.template(block.agent_account_access_key),
         agent_account_name: build.template(block.agent_account_name),
         agent_application_name: build.template(std.get(block, 'agent_application_name', null)),
@@ -17927,7 +17932,7 @@ local provider(configuration) = {
     },
     spring_cloud_app_mysql_association(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_app_mysql_association', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         mysql_server_id: build.template(block.mysql_server_id),
         name: build.template(block.name),
@@ -17945,7 +17950,7 @@ local provider(configuration) = {
     },
     spring_cloud_app_redis_association(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_app_redis_association', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         redis_access_key: build.template(block.redis_access_key),
         redis_cache_id: build.template(block.redis_cache_id),
@@ -17961,7 +17966,7 @@ local provider(configuration) = {
     },
     spring_cloud_application_insights_application_performance_monitoring(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_application_insights_application_performance_monitoring', name),
-      _: resource._({
+      _: resource._(block, {
         connection_string: build.template(std.get(block, 'connection_string', null)),
         globally_enabled: build.template(std.get(block, 'globally_enabled', null)),
         name: build.template(block.name),
@@ -17983,7 +17988,7 @@ local provider(configuration) = {
     },
     spring_cloud_application_live_view(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_application_live_view', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         spring_cloud_service_id: build.template(block.spring_cloud_service_id),
       }),
@@ -17993,7 +17998,7 @@ local provider(configuration) = {
     },
     spring_cloud_build_deployment(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_build_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         application_performance_monitoring_ids: build.template(std.get(block, 'application_performance_monitoring_ids', null)),
         build_result_id: build.template(block.build_result_id),
         environment_variables: build.template(std.get(block, 'environment_variables', null)),
@@ -18012,7 +18017,7 @@ local provider(configuration) = {
     },
     spring_cloud_build_pack_binding(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_build_pack_binding', name),
-      _: resource._({
+      _: resource._(block, {
         binding_type: build.template(std.get(block, 'binding_type', null)),
         name: build.template(block.name),
         spring_cloud_builder_id: build.template(block.spring_cloud_builder_id),
@@ -18024,7 +18029,7 @@ local provider(configuration) = {
     },
     spring_cloud_builder(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_builder', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         spring_cloud_service_id: build.template(block.spring_cloud_service_id),
       }),
@@ -18034,7 +18039,7 @@ local provider(configuration) = {
     },
     spring_cloud_certificate(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_content: build.template(std.get(block, 'certificate_content', null)),
         exclude_private_key: build.template(std.get(block, 'exclude_private_key', null)),
         key_vault_certificate_id: build.template(std.get(block, 'key_vault_certificate_id', null)),
@@ -18053,7 +18058,7 @@ local provider(configuration) = {
     },
     spring_cloud_configuration_service(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_configuration_service', name),
-      _: resource._({
+      _: resource._(block, {
         generation: build.template(std.get(block, 'generation', null)),
         name: build.template(block.name),
         refresh_interval_in_seconds: build.template(std.get(block, 'refresh_interval_in_seconds', null)),
@@ -18067,7 +18072,7 @@ local provider(configuration) = {
     },
     spring_cloud_connection(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_connection', name),
-      _: resource._({
+      _: resource._(block, {
         client_type: build.template(std.get(block, 'client_type', null)),
         name: build.template(block.name),
         spring_cloud_id: build.template(block.spring_cloud_id),
@@ -18083,7 +18088,7 @@ local provider(configuration) = {
     },
     spring_cloud_container_deployment(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_container_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         application_performance_monitoring_ids: build.template(std.get(block, 'application_performance_monitoring_ids', null)),
         arguments: build.template(std.get(block, 'arguments', null)),
         commands: build.template(std.get(block, 'commands', null)),
@@ -18110,7 +18115,7 @@ local provider(configuration) = {
     },
     spring_cloud_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_name: build.template(std.get(block, 'certificate_name', null)),
         name: build.template(block.name),
         spring_cloud_app_id: build.template(block.spring_cloud_app_id),
@@ -18124,7 +18129,7 @@ local provider(configuration) = {
     },
     spring_cloud_customized_accelerator(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_customized_accelerator', name),
-      _: resource._({
+      _: resource._(block, {
         accelerator_tags: build.template(std.get(block, 'accelerator_tags', null)),
         accelerator_type: build.template(std.get(block, 'accelerator_type', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -18144,7 +18149,7 @@ local provider(configuration) = {
     },
     spring_cloud_dev_tool_portal(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_dev_tool_portal', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         public_network_access_enabled: build.template(std.get(block, 'public_network_access_enabled', null)),
         spring_cloud_service_id: build.template(block.spring_cloud_service_id),
@@ -18158,7 +18163,7 @@ local provider(configuration) = {
     },
     spring_cloud_dynatrace_application_performance_monitoring(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_dynatrace_application_performance_monitoring', name),
-      _: resource._({
+      _: resource._(block, {
         api_token: build.template(std.get(block, 'api_token', null)),
         api_url: build.template(std.get(block, 'api_url', null)),
         connection_point: build.template(block.connection_point),
@@ -18182,7 +18187,7 @@ local provider(configuration) = {
     },
     spring_cloud_elastic_application_performance_monitoring(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_elastic_application_performance_monitoring', name),
-      _: resource._({
+      _: resource._(block, {
         application_packages: build.template(block.application_packages),
         globally_enabled: build.template(std.get(block, 'globally_enabled', null)),
         name: build.template(block.name),
@@ -18200,7 +18205,7 @@ local provider(configuration) = {
     },
     spring_cloud_gateway(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         application_performance_monitoring_ids: build.template(std.get(block, 'application_performance_monitoring_ids', null)),
         application_performance_monitoring_types: build.template(std.get(block, 'application_performance_monitoring_types', null)),
         environment_variables: build.template(std.get(block, 'environment_variables', null)),
@@ -18225,7 +18230,7 @@ local provider(configuration) = {
     },
     spring_cloud_gateway_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_gateway_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         spring_cloud_gateway_id: build.template(block.spring_cloud_gateway_id),
         thumbprint: build.template(std.get(block, 'thumbprint', null)),
@@ -18237,7 +18242,7 @@ local provider(configuration) = {
     },
     spring_cloud_gateway_route_config(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_gateway_route_config', name),
-      _: resource._({
+      _: resource._(block, {
         filters: build.template(std.get(block, 'filters', null)),
         name: build.template(block.name),
         predicates: build.template(std.get(block, 'predicates', null)),
@@ -18257,7 +18262,7 @@ local provider(configuration) = {
     },
     spring_cloud_java_deployment(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_java_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         environment_variables: build.template(std.get(block, 'environment_variables', null)),
         instance_count: build.template(std.get(block, 'instance_count', null)),
         jvm_options: build.template(std.get(block, 'jvm_options', null)),
@@ -18275,7 +18280,7 @@ local provider(configuration) = {
     },
     spring_cloud_new_relic_application_performance_monitoring(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_new_relic_application_performance_monitoring', name),
-      _: resource._({
+      _: resource._(block, {
         agent_enabled: build.template(std.get(block, 'agent_enabled', null)),
         app_name: build.template(block.app_name),
         app_server_port: build.template(std.get(block, 'app_server_port', null)),
@@ -18305,7 +18310,7 @@ local provider(configuration) = {
     },
     spring_cloud_service(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_service', name),
-      _: resource._({
+      _: resource._(block, {
         build_agent_pool_size: build.template(std.get(block, 'build_agent_pool_size', null)),
         location: build.template(block.location),
         log_stream_public_endpoint_enabled: build.template(std.get(block, 'log_stream_public_endpoint_enabled', null)),
@@ -18335,7 +18340,7 @@ local provider(configuration) = {
     },
     spring_cloud_storage(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_storage', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         spring_cloud_service_id: build.template(block.spring_cloud_service_id),
         storage_account_key: build.template(block.storage_account_key),
@@ -18349,7 +18354,7 @@ local provider(configuration) = {
     },
     ssh_public_key(name, block): {
       local resource = blockType.resource('azurerm_ssh_public_key', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         public_key: build.template(block.public_key),
@@ -18365,7 +18370,7 @@ local provider(configuration) = {
     },
     stack_hci_cluster(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         automanage_configuration_id: build.template(std.get(block, 'automanage_configuration_id', null)),
         client_id: build.template(std.get(block, 'client_id', null)),
         location: build.template(block.location),
@@ -18387,7 +18392,7 @@ local provider(configuration) = {
     },
     stack_hci_deployment_setting(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_deployment_setting', name),
-      _: resource._({
+      _: resource._(block, {
         arc_resource_ids: build.template(block.arc_resource_ids),
         stack_hci_cluster_id: build.template(block.stack_hci_cluster_id),
         version: build.template(block.version),
@@ -18399,7 +18404,7 @@ local provider(configuration) = {
     },
     stack_hci_extension(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_extension', name),
-      _: resource._({
+      _: resource._(block, {
         arc_setting_id: build.template(block.arc_setting_id),
         auto_upgrade_minor_version_enabled: build.template(std.get(block, 'auto_upgrade_minor_version_enabled', null)),
         automatic_upgrade_enabled: build.template(std.get(block, 'automatic_upgrade_enabled', null)),
@@ -18423,7 +18428,7 @@ local provider(configuration) = {
     },
     stack_hci_logical_network(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_logical_network', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         dns_servers: build.template(std.get(block, 'dns_servers', null)),
         location: build.template(block.location),
@@ -18443,7 +18448,7 @@ local provider(configuration) = {
     },
     stack_hci_marketplace_gallery_image(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_marketplace_gallery_image', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         hyperv_generation: build.template(block.hyperv_generation),
         location: build.template(block.location),
@@ -18467,7 +18472,7 @@ local provider(configuration) = {
     },
     stack_hci_network_interface(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_network_interface', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         dns_servers: build.template(std.get(block, 'dns_servers', null)),
         location: build.template(block.location),
@@ -18487,7 +18492,7 @@ local provider(configuration) = {
     },
     stack_hci_storage_path(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_storage_path', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -18505,7 +18510,7 @@ local provider(configuration) = {
     },
     stack_hci_virtual_hard_disk(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_virtual_hard_disk', name),
-      _: resource._({
+      _: resource._(block, {
         block_size_in_bytes: build.template(std.get(block, 'block_size_in_bytes', null)),
         custom_location_id: build.template(block.custom_location_id),
         disk_file_format: build.template(std.get(block, 'disk_file_format', null)),
@@ -18537,7 +18542,7 @@ local provider(configuration) = {
     },
     static_site(name, block): {
       local resource = blockType.resource('azurerm_static_site', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -18559,7 +18564,7 @@ local provider(configuration) = {
     },
     static_site_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_static_site_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         static_site_id: build.template(block.static_site_id),
         validation_type: build.template(std.get(block, 'validation_type', null)),
@@ -18572,7 +18577,7 @@ local provider(configuration) = {
     },
     static_web_app(name, block): {
       local resource = blockType.resource('azurerm_static_web_app', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         configuration_file_changes_enabled: build.template(std.get(block, 'configuration_file_changes_enabled', null)),
         location: build.template(block.location),
@@ -18600,7 +18605,7 @@ local provider(configuration) = {
     },
     static_web_app_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_static_web_app_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         static_web_app_id: build.template(block.static_web_app_id),
         validation_type: build.template(block.validation_type),
@@ -18613,7 +18618,7 @@ local provider(configuration) = {
     },
     static_web_app_function_app_registration(name, block): {
       local resource = blockType.resource('azurerm_static_web_app_function_app_registration', name),
-      _: resource._({
+      _: resource._(block, {
         function_app_id: build.template(block.function_app_id),
         static_web_app_id: build.template(block.static_web_app_id),
       }),
@@ -18623,7 +18628,7 @@ local provider(configuration) = {
     },
     storage_account(name, block): {
       local resource = blockType.resource('azurerm_storage_account', name),
-      _: resource._({
+      _: resource._(block, {
         account_kind: build.template(std.get(block, 'account_kind', null)),
         account_replication_type: build.template(block.account_replication_type),
         account_tier: build.template(block.account_tier),
@@ -18751,7 +18756,7 @@ local provider(configuration) = {
     },
     storage_account_customer_managed_key(name, block): {
       local resource = blockType.resource('azurerm_storage_account_customer_managed_key', name),
-      _: resource._({
+      _: resource._(block, {
         federated_identity_client_id: build.template(std.get(block, 'federated_identity_client_id', null)),
         key_name: build.template(block.key_name),
         key_vault_id: build.template(std.get(block, 'key_vault_id', null)),
@@ -18772,7 +18777,7 @@ local provider(configuration) = {
     },
     storage_account_local_user(name, block): {
       local resource = blockType.resource('azurerm_storage_account_local_user', name),
-      _: resource._({
+      _: resource._(block, {
         home_directory: build.template(std.get(block, 'home_directory', null)),
         name: build.template(block.name),
         ssh_key_enabled: build.template(std.get(block, 'ssh_key_enabled', null)),
@@ -18790,7 +18795,7 @@ local provider(configuration) = {
     },
     storage_account_network_rules(name, block): {
       local resource = blockType.resource('azurerm_storage_account_network_rules', name),
-      _: resource._({
+      _: resource._(block, {
         default_action: build.template(block.default_action),
         ip_rules: build.template(std.get(block, 'ip_rules', null)),
         storage_account_id: build.template(block.storage_account_id),
@@ -18805,7 +18810,7 @@ local provider(configuration) = {
     },
     storage_account_queue_properties(name, block): {
       local resource = blockType.resource('azurerm_storage_account_queue_properties', name),
-      _: resource._({
+      _: resource._(block, {
         storage_account_id: build.template(block.storage_account_id),
       }),
       id: resource.field('id'),
@@ -18813,7 +18818,7 @@ local provider(configuration) = {
     },
     storage_account_static_website(name, block): {
       local resource = blockType.resource('azurerm_storage_account_static_website', name),
-      _: resource._({
+      _: resource._(block, {
         error_404_document: build.template(std.get(block, 'error_404_document', null)),
         index_document: build.template(std.get(block, 'index_document', null)),
         storage_account_id: build.template(block.storage_account_id),
@@ -18825,7 +18830,7 @@ local provider(configuration) = {
     },
     storage_blob(name, block): {
       local resource = blockType.resource('azurerm_storage_blob', name),
-      _: resource._({
+      _: resource._(block, {
         cache_control: build.template(std.get(block, 'cache_control', null)),
         content_md5: build.template(std.get(block, 'content_md5', null)),
         content_type: build.template(std.get(block, 'content_type', null)),
@@ -18860,7 +18865,7 @@ local provider(configuration) = {
     },
     storage_blob_inventory_policy(name, block): {
       local resource = blockType.resource('azurerm_storage_blob_inventory_policy', name),
-      _: resource._({
+      _: resource._(block, {
         storage_account_id: build.template(block.storage_account_id),
       }),
       id: resource.field('id'),
@@ -18868,7 +18873,7 @@ local provider(configuration) = {
     },
     storage_container(name, block): {
       local resource = blockType.resource('azurerm_storage_container', name),
-      _: resource._({
+      _: resource._(block, {
         container_access_type: build.template(std.get(block, 'container_access_type', null)),
         encryption_scope_override_enabled: build.template(std.get(block, 'encryption_scope_override_enabled', null)),
         name: build.template(block.name),
@@ -18889,7 +18894,7 @@ local provider(configuration) = {
     },
     storage_container_immutability_policy(name, block): {
       local resource = blockType.resource('azurerm_storage_container_immutability_policy', name),
-      _: resource._({
+      _: resource._(block, {
         immutability_period_in_days: build.template(block.immutability_period_in_days),
         locked: build.template(std.get(block, 'locked', null)),
         protected_append_writes_all_enabled: build.template(std.get(block, 'protected_append_writes_all_enabled', null)),
@@ -18905,7 +18910,7 @@ local provider(configuration) = {
     },
     storage_data_lake_gen2_filesystem(name, block): {
       local resource = blockType.resource('azurerm_storage_data_lake_gen2_filesystem', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         properties: build.template(std.get(block, 'properties', null)),
         storage_account_id: build.template(block.storage_account_id),
@@ -18920,7 +18925,7 @@ local provider(configuration) = {
     },
     storage_data_lake_gen2_path(name, block): {
       local resource = blockType.resource('azurerm_storage_data_lake_gen2_path', name),
-      _: resource._({
+      _: resource._(block, {
         filesystem_name: build.template(block.filesystem_name),
         path: build.template(block.path),
         resource: build.template(block.resource),
@@ -18936,7 +18941,7 @@ local provider(configuration) = {
     },
     storage_encryption_scope(name, block): {
       local resource = blockType.resource('azurerm_storage_encryption_scope', name),
-      _: resource._({
+      _: resource._(block, {
         infrastructure_encryption_required: build.template(std.get(block, 'infrastructure_encryption_required', null)),
         key_vault_key_id: build.template(std.get(block, 'key_vault_key_id', null)),
         name: build.template(block.name),
@@ -18952,7 +18957,7 @@ local provider(configuration) = {
     },
     storage_management_policy(name, block): {
       local resource = blockType.resource('azurerm_storage_management_policy', name),
-      _: resource._({
+      _: resource._(block, {
         storage_account_id: build.template(block.storage_account_id),
       }),
       id: resource.field('id'),
@@ -18960,7 +18965,7 @@ local provider(configuration) = {
     },
     storage_mover(name, block): {
       local resource = blockType.resource('azurerm_storage_mover', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -18976,7 +18981,7 @@ local provider(configuration) = {
     },
     storage_mover_agent(name, block): {
       local resource = blockType.resource('azurerm_storage_mover_agent', name),
-      _: resource._({
+      _: resource._(block, {
         arc_virtual_machine_id: build.template(block.arc_virtual_machine_id),
         arc_virtual_machine_uuid: build.template(block.arc_virtual_machine_uuid),
         description: build.template(std.get(block, 'description', null)),
@@ -18992,7 +18997,7 @@ local provider(configuration) = {
     },
     storage_mover_job_definition(name, block): {
       local resource = blockType.resource('azurerm_storage_mover_job_definition', name),
-      _: resource._({
+      _: resource._(block, {
         agent_name: build.template(std.get(block, 'agent_name', null)),
         copy_mode: build.template(block.copy_mode),
         description: build.template(std.get(block, 'description', null)),
@@ -19016,7 +19021,7 @@ local provider(configuration) = {
     },
     storage_mover_project(name, block): {
       local resource = blockType.resource('azurerm_storage_mover_project', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         storage_mover_id: build.template(block.storage_mover_id),
@@ -19028,7 +19033,7 @@ local provider(configuration) = {
     },
     storage_mover_source_endpoint(name, block): {
       local resource = blockType.resource('azurerm_storage_mover_source_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         export: build.template(std.get(block, 'export', null)),
         host: build.template(block.host),
@@ -19046,7 +19051,7 @@ local provider(configuration) = {
     },
     storage_mover_target_endpoint(name, block): {
       local resource = blockType.resource('azurerm_storage_mover_target_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         storage_account_id: build.template(block.storage_account_id),
@@ -19062,7 +19067,7 @@ local provider(configuration) = {
     },
     storage_object_replication(name, block): {
       local resource = blockType.resource('azurerm_storage_object_replication', name),
-      _: resource._({
+      _: resource._(block, {
         destination_storage_account_id: build.template(block.destination_storage_account_id),
         source_storage_account_id: build.template(block.source_storage_account_id),
       }),
@@ -19074,7 +19079,7 @@ local provider(configuration) = {
     },
     storage_queue(name, block): {
       local resource = blockType.resource('azurerm_storage_queue', name),
-      _: resource._({
+      _: resource._(block, {
         metadata: build.template(std.get(block, 'metadata', null)),
         name: build.template(block.name),
         storage_account_name: build.template(block.storage_account_name),
@@ -19087,7 +19092,7 @@ local provider(configuration) = {
     },
     storage_share(name, block): {
       local resource = blockType.resource('azurerm_storage_share', name),
-      _: resource._({
+      _: resource._(block, {
         enabled_protocol: build.template(std.get(block, 'enabled_protocol', null)),
         name: build.template(block.name),
         quota: build.template(block.quota),
@@ -19107,7 +19112,7 @@ local provider(configuration) = {
     },
     storage_share_directory(name, block): {
       local resource = blockType.resource('azurerm_storage_share_directory', name),
-      _: resource._({
+      _: resource._(block, {
         metadata: build.template(std.get(block, 'metadata', null)),
         name: build.template(block.name),
         storage_share_id: build.template(block.storage_share_id),
@@ -19119,7 +19124,7 @@ local provider(configuration) = {
     },
     storage_share_file(name, block): {
       local resource = blockType.resource('azurerm_storage_share_file', name),
-      _: resource._({
+      _: resource._(block, {
         content_disposition: build.template(std.get(block, 'content_disposition', null)),
         content_encoding: build.template(std.get(block, 'content_encoding', null)),
         content_md5: build.template(std.get(block, 'content_md5', null)),
@@ -19144,7 +19149,7 @@ local provider(configuration) = {
     },
     storage_sync(name, block): {
       local resource = blockType.resource('azurerm_storage_sync', name),
-      _: resource._({
+      _: resource._(block, {
         incoming_traffic_policy: build.template(std.get(block, 'incoming_traffic_policy', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -19161,7 +19166,7 @@ local provider(configuration) = {
     },
     storage_sync_cloud_endpoint(name, block): {
       local resource = blockType.resource('azurerm_storage_sync_cloud_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         file_share_name: build.template(block.file_share_name),
         name: build.template(block.name),
         storage_account_id: build.template(block.storage_account_id),
@@ -19176,7 +19181,7 @@ local provider(configuration) = {
     },
     storage_sync_group(name, block): {
       local resource = blockType.resource('azurerm_storage_sync_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_sync_id: build.template(block.storage_sync_id),
       }),
@@ -19186,7 +19191,7 @@ local provider(configuration) = {
     },
     storage_sync_server_endpoint(name, block): {
       local resource = blockType.resource('azurerm_storage_sync_server_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_tiering_enabled: build.template(std.get(block, 'cloud_tiering_enabled', null)),
         initial_download_policy: build.template(std.get(block, 'initial_download_policy', null)),
         local_cache_mode: build.template(std.get(block, 'local_cache_mode', null)),
@@ -19210,7 +19215,7 @@ local provider(configuration) = {
     },
     storage_table(name, block): {
       local resource = blockType.resource('azurerm_storage_table', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_account_name: build.template(block.storage_account_name),
       }),
@@ -19220,7 +19225,7 @@ local provider(configuration) = {
     },
     storage_table_entity(name, block): {
       local resource = blockType.resource('azurerm_storage_table_entity', name),
-      _: resource._({
+      _: resource._(block, {
         entity: build.template(block.entity),
         partition_key: build.template(block.partition_key),
         row_key: build.template(block.row_key),
@@ -19234,7 +19239,7 @@ local provider(configuration) = {
     },
     stream_analytics_cluster(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -19250,7 +19255,7 @@ local provider(configuration) = {
     },
     stream_analytics_function_javascript_uda(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_function_javascript_uda', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         script: build.template(block.script),
         stream_analytics_job_id: build.template(block.stream_analytics_job_id),
@@ -19262,7 +19267,7 @@ local provider(configuration) = {
     },
     stream_analytics_function_javascript_udf(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_function_javascript_udf', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         script: build.template(block.script),
@@ -19276,7 +19281,7 @@ local provider(configuration) = {
     },
     stream_analytics_job(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_job', name),
-      _: resource._({
+      _: resource._(block, {
         content_storage_policy: build.template(std.get(block, 'content_storage_policy', null)),
         data_locale: build.template(std.get(block, 'data_locale', null)),
         events_late_arrival_max_delay_in_seconds: build.template(std.get(block, 'events_late_arrival_max_delay_in_seconds', null)),
@@ -19314,7 +19319,7 @@ local provider(configuration) = {
     },
     stream_analytics_job_schedule(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_job_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         start_mode: build.template(block.start_mode),
         stream_analytics_job_id: build.template(block.stream_analytics_job_id),
       }),
@@ -19326,7 +19331,7 @@ local provider(configuration) = {
     },
     stream_analytics_managed_private_endpoint(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_managed_private_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         stream_analytics_cluster_name: build.template(block.stream_analytics_cluster_name),
@@ -19342,7 +19347,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_blob(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_blob', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         batch_max_wait_time: build.template(std.get(block, 'batch_max_wait_time', null)),
         batch_min_rows: build.template(std.get(block, 'batch_min_rows', null)),
@@ -19374,7 +19379,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_cosmosdb(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_cosmosdb', name),
-      _: resource._({
+      _: resource._(block, {
         container_name: build.template(block.container_name),
         cosmosdb_account_key: build.template(block.cosmosdb_account_key),
         cosmosdb_sql_database_id: build.template(block.cosmosdb_sql_database_id),
@@ -19394,7 +19399,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_eventhub(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_eventhub', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         eventhub_name: build.template(block.eventhub_name),
         name: build.template(block.name),
@@ -19420,7 +19425,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_function(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_function', name),
-      _: resource._({
+      _: resource._(block, {
         api_key: build.template(block.api_key),
         batch_max_count: build.template(std.get(block, 'batch_max_count', null)),
         batch_max_in_bytes: build.template(std.get(block, 'batch_max_in_bytes', null)),
@@ -19442,7 +19447,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_mssql(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_mssql', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         database: build.template(block.database),
         max_batch_count: build.template(std.get(block, 'max_batch_count', null)),
@@ -19470,7 +19475,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_powerbi(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_powerbi', name),
-      _: resource._({
+      _: resource._(block, {
         dataset: build.template(block.dataset),
         group_id: build.template(block.group_id),
         group_name: build.template(block.group_name),
@@ -19492,7 +19497,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_servicebus_queue(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_servicebus_queue', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         name: build.template(block.name),
         property_columns: build.template(std.get(block, 'property_columns', null)),
@@ -19518,7 +19523,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_servicebus_topic(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_servicebus_topic', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         name: build.template(block.name),
         property_columns: build.template(std.get(block, 'property_columns', null)),
@@ -19544,7 +19549,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_synapse(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_synapse', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         name: build.template(block.name),
         password: build.template(block.password),
@@ -19566,7 +19571,7 @@ local provider(configuration) = {
     },
     stream_analytics_output_table(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_output_table', name),
-      _: resource._({
+      _: resource._(block, {
         batch_size: build.template(block.batch_size),
         columns_to_remove: build.template(std.get(block, 'columns_to_remove', null)),
         name: build.template(block.name),
@@ -19592,7 +19597,7 @@ local provider(configuration) = {
     },
     stream_analytics_reference_input_blob(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_reference_input_blob', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         date_format: build.template(block.date_format),
         name: build.template(block.name),
@@ -19618,7 +19623,7 @@ local provider(configuration) = {
     },
     stream_analytics_reference_input_mssql(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_reference_input_mssql', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         delta_snapshot_query: build.template(std.get(block, 'delta_snapshot_query', null)),
         full_snapshot_query: build.template(block.full_snapshot_query),
@@ -19648,7 +19653,7 @@ local provider(configuration) = {
     },
     stream_analytics_stream_input_blob(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_stream_input_blob', name),
-      _: resource._({
+      _: resource._(block, {
         date_format: build.template(block.date_format),
         name: build.template(block.name),
         path_pattern: build.template(block.path_pattern),
@@ -19672,7 +19677,7 @@ local provider(configuration) = {
     },
     stream_analytics_stream_input_eventhub(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_stream_input_eventhub', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         eventhub_consumer_group_name: build.template(std.get(block, 'eventhub_consumer_group_name', null)),
         eventhub_name: build.template(block.eventhub_name),
@@ -19698,7 +19703,7 @@ local provider(configuration) = {
     },
     stream_analytics_stream_input_eventhub_v2(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_stream_input_eventhub_v2', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_mode: build.template(std.get(block, 'authentication_mode', null)),
         eventhub_consumer_group_name: build.template(std.get(block, 'eventhub_consumer_group_name', null)),
         eventhub_name: build.template(block.eventhub_name),
@@ -19722,7 +19727,7 @@ local provider(configuration) = {
     },
     stream_analytics_stream_input_iothub(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_stream_input_iothub', name),
-      _: resource._({
+      _: resource._(block, {
         endpoint: build.template(block.endpoint),
         eventhub_consumer_group_name: build.template(block.eventhub_consumer_group_name),
         iothub_namespace: build.template(block.iothub_namespace),
@@ -19744,7 +19749,7 @@ local provider(configuration) = {
     },
     subnet(name, block): {
       local resource = blockType.resource('azurerm_subnet', name),
-      _: resource._({
+      _: resource._(block, {
         address_prefixes: build.template(block.address_prefixes),
         default_outbound_access_enabled: build.template(std.get(block, 'default_outbound_access_enabled', null)),
         name: build.template(block.name),
@@ -19768,7 +19773,7 @@ local provider(configuration) = {
     },
     subnet_nat_gateway_association(name, block): {
       local resource = blockType.resource('azurerm_subnet_nat_gateway_association', name),
-      _: resource._({
+      _: resource._(block, {
         nat_gateway_id: build.template(block.nat_gateway_id),
         subnet_id: build.template(block.subnet_id),
       }),
@@ -19778,7 +19783,7 @@ local provider(configuration) = {
     },
     subnet_network_security_group_association(name, block): {
       local resource = blockType.resource('azurerm_subnet_network_security_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         network_security_group_id: build.template(block.network_security_group_id),
         subnet_id: build.template(block.subnet_id),
       }),
@@ -19788,7 +19793,7 @@ local provider(configuration) = {
     },
     subnet_route_table_association(name, block): {
       local resource = blockType.resource('azurerm_subnet_route_table_association', name),
-      _: resource._({
+      _: resource._(block, {
         route_table_id: build.template(block.route_table_id),
         subnet_id: build.template(block.subnet_id),
       }),
@@ -19798,7 +19803,7 @@ local provider(configuration) = {
     },
     subnet_service_endpoint_storage_policy(name, block): {
       local resource = blockType.resource('azurerm_subnet_service_endpoint_storage_policy', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -19812,7 +19817,7 @@ local provider(configuration) = {
     },
     subscription(name, block): {
       local resource = blockType.resource('azurerm_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         billing_scope_id: build.template(std.get(block, 'billing_scope_id', null)),
         subscription_name: build.template(block.subscription_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -19829,7 +19834,7 @@ local provider(configuration) = {
     },
     subscription_cost_management_export(name, block): {
       local resource = blockType.resource('azurerm_subscription_cost_management_export', name),
-      _: resource._({
+      _: resource._(block, {
         active: build.template(std.get(block, 'active', null)),
         name: build.template(block.name),
         recurrence_period_end_date: build.template(block.recurrence_period_end_date),
@@ -19847,7 +19852,7 @@ local provider(configuration) = {
     },
     subscription_cost_management_view(name, block): {
       local resource = blockType.resource('azurerm_subscription_cost_management_view', name),
-      _: resource._({
+      _: resource._(block, {
         accumulated: build.template(block.accumulated),
         chart_type: build.template(block.chart_type),
         display_name: build.template(block.display_name),
@@ -19867,7 +19872,7 @@ local provider(configuration) = {
     },
     subscription_policy_assignment(name, block): {
       local resource = blockType.resource('azurerm_subscription_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         enforce: build.template(std.get(block, 'enforce', null)),
@@ -19892,7 +19897,7 @@ local provider(configuration) = {
     },
     subscription_policy_exemption(name, block): {
       local resource = blockType.resource('azurerm_subscription_policy_exemption', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         exemption_category: build.template(block.exemption_category),
@@ -19915,7 +19920,7 @@ local provider(configuration) = {
     },
     subscription_policy_remediation(name, block): {
       local resource = blockType.resource('azurerm_subscription_policy_remediation', name),
-      _: resource._({
+      _: resource._(block, {
         failure_percentage: build.template(std.get(block, 'failure_percentage', null)),
         location_filters: build.template(std.get(block, 'location_filters', null)),
         name: build.template(block.name),
@@ -19939,7 +19944,7 @@ local provider(configuration) = {
     },
     subscription_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_subscription_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         debug_level: build.template(std.get(block, 'debug_level', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -19958,7 +19963,7 @@ local provider(configuration) = {
     },
     synapse_firewall_rule(name, block): {
       local resource = blockType.resource('azurerm_synapse_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         end_ip_address: build.template(block.end_ip_address),
         name: build.template(block.name),
         start_ip_address: build.template(block.start_ip_address),
@@ -19972,7 +19977,7 @@ local provider(configuration) = {
     },
     synapse_integration_runtime_azure(name, block): {
       local resource = blockType.resource('azurerm_synapse_integration_runtime_azure', name),
-      _: resource._({
+      _: resource._(block, {
         compute_type: build.template(std.get(block, 'compute_type', null)),
         core_count: build.template(std.get(block, 'core_count', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -19992,7 +19997,7 @@ local provider(configuration) = {
     },
     synapse_integration_runtime_self_hosted(name, block): {
       local resource = blockType.resource('azurerm_synapse_integration_runtime_self_hosted', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         synapse_workspace_id: build.template(block.synapse_workspace_id),
@@ -20006,7 +20011,7 @@ local provider(configuration) = {
     },
     synapse_linked_service(name, block): {
       local resource = blockType.resource('azurerm_synapse_linked_service', name),
-      _: resource._({
+      _: resource._(block, {
         additional_properties: build.template(std.get(block, 'additional_properties', null)),
         annotations: build.template(std.get(block, 'annotations', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -20028,7 +20033,7 @@ local provider(configuration) = {
     },
     synapse_managed_private_endpoint(name, block): {
       local resource = blockType.resource('azurerm_synapse_managed_private_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         subresource_name: build.template(block.subresource_name),
         synapse_workspace_id: build.template(block.synapse_workspace_id),
@@ -20042,7 +20047,7 @@ local provider(configuration) = {
     },
     synapse_private_link_hub(name, block): {
       local resource = blockType.resource('azurerm_synapse_private_link_hub', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -20056,7 +20061,7 @@ local provider(configuration) = {
     },
     synapse_role_assignment(name, block): {
       local resource = blockType.resource('azurerm_synapse_role_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         principal_id: build.template(block.principal_id),
         principal_type: build.template(std.get(block, 'principal_type', null)),
         role_name: build.template(block.role_name),
@@ -20072,7 +20077,7 @@ local provider(configuration) = {
     },
     synapse_spark_pool(name, block): {
       local resource = blockType.resource('azurerm_synapse_spark_pool', name),
-      _: resource._({
+      _: resource._(block, {
         cache_size: build.template(std.get(block, 'cache_size', null)),
         compute_isolation_enabled: build.template(std.get(block, 'compute_isolation_enabled', null)),
         dynamic_executor_allocation_enabled: build.template(std.get(block, 'dynamic_executor_allocation_enabled', null)),
@@ -20107,7 +20112,7 @@ local provider(configuration) = {
     },
     synapse_sql_pool(name, block): {
       local resource = blockType.resource('azurerm_synapse_sql_pool', name),
-      _: resource._({
+      _: resource._(block, {
         create_mode: build.template(std.get(block, 'create_mode', null)),
         data_encrypted: build.template(std.get(block, 'data_encrypted', null)),
         geo_backup_policy_enabled: build.template(std.get(block, 'geo_backup_policy_enabled', null)),
@@ -20132,7 +20137,7 @@ local provider(configuration) = {
     },
     synapse_sql_pool_extended_auditing_policy(name, block): {
       local resource = blockType.resource('azurerm_synapse_sql_pool_extended_auditing_policy', name),
-      _: resource._({
+      _: resource._(block, {
         log_monitoring_enabled: build.template(std.get(block, 'log_monitoring_enabled', null)),
         retention_in_days: build.template(std.get(block, 'retention_in_days', null)),
         sql_pool_id: build.template(block.sql_pool_id),
@@ -20150,7 +20155,7 @@ local provider(configuration) = {
     },
     synapse_sql_pool_security_alert_policy(name, block): {
       local resource = blockType.resource('azurerm_synapse_sql_pool_security_alert_policy', name),
-      _: resource._({
+      _: resource._(block, {
         disabled_alerts: build.template(std.get(block, 'disabled_alerts', null)),
         email_account_admins_enabled: build.template(std.get(block, 'email_account_admins_enabled', null)),
         email_addresses: build.template(std.get(block, 'email_addresses', null)),
@@ -20172,7 +20177,7 @@ local provider(configuration) = {
     },
     synapse_sql_pool_vulnerability_assessment(name, block): {
       local resource = blockType.resource('azurerm_synapse_sql_pool_vulnerability_assessment', name),
-      _: resource._({
+      _: resource._(block, {
         sql_pool_security_alert_policy_id: build.template(block.sql_pool_security_alert_policy_id),
         storage_account_access_key: build.template(std.get(block, 'storage_account_access_key', null)),
         storage_container_path: build.template(block.storage_container_path),
@@ -20186,7 +20191,7 @@ local provider(configuration) = {
     },
     synapse_sql_pool_vulnerability_assessment_baseline(name, block): {
       local resource = blockType.resource('azurerm_synapse_sql_pool_vulnerability_assessment_baseline', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         rule_name: build.template(block.rule_name),
         sql_pool_vulnerability_assessment_id: build.template(block.sql_pool_vulnerability_assessment_id),
@@ -20198,7 +20203,7 @@ local provider(configuration) = {
     },
     synapse_sql_pool_workload_classifier(name, block): {
       local resource = blockType.resource('azurerm_synapse_sql_pool_workload_classifier', name),
-      _: resource._({
+      _: resource._(block, {
         context: build.template(std.get(block, 'context', null)),
         end_time: build.template(std.get(block, 'end_time', null)),
         importance: build.template(std.get(block, 'importance', null)),
@@ -20220,7 +20225,7 @@ local provider(configuration) = {
     },
     synapse_sql_pool_workload_group(name, block): {
       local resource = blockType.resource('azurerm_synapse_sql_pool_workload_group', name),
-      _: resource._({
+      _: resource._(block, {
         importance: build.template(std.get(block, 'importance', null)),
         max_resource_percent: build.template(block.max_resource_percent),
         max_resource_percent_per_request: build.template(std.get(block, 'max_resource_percent_per_request', null)),
@@ -20242,7 +20247,7 @@ local provider(configuration) = {
     },
     synapse_workspace(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         azuread_authentication_only: build.template(std.get(block, 'azuread_authentication_only', null)),
         compute_subnet_id: build.template(std.get(block, 'compute_subnet_id', null)),
         data_exfiltration_protection_enabled: build.template(std.get(block, 'data_exfiltration_protection_enabled', null)),
@@ -20280,7 +20285,7 @@ local provider(configuration) = {
     },
     synapse_workspace_aad_admin(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace_aad_admin', name),
-      _: resource._({
+      _: resource._(block, {
         login: build.template(block.login),
         object_id: build.template(block.object_id),
         synapse_workspace_id: build.template(block.synapse_workspace_id),
@@ -20294,7 +20299,7 @@ local provider(configuration) = {
     },
     synapse_workspace_extended_auditing_policy(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace_extended_auditing_policy', name),
-      _: resource._({
+      _: resource._(block, {
         log_monitoring_enabled: build.template(std.get(block, 'log_monitoring_enabled', null)),
         retention_in_days: build.template(std.get(block, 'retention_in_days', null)),
         storage_account_access_key: build.template(std.get(block, 'storage_account_access_key', null)),
@@ -20312,7 +20317,7 @@ local provider(configuration) = {
     },
     synapse_workspace_key(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace_key', name),
-      _: resource._({
+      _: resource._(block, {
         active: build.template(block.active),
         customer_managed_key_name: build.template(block.customer_managed_key_name),
         customer_managed_key_versionless_id: build.template(std.get(block, 'customer_managed_key_versionless_id', null)),
@@ -20326,7 +20331,7 @@ local provider(configuration) = {
     },
     synapse_workspace_security_alert_policy(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace_security_alert_policy', name),
-      _: resource._({
+      _: resource._(block, {
         disabled_alerts: build.template(std.get(block, 'disabled_alerts', null)),
         email_account_admins_enabled: build.template(std.get(block, 'email_account_admins_enabled', null)),
         email_addresses: build.template(std.get(block, 'email_addresses', null)),
@@ -20348,7 +20353,7 @@ local provider(configuration) = {
     },
     synapse_workspace_sql_aad_admin(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace_sql_aad_admin', name),
-      _: resource._({
+      _: resource._(block, {
         login: build.template(block.login),
         object_id: build.template(block.object_id),
         synapse_workspace_id: build.template(block.synapse_workspace_id),
@@ -20362,7 +20367,7 @@ local provider(configuration) = {
     },
     synapse_workspace_vulnerability_assessment(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace_vulnerability_assessment', name),
-      _: resource._({
+      _: resource._(block, {
         storage_account_access_key: build.template(std.get(block, 'storage_account_access_key', null)),
         storage_container_path: build.template(block.storage_container_path),
         storage_container_sas_key: build.template(std.get(block, 'storage_container_sas_key', null)),
@@ -20376,7 +20381,7 @@ local provider(configuration) = {
     },
     system_center_virtual_machine_manager_availability_set(name, block): {
       local resource = blockType.resource('azurerm_system_center_virtual_machine_manager_availability_set', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -20394,7 +20399,7 @@ local provider(configuration) = {
     },
     system_center_virtual_machine_manager_cloud(name, block): {
       local resource = blockType.resource('azurerm_system_center_virtual_machine_manager_cloud', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -20412,7 +20417,7 @@ local provider(configuration) = {
     },
     system_center_virtual_machine_manager_server(name, block): {
       local resource = blockType.resource('azurerm_system_center_virtual_machine_manager_server', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         fqdn: build.template(block.fqdn),
         location: build.template(block.location),
@@ -20436,7 +20441,7 @@ local provider(configuration) = {
     },
     system_center_virtual_machine_manager_virtual_machine_template(name, block): {
       local resource = blockType.resource('azurerm_system_center_virtual_machine_manager_virtual_machine_template', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -20454,7 +20459,7 @@ local provider(configuration) = {
     },
     system_center_virtual_machine_manager_virtual_network(name, block): {
       local resource = blockType.resource('azurerm_system_center_virtual_machine_manager_virtual_network', name),
-      _: resource._({
+      _: resource._(block, {
         custom_location_id: build.template(block.custom_location_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -20472,7 +20477,7 @@ local provider(configuration) = {
     },
     tenant_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_tenant_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         debug_level: build.template(std.get(block, 'debug_level', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -20491,7 +20496,7 @@ local provider(configuration) = {
     },
     traffic_manager_azure_endpoint(name, block): {
       local resource = blockType.resource('azurerm_traffic_manager_azure_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         always_serve_enabled: build.template(std.get(block, 'always_serve_enabled', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         geo_mappings: build.template(std.get(block, 'geo_mappings', null)),
@@ -20512,7 +20517,7 @@ local provider(configuration) = {
     },
     traffic_manager_external_endpoint(name, block): {
       local resource = blockType.resource('azurerm_traffic_manager_external_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         always_serve_enabled: build.template(std.get(block, 'always_serve_enabled', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         geo_mappings: build.template(std.get(block, 'geo_mappings', null)),
@@ -20534,7 +20539,7 @@ local provider(configuration) = {
     },
     traffic_manager_nested_endpoint(name, block): {
       local resource = blockType.resource('azurerm_traffic_manager_nested_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         geo_mappings: build.template(std.get(block, 'geo_mappings', null)),
         minimum_child_endpoints: build.template(block.minimum_child_endpoints),
@@ -20561,7 +20566,7 @@ local provider(configuration) = {
     },
     traffic_manager_profile(name, block): {
       local resource = blockType.resource('azurerm_traffic_manager_profile', name),
-      _: resource._({
+      _: resource._(block, {
         max_return: build.template(std.get(block, 'max_return', null)),
         name: build.template(block.name),
         profile_status: build.template(std.get(block, 'profile_status', null)),
@@ -20582,7 +20587,7 @@ local provider(configuration) = {
     },
     trusted_signing_account(name, block): {
       local resource = blockType.resource('azurerm_trusted_signing_account', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -20599,7 +20604,7 @@ local provider(configuration) = {
     },
     user_assigned_identity(name, block): {
       local resource = blockType.resource('azurerm_user_assigned_identity', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -20616,7 +20621,7 @@ local provider(configuration) = {
     },
     video_indexer_account(name, block): {
       local resource = blockType.resource('azurerm_video_indexer_account', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -20630,7 +20635,7 @@ local provider(configuration) = {
     },
     virtual_desktop_application(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_application', name),
-      _: resource._({
+      _: resource._(block, {
         application_group_id: build.template(block.application_group_id),
         command_line_argument_policy: build.template(block.command_line_argument_policy),
         command_line_arguments: build.template(std.get(block, 'command_line_arguments', null)),
@@ -20654,7 +20659,7 @@ local provider(configuration) = {
     },
     virtual_desktop_application_group(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_application_group', name),
-      _: resource._({
+      _: resource._(block, {
         default_desktop_display_name: build.template(std.get(block, 'default_desktop_display_name', null)),
         description: build.template(std.get(block, 'description', null)),
         friendly_name: build.template(std.get(block, 'friendly_name', null)),
@@ -20678,7 +20683,7 @@ local provider(configuration) = {
     },
     virtual_desktop_host_pool(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_host_pool', name),
-      _: resource._({
+      _: resource._(block, {
         custom_rdp_properties: build.template(std.get(block, 'custom_rdp_properties', null)),
         description: build.template(std.get(block, 'description', null)),
         friendly_name: build.template(std.get(block, 'friendly_name', null)),
@@ -20716,7 +20721,7 @@ local provider(configuration) = {
     },
     virtual_desktop_host_pool_registration_info(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_host_pool_registration_info', name),
-      _: resource._({
+      _: resource._(block, {
         expiration_date: build.template(block.expiration_date),
         hostpool_id: build.template(block.hostpool_id),
       }),
@@ -20727,7 +20732,7 @@ local provider(configuration) = {
     },
     virtual_desktop_scaling_plan(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_scaling_plan', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         exclusion_tag: build.template(std.get(block, 'exclusion_tag', null)),
         friendly_name: build.template(std.get(block, 'friendly_name', null)),
@@ -20749,7 +20754,7 @@ local provider(configuration) = {
     },
     virtual_desktop_scaling_plan_host_pool_association(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_scaling_plan_host_pool_association', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
         host_pool_id: build.template(block.host_pool_id),
         scaling_plan_id: build.template(block.scaling_plan_id),
@@ -20761,7 +20766,7 @@ local provider(configuration) = {
     },
     virtual_desktop_workspace(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         friendly_name: build.template(std.get(block, 'friendly_name', null)),
         location: build.template(block.location),
@@ -20781,7 +20786,7 @@ local provider(configuration) = {
     },
     virtual_desktop_workspace_application_group_association(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_workspace_application_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         application_group_id: build.template(block.application_group_id),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -20791,7 +20796,7 @@ local provider(configuration) = {
     },
     virtual_hub(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub', name),
-      _: resource._({
+      _: resource._(block, {
         address_prefix: build.template(std.get(block, 'address_prefix', null)),
         hub_routing_preference: build.template(std.get(block, 'hub_routing_preference', null)),
         location: build.template(block.location),
@@ -20818,7 +20823,7 @@ local provider(configuration) = {
     },
     virtual_hub_bgp_connection(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_bgp_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         peer_asn: build.template(block.peer_asn),
         peer_ip: build.template(block.peer_ip),
@@ -20834,7 +20839,7 @@ local provider(configuration) = {
     },
     virtual_hub_connection(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_connection', name),
-      _: resource._({
+      _: resource._(block, {
         internet_security_enabled: build.template(std.get(block, 'internet_security_enabled', null)),
         name: build.template(block.name),
         remote_virtual_network_id: build.template(block.remote_virtual_network_id),
@@ -20848,7 +20853,7 @@ local provider(configuration) = {
     },
     virtual_hub_ip(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_ip', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         private_ip_address: build.template(std.get(block, 'private_ip_address', null)),
         private_ip_allocation_method: build.template(std.get(block, 'private_ip_allocation_method', null)),
@@ -20866,7 +20871,7 @@ local provider(configuration) = {
     },
     virtual_hub_route_table(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_route_table', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
         virtual_hub_id: build.template(block.virtual_hub_id),
@@ -20878,7 +20883,7 @@ local provider(configuration) = {
     },
     virtual_hub_route_table_route(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_route_table_route', name),
-      _: resource._({
+      _: resource._(block, {
         destinations: build.template(block.destinations),
         destinations_type: build.template(block.destinations_type),
         name: build.template(block.name),
@@ -20896,7 +20901,7 @@ local provider(configuration) = {
     },
     virtual_hub_routing_intent(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_routing_intent', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         virtual_hub_id: build.template(block.virtual_hub_id),
       }),
@@ -20906,7 +20911,7 @@ local provider(configuration) = {
     },
     virtual_hub_security_partner_provider(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_security_partner_provider', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -20924,7 +20929,7 @@ local provider(configuration) = {
     },
     virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         delete_data_disks_on_termination: build.template(std.get(block, 'delete_data_disks_on_termination', null)),
         delete_os_disk_on_termination: build.template(std.get(block, 'delete_os_disk_on_termination', null)),
         location: build.template(block.location),
@@ -20954,7 +20959,7 @@ local provider(configuration) = {
     },
     virtual_machine_automanage_configuration_assignment(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_automanage_configuration_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_id: build.template(block.configuration_id),
         virtual_machine_id: build.template(block.virtual_machine_id),
       }),
@@ -20964,7 +20969,7 @@ local provider(configuration) = {
     },
     virtual_machine_data_disk_attachment(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_data_disk_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         caching: build.template(block.caching),
         create_option: build.template(std.get(block, 'create_option', null)),
         lun: build.template(block.lun),
@@ -20982,7 +20987,7 @@ local provider(configuration) = {
     },
     virtual_machine_extension(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_extension', name),
-      _: resource._({
+      _: resource._(block, {
         auto_upgrade_minor_version: build.template(std.get(block, 'auto_upgrade_minor_version', null)),
         automatic_upgrade_enabled: build.template(std.get(block, 'automatic_upgrade_enabled', null)),
         failure_suppression_enabled: build.template(std.get(block, 'failure_suppression_enabled', null)),
@@ -21012,7 +21017,7 @@ local provider(configuration) = {
     },
     virtual_machine_gallery_application_assignment(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_gallery_application_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_blob_uri: build.template(std.get(block, 'configuration_blob_uri', null)),
         gallery_application_version_id: build.template(block.gallery_application_version_id),
         order: build.template(std.get(block, 'order', null)),
@@ -21028,7 +21033,7 @@ local provider(configuration) = {
     },
     virtual_machine_implicit_data_disk_from_source(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_implicit_data_disk_from_source', name),
-      _: resource._({
+      _: resource._(block, {
         caching: build.template(std.get(block, 'caching', null)),
         create_option: build.template(block.create_option),
         disk_size_gb: build.template(block.disk_size_gb),
@@ -21050,7 +21055,7 @@ local provider(configuration) = {
     },
     virtual_machine_packet_capture(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_packet_capture', name),
-      _: resource._({
+      _: resource._(block, {
         maximum_bytes_per_packet: build.template(std.get(block, 'maximum_bytes_per_packet', null)),
         maximum_bytes_per_session: build.template(std.get(block, 'maximum_bytes_per_session', null)),
         maximum_capture_duration_in_seconds: build.template(std.get(block, 'maximum_capture_duration_in_seconds', null)),
@@ -21068,7 +21073,7 @@ local provider(configuration) = {
     },
     virtual_machine_restore_point(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_restore_point', name),
-      _: resource._({
+      _: resource._(block, {
         crash_consistency_mode_enabled: build.template(std.get(block, 'crash_consistency_mode_enabled', null)),
         excluded_disks: build.template(std.get(block, 'excluded_disks', null)),
         name: build.template(block.name),
@@ -21082,7 +21087,7 @@ local provider(configuration) = {
     },
     virtual_machine_restore_point_collection(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_restore_point_collection', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -21098,7 +21103,7 @@ local provider(configuration) = {
     },
     virtual_machine_run_command(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_run_command', name),
-      _: resource._({
+      _: resource._(block, {
         error_blob_uri: build.template(std.get(block, 'error_blob_uri', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -21121,7 +21126,7 @@ local provider(configuration) = {
     },
     virtual_machine_scale_set(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_scale_set', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_os_upgrade: build.template(std.get(block, 'automatic_os_upgrade', null)),
         eviction_policy: build.template(std.get(block, 'eviction_policy', null)),
         health_probe_id: build.template(std.get(block, 'health_probe_id', null)),
@@ -21154,7 +21159,7 @@ local provider(configuration) = {
     },
     virtual_machine_scale_set_extension(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_scale_set_extension', name),
-      _: resource._({
+      _: resource._(block, {
         auto_upgrade_minor_version: build.template(std.get(block, 'auto_upgrade_minor_version', null)),
         automatic_upgrade_enabled: build.template(std.get(block, 'automatic_upgrade_enabled', null)),
         failure_suppression_enabled: build.template(std.get(block, 'failure_suppression_enabled', null)),
@@ -21184,7 +21189,7 @@ local provider(configuration) = {
     },
     virtual_machine_scale_set_packet_capture(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_scale_set_packet_capture', name),
-      _: resource._({
+      _: resource._(block, {
         maximum_bytes_per_packet: build.template(std.get(block, 'maximum_bytes_per_packet', null)),
         maximum_bytes_per_session: build.template(std.get(block, 'maximum_bytes_per_session', null)),
         maximum_capture_duration_in_seconds: build.template(std.get(block, 'maximum_capture_duration_in_seconds', null)),
@@ -21202,7 +21207,7 @@ local provider(configuration) = {
     },
     virtual_network(name, block): {
       local resource = blockType.resource('azurerm_virtual_network', name),
-      _: resource._({
+      _: resource._(block, {
         address_space: build.template(block.address_space),
         bgp_community: build.template(std.get(block, 'bgp_community', null)),
         edge_zone: build.template(std.get(block, 'edge_zone', null)),
@@ -21227,7 +21232,7 @@ local provider(configuration) = {
     },
     virtual_network_dns_servers(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_dns_servers', name),
-      _: resource._({
+      _: resource._(block, {
         dns_servers: build.template(std.get(block, 'dns_servers', null)),
         virtual_network_id: build.template(block.virtual_network_id),
       }),
@@ -21237,7 +21242,7 @@ local provider(configuration) = {
     },
     virtual_network_gateway(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         bgp_route_translation_for_nat_enabled: build.template(std.get(block, 'bgp_route_translation_for_nat_enabled', null)),
         default_local_network_gateway_id: build.template(std.get(block, 'default_local_network_gateway_id', null)),
         dns_forwarding_enabled: build.template(std.get(block, 'dns_forwarding_enabled', null)),
@@ -21276,7 +21281,7 @@ local provider(configuration) = {
     },
     virtual_network_gateway_connection(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_gateway_connection', name),
-      _: resource._({
+      _: resource._(block, {
         authorization_key: build.template(std.get(block, 'authorization_key', null)),
         connection_mode: build.template(std.get(block, 'connection_mode', null)),
         dpd_timeout_seconds: build.template(std.get(block, 'dpd_timeout_seconds', null)),
@@ -21320,7 +21325,7 @@ local provider(configuration) = {
     },
     virtual_network_gateway_nat_rule(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_gateway_nat_rule', name),
-      _: resource._({
+      _: resource._(block, {
         ip_configuration_id: build.template(std.get(block, 'ip_configuration_id', null)),
         mode: build.template(std.get(block, 'mode', null)),
         name: build.template(block.name),
@@ -21338,7 +21343,7 @@ local provider(configuration) = {
     },
     virtual_network_peering(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_peering', name),
-      _: resource._({
+      _: resource._(block, {
         allow_forwarded_traffic: build.template(std.get(block, 'allow_forwarded_traffic', null)),
         allow_gateway_transit: build.template(std.get(block, 'allow_gateway_transit', null)),
         allow_virtual_network_access: build.template(std.get(block, 'allow_virtual_network_access', null)),
@@ -21370,7 +21375,7 @@ local provider(configuration) = {
     },
     virtual_wan(name, block): {
       local resource = blockType.resource('azurerm_virtual_wan', name),
-      _: resource._({
+      _: resource._(block, {
         allow_branch_to_branch_traffic: build.template(std.get(block, 'allow_branch_to_branch_traffic', null)),
         disable_vpn_encryption: build.template(std.get(block, 'disable_vpn_encryption', null)),
         location: build.template(block.location),
@@ -21392,7 +21397,7 @@ local provider(configuration) = {
     },
     vmware_cluster(name, block): {
       local resource = blockType.resource('azurerm_vmware_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_node_count: build.template(block.cluster_node_count),
         name: build.template(block.name),
         sku_name: build.template(block.sku_name),
@@ -21408,7 +21413,7 @@ local provider(configuration) = {
     },
     vmware_express_route_authorization(name, block): {
       local resource = blockType.resource('azurerm_vmware_express_route_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         private_cloud_id: build.template(block.private_cloud_id),
       }),
@@ -21420,7 +21425,7 @@ local provider(configuration) = {
     },
     vmware_netapp_volume_attachment(name, block): {
       local resource = blockType.resource('azurerm_vmware_netapp_volume_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         netapp_volume_id: build.template(block.netapp_volume_id),
         vmware_cluster_id: build.template(block.vmware_cluster_id),
@@ -21432,7 +21437,7 @@ local provider(configuration) = {
     },
     vmware_private_cloud(name, block): {
       local resource = blockType.resource('azurerm_vmware_private_cloud', name),
-      _: resource._({
+      _: resource._(block, {
         internet_connection_enabled: build.template(std.get(block, 'internet_connection_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -21465,7 +21470,7 @@ local provider(configuration) = {
     },
     voice_services_communications_gateway(name, block): {
       local resource = blockType.resource('azurerm_voice_services_communications_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         api_bridge: build.template(std.get(block, 'api_bridge', null)),
         auto_generated_domain_name_label_scope: build.template(std.get(block, 'auto_generated_domain_name_label_scope', null)),
         codecs: build.template(block.codecs),
@@ -21497,7 +21502,7 @@ local provider(configuration) = {
     },
     voice_services_communications_gateway_test_line(name, block): {
       local resource = blockType.resource('azurerm_voice_services_communications_gateway_test_line', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         phone_number: build.template(block.phone_number),
@@ -21515,7 +21520,7 @@ local provider(configuration) = {
     },
     vpn_gateway(name, block): {
       local resource = blockType.resource('azurerm_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         bgp_route_translation_for_nat_enabled: build.template(std.get(block, 'bgp_route_translation_for_nat_enabled', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -21537,7 +21542,7 @@ local provider(configuration) = {
     },
     vpn_gateway_connection(name, block): {
       local resource = blockType.resource('azurerm_vpn_gateway_connection', name),
-      _: resource._({
+      _: resource._(block, {
         internet_security_enabled: build.template(std.get(block, 'internet_security_enabled', null)),
         name: build.template(block.name),
         remote_vpn_site_id: build.template(block.remote_vpn_site_id),
@@ -21551,7 +21556,7 @@ local provider(configuration) = {
     },
     vpn_gateway_nat_rule(name, block): {
       local resource = blockType.resource('azurerm_vpn_gateway_nat_rule', name),
-      _: resource._({
+      _: resource._(block, {
         ip_configuration_id: build.template(std.get(block, 'ip_configuration_id', null)),
         mode: build.template(std.get(block, 'mode', null)),
         name: build.template(block.name),
@@ -21567,7 +21572,7 @@ local provider(configuration) = {
     },
     vpn_server_configuration(name, block): {
       local resource = blockType.resource('azurerm_vpn_server_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -21584,7 +21589,7 @@ local provider(configuration) = {
     },
     vpn_server_configuration_policy_group(name, block): {
       local resource = blockType.resource('azurerm_vpn_server_configuration_policy_group', name),
-      _: resource._({
+      _: resource._(block, {
         is_default: build.template(std.get(block, 'is_default', null)),
         name: build.template(block.name),
         priority: build.template(std.get(block, 'priority', null)),
@@ -21598,7 +21603,7 @@ local provider(configuration) = {
     },
     vpn_site(name, block): {
       local resource = blockType.resource('azurerm_vpn_site', name),
-      _: resource._({
+      _: resource._(block, {
         address_cidrs: build.template(std.get(block, 'address_cidrs', null)),
         device_model: build.template(std.get(block, 'device_model', null)),
         device_vendor: build.template(std.get(block, 'device_vendor', null)),
@@ -21620,7 +21625,7 @@ local provider(configuration) = {
     },
     web_app_active_slot(name, block): {
       local resource = blockType.resource('azurerm_web_app_active_slot', name),
-      _: resource._({
+      _: resource._(block, {
         overwrite_network_config: build.template(std.get(block, 'overwrite_network_config', null)),
         slot_id: build.template(block.slot_id),
       }),
@@ -21631,7 +21636,7 @@ local provider(configuration) = {
     },
     web_app_hybrid_connection(name, block): {
       local resource = blockType.resource('azurerm_web_app_hybrid_connection', name),
-      _: resource._({
+      _: resource._(block, {
         hostname: build.template(block.hostname),
         port: build.template(block.port),
         relay_id: build.template(block.relay_id),
@@ -21652,7 +21657,7 @@ local provider(configuration) = {
     },
     web_application_firewall_policy(name, block): {
       local resource = blockType.resource('azurerm_web_application_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -21668,7 +21673,7 @@ local provider(configuration) = {
     },
     web_pubsub(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub', name),
-      _: resource._({
+      _: resource._(block, {
         aad_auth_enabled: build.template(std.get(block, 'aad_auth_enabled', null)),
         capacity: build.template(std.get(block, 'capacity', null)),
         local_auth_enabled: build.template(std.get(block, 'local_auth_enabled', null)),
@@ -21703,7 +21708,7 @@ local provider(configuration) = {
     },
     web_pubsub_custom_certificate(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub_custom_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         custom_certificate_id: build.template(block.custom_certificate_id),
         name: build.template(block.name),
         web_pubsub_id: build.template(block.web_pubsub_id),
@@ -21716,7 +21721,7 @@ local provider(configuration) = {
     },
     web_pubsub_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         name: build.template(block.name),
         web_pubsub_custom_certificate_id: build.template(block.web_pubsub_custom_certificate_id),
@@ -21730,7 +21735,7 @@ local provider(configuration) = {
     },
     web_pubsub_hub(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub_hub', name),
-      _: resource._({
+      _: resource._(block, {
         anonymous_connections_enabled: build.template(std.get(block, 'anonymous_connections_enabled', null)),
         name: build.template(block.name),
         web_pubsub_id: build.template(block.web_pubsub_id),
@@ -21742,7 +21747,7 @@ local provider(configuration) = {
     },
     web_pubsub_network_acl(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub_network_acl', name),
-      _: resource._({
+      _: resource._(block, {
         default_action: build.template(std.get(block, 'default_action', null)),
         web_pubsub_id: build.template(block.web_pubsub_id),
       }),
@@ -21752,7 +21757,7 @@ local provider(configuration) = {
     },
     web_pubsub_shared_private_link_resource(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub_shared_private_link_resource', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         request_message: build.template(std.get(block, 'request_message', null)),
         subresource_name: build.template(block.subresource_name),
@@ -21769,7 +21774,7 @@ local provider(configuration) = {
     },
     windows_function_app(name, block): {
       local resource = blockType.resource('azurerm_windows_function_app', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         builtin_logging_enabled: build.template(std.get(block, 'builtin_logging_enabled', null)),
         client_certificate_enabled: build.template(std.get(block, 'client_certificate_enabled', null)),
@@ -21833,7 +21838,7 @@ local provider(configuration) = {
     },
     windows_function_app_slot(name, block): {
       local resource = blockType.resource('azurerm_windows_function_app_slot', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         builtin_logging_enabled: build.template(std.get(block, 'builtin_logging_enabled', null)),
         client_certificate_enabled: build.template(std.get(block, 'client_certificate_enabled', null)),
@@ -21895,7 +21900,7 @@ local provider(configuration) = {
     },
     windows_virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_windows_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         admin_password: build.template(block.admin_password),
         admin_username: build.template(block.admin_username),
         allow_extension_operations: build.template(std.get(block, 'allow_extension_operations', null)),
@@ -21984,7 +21989,7 @@ local provider(configuration) = {
     },
     windows_virtual_machine_scale_set(name, block): {
       local resource = blockType.resource('azurerm_windows_virtual_machine_scale_set', name),
-      _: resource._({
+      _: resource._(block, {
         admin_password: build.template(block.admin_password),
         admin_username: build.template(block.admin_username),
         capacity_reservation_group_id: build.template(std.get(block, 'capacity_reservation_group_id', null)),
@@ -22061,7 +22066,7 @@ local provider(configuration) = {
     },
     windows_web_app(name, block): {
       local resource = blockType.resource('azurerm_windows_web_app', name),
-      _: resource._({
+      _: resource._(block, {
         app_settings: build.template(std.get(block, 'app_settings', null)),
         client_affinity_enabled: build.template(std.get(block, 'client_affinity_enabled', null)),
         client_certificate_enabled: build.template(std.get(block, 'client_certificate_enabled', null)),
@@ -22110,7 +22115,7 @@ local provider(configuration) = {
     },
     windows_web_app_slot(name, block): {
       local resource = blockType.resource('azurerm_windows_web_app_slot', name),
-      _: resource._({
+      _: resource._(block, {
         app_service_id: build.template(block.app_service_id),
         app_settings: build.template(std.get(block, 'app_settings', null)),
         client_affinity_enabled: build.template(std.get(block, 'client_affinity_enabled', null)),
@@ -22157,7 +22162,7 @@ local provider(configuration) = {
     },
     workloads_sap_discovery_virtual_instance(name, block): {
       local resource = blockType.resource('azurerm_workloads_sap_discovery_virtual_instance', name),
-      _: resource._({
+      _: resource._(block, {
         central_server_virtual_machine_id: build.template(block.central_server_virtual_machine_id),
         environment: build.template(block.environment),
         location: build.template(block.location),
@@ -22181,7 +22186,7 @@ local provider(configuration) = {
     },
     workloads_sap_single_node_virtual_instance(name, block): {
       local resource = blockType.resource('azurerm_workloads_sap_single_node_virtual_instance', name),
-      _: resource._({
+      _: resource._(block, {
         app_location: build.template(block.app_location),
         environment: build.template(block.environment),
         location: build.template(block.location),
@@ -22205,7 +22210,7 @@ local provider(configuration) = {
     },
     workloads_sap_three_tier_virtual_instance(name, block): {
       local resource = blockType.resource('azurerm_workloads_sap_three_tier_virtual_instance', name),
-      _: resource._({
+      _: resource._(block, {
         app_location: build.template(block.app_location),
         environment: build.template(block.environment),
         location: build.template(block.location),
@@ -22232,7 +22237,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('data'),
     aadb2c_directory(name, block): {
       local resource = blockType.resource('azurerm_aadb2c_directory', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22248,7 +22253,7 @@ local provider(configuration) = {
     },
     active_directory_domain_service(name, block): {
       local resource = blockType.resource('azurerm_active_directory_domain_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22274,7 +22279,7 @@ local provider(configuration) = {
     },
     advisor_recommendations(name, block): {
       local resource = blockType.resource('azurerm_advisor_recommendations', name),
-      _: resource._({
+      _: resource._(block, {
         filter_by_category: build.template(std.get(block, 'filter_by_category', null)),
         filter_by_resource_groups: build.template(std.get(block, 'filter_by_resource_groups', null)),
       }),
@@ -22285,7 +22290,7 @@ local provider(configuration) = {
     },
     api_management(name, block): {
       local resource = blockType.resource('azurerm_api_management', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22315,7 +22320,7 @@ local provider(configuration) = {
     },
     api_management_api(name, block): {
       local resource = blockType.resource('azurerm_api_management_api', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22341,7 +22346,7 @@ local provider(configuration) = {
     },
     api_management_api_version_set(name, block): {
       local resource = blockType.resource('azurerm_api_management_api_version_set', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22358,7 +22363,7 @@ local provider(configuration) = {
     },
     api_management_gateway(name, block): {
       local resource = blockType.resource('azurerm_api_management_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         name: build.template(block.name),
       }),
@@ -22370,7 +22375,7 @@ local provider(configuration) = {
     },
     api_management_gateway_host_name_configuration(name, block): {
       local resource = blockType.resource('azurerm_api_management_gateway_host_name_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_id: build.template(block.api_management_id),
         gateway_name: build.template(block.gateway_name),
         name: build.template(block.name),
@@ -22388,7 +22393,7 @@ local provider(configuration) = {
     },
     api_management_group(name, block): {
       local resource = blockType.resource('azurerm_api_management_group', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22404,7 +22409,7 @@ local provider(configuration) = {
     },
     api_management_product(name, block): {
       local resource = blockType.resource('azurerm_api_management_product', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         product_id: build.template(block.product_id),
         resource_group_name: build.template(block.resource_group_name),
@@ -22423,7 +22428,7 @@ local provider(configuration) = {
     },
     api_management_user(name, block): {
       local resource = blockType.resource('azurerm_api_management_user', name),
-      _: resource._({
+      _: resource._(block, {
         api_management_name: build.template(block.api_management_name),
         resource_group_name: build.template(block.resource_group_name),
         user_id: build.template(block.user_id),
@@ -22440,7 +22445,7 @@ local provider(configuration) = {
     },
     app_configuration(name, block): {
       local resource = blockType.resource('azurerm_app_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22466,7 +22471,7 @@ local provider(configuration) = {
     },
     app_configuration_key(name, block): {
       local resource = blockType.resource('azurerm_app_configuration_key', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_store_id: build.template(block.configuration_store_id),
         key: build.template(block.key),
         label: build.template(std.get(block, 'label', null)),
@@ -22485,7 +22490,7 @@ local provider(configuration) = {
     },
     app_configuration_keys(name, block): {
       local resource = blockType.resource('azurerm_app_configuration_keys', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_store_id: build.template(block.configuration_store_id),
         key: build.template(std.get(block, 'key', null)),
         label: build.template(std.get(block, 'label', null)),
@@ -22498,7 +22503,7 @@ local provider(configuration) = {
     },
     app_service(name, block): {
       local resource = blockType.resource('azurerm_app_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22526,7 +22531,7 @@ local provider(configuration) = {
     },
     app_service_certificate(name, block): {
       local resource = blockType.resource('azurerm_app_service_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22546,7 +22551,7 @@ local provider(configuration) = {
     },
     app_service_certificate_order(name, block): {
       local resource = blockType.resource('azurerm_app_service_certificate_order', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22573,7 +22578,7 @@ local provider(configuration) = {
     },
     app_service_environment_v3(name, block): {
       local resource = blockType.resource('azurerm_app_service_environment_v3', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22600,7 +22605,7 @@ local provider(configuration) = {
     },
     app_service_plan(name, block): {
       local resource = blockType.resource('azurerm_app_service_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22621,7 +22626,7 @@ local provider(configuration) = {
     },
     application_gateway(name, block): {
       local resource = blockType.resource('azurerm_application_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22663,7 +22668,7 @@ local provider(configuration) = {
     },
     application_insights(name, block): {
       local resource = blockType.resource('azurerm_application_insights', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22681,7 +22686,7 @@ local provider(configuration) = {
     },
     application_security_group(name, block): {
       local resource = blockType.resource('azurerm_application_security_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22693,7 +22698,7 @@ local provider(configuration) = {
     },
     arc_machine(name, block): {
       local resource = blockType.resource('azurerm_arc_machine', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22730,7 +22735,7 @@ local provider(configuration) = {
     },
     arc_resource_bridge_appliance(name, block): {
       local resource = blockType.resource('azurerm_arc_resource_bridge_appliance', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22746,7 +22751,7 @@ local provider(configuration) = {
     },
     attestation_provider(name, block): {
       local resource = blockType.resource('azurerm_attestation_provider', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22760,7 +22765,7 @@ local provider(configuration) = {
     },
     automation_account(name, block): {
       local resource = blockType.resource('azurerm_automation_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22776,7 +22781,7 @@ local provider(configuration) = {
     },
     automation_runbook(name, block): {
       local resource = blockType.resource('azurerm_automation_runbook', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22796,7 +22801,7 @@ local provider(configuration) = {
     },
     automation_variable_bool(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_bool', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22811,7 +22816,7 @@ local provider(configuration) = {
     },
     automation_variable_datetime(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_datetime', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22826,7 +22831,7 @@ local provider(configuration) = {
     },
     automation_variable_int(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_int', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22841,7 +22846,7 @@ local provider(configuration) = {
     },
     automation_variable_object(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_object', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22856,7 +22861,7 @@ local provider(configuration) = {
     },
     automation_variable_string(name, block): {
       local resource = blockType.resource('azurerm_automation_variable_string', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_name: build.template(block.automation_account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22871,7 +22876,7 @@ local provider(configuration) = {
     },
     automation_variables(name, block): {
       local resource = blockType.resource('azurerm_automation_variables', name),
-      _: resource._({
+      _: resource._(block, {
         automation_account_id: build.template(block.automation_account_id),
       }),
       automation_account_id: resource.field('automation_account_id'),
@@ -22886,7 +22891,7 @@ local provider(configuration) = {
     },
     availability_set(name, block): {
       local resource = blockType.resource('azurerm_availability_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22901,7 +22906,7 @@ local provider(configuration) = {
     },
     backup_policy_file_share(name, block): {
       local resource = blockType.resource('azurerm_backup_policy_file_share', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22913,7 +22918,7 @@ local provider(configuration) = {
     },
     backup_policy_vm(name, block): {
       local resource = blockType.resource('azurerm_backup_policy_vm', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22925,7 +22930,7 @@ local provider(configuration) = {
     },
     bastion_host(name, block): {
       local resource = blockType.resource('azurerm_bastion_host', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22948,7 +22953,7 @@ local provider(configuration) = {
     },
     batch_account(name, block): {
       local resource = blockType.resource('azurerm_batch_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -22967,7 +22972,7 @@ local provider(configuration) = {
     },
     batch_application(name, block): {
       local resource = blockType.resource('azurerm_batch_application', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22982,7 +22987,7 @@ local provider(configuration) = {
     },
     batch_certificate(name, block): {
       local resource = blockType.resource('azurerm_batch_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -22998,7 +23003,7 @@ local provider(configuration) = {
     },
     batch_pool(name, block): {
       local resource = blockType.resource('azurerm_batch_pool', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23033,7 +23038,7 @@ local provider(configuration) = {
     },
     billing_enrollment_account_scope(name, block): {
       local resource = blockType.resource('azurerm_billing_enrollment_account_scope', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account_name: build.template(block.billing_account_name),
         enrollment_account_name: build.template(block.enrollment_account_name),
       }),
@@ -23043,7 +23048,7 @@ local provider(configuration) = {
     },
     billing_mca_account_scope(name, block): {
       local resource = blockType.resource('azurerm_billing_mca_account_scope', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account_name: build.template(block.billing_account_name),
         billing_profile_name: build.template(block.billing_profile_name),
         invoice_section_name: build.template(block.invoice_section_name),
@@ -23055,7 +23060,7 @@ local provider(configuration) = {
     },
     billing_mpa_account_scope(name, block): {
       local resource = blockType.resource('azurerm_billing_mpa_account_scope', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account_name: build.template(block.billing_account_name),
         customer_name: build.template(block.customer_name),
       }),
@@ -23065,7 +23070,7 @@ local provider(configuration) = {
     },
     blueprint_definition(name, block): {
       local resource = blockType.resource('azurerm_blueprint_definition', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         scope_id: build.template(block.scope_id),
       }),
@@ -23081,7 +23086,7 @@ local provider(configuration) = {
     },
     blueprint_published_version(name, block): {
       local resource = blockType.resource('azurerm_blueprint_published_version', name),
-      _: resource._({
+      _: resource._(block, {
         blueprint_name: build.template(block.blueprint_name),
         scope_id: build.template(block.scope_id),
         version: build.template(block.version),
@@ -23099,7 +23104,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_custom_domain(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_custom_domain', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         profile_name: build.template(block.profile_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23117,7 +23122,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_endpoint(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         profile_name: build.template(block.profile_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23132,7 +23137,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_firewall_policy(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23147,7 +23152,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_origin_group(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_origin_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         profile_name: build.template(block.profile_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23164,7 +23169,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_profile(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_profile', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23178,7 +23183,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_rule_set(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_rule_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         profile_name: build.template(block.profile_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23191,7 +23196,7 @@ local provider(configuration) = {
     },
     cdn_frontdoor_secret(name, block): {
       local resource = blockType.resource('azurerm_cdn_frontdoor_secret', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         profile_name: build.template(block.profile_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23205,7 +23210,7 @@ local provider(configuration) = {
     },
     cdn_profile(name, block): {
       local resource = blockType.resource('azurerm_cdn_profile', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23218,7 +23223,7 @@ local provider(configuration) = {
     },
     client_config(name, block): {
       local resource = blockType.resource('azurerm_client_config', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       client_id: resource.field('client_id'),
       id: resource.field('id'),
@@ -23228,7 +23233,7 @@ local provider(configuration) = {
     },
     cognitive_account(name, block): {
       local resource = blockType.resource('azurerm_cognitive_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -23249,7 +23254,7 @@ local provider(configuration) = {
     },
     communication_service(name, block): {
       local resource = blockType.resource('azurerm_communication_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23265,7 +23270,7 @@ local provider(configuration) = {
     },
     confidential_ledger(name, block): {
       local resource = blockType.resource('azurerm_confidential_ledger', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23282,7 +23287,7 @@ local provider(configuration) = {
     },
     consumption_budget_resource_group(name, block): {
       local resource = blockType.resource('azurerm_consumption_budget_resource_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_id: build.template(block.resource_group_id),
       }),
@@ -23297,7 +23302,7 @@ local provider(configuration) = {
     },
     consumption_budget_subscription(name, block): {
       local resource = blockType.resource('azurerm_consumption_budget_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         subscription_id: build.template(block.subscription_id),
       }),
@@ -23312,7 +23317,7 @@ local provider(configuration) = {
     },
     container_app(name, block): {
       local resource = blockType.resource('azurerm_container_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23338,7 +23343,7 @@ local provider(configuration) = {
     },
     container_app_environment(name, block): {
       local resource = blockType.resource('azurerm_container_app_environment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23359,7 +23364,7 @@ local provider(configuration) = {
     },
     container_app_environment_certificate(name, block): {
       local resource = blockType.resource('azurerm_container_app_environment_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         container_app_environment_id: build.template(block.container_app_environment_id),
         name: build.template(block.name),
       }),
@@ -23375,7 +23380,7 @@ local provider(configuration) = {
     },
     container_group(name, block): {
       local resource = blockType.resource('azurerm_container_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zones: build.template(std.get(block, 'zones', null)),
@@ -23393,7 +23398,7 @@ local provider(configuration) = {
     },
     container_registry(name, block): {
       local resource = blockType.resource('azurerm_container_registry', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23411,7 +23416,7 @@ local provider(configuration) = {
     },
     container_registry_cache_rule(name, block): {
       local resource = blockType.resource('azurerm_container_registry_cache_rule', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_id: build.template(block.container_registry_id),
         name: build.template(block.name),
       }),
@@ -23424,7 +23429,7 @@ local provider(configuration) = {
     },
     container_registry_scope_map(name, block): {
       local resource = blockType.resource('azurerm_container_registry_scope_map', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_name: build.template(block.container_registry_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23438,7 +23443,7 @@ local provider(configuration) = {
     },
     container_registry_token(name, block): {
       local resource = blockType.resource('azurerm_container_registry_token', name),
-      _: resource._({
+      _: resource._(block, {
         container_registry_name: build.template(block.container_registry_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23452,7 +23457,7 @@ local provider(configuration) = {
     },
     cosmosdb_account(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23491,7 +23496,7 @@ local provider(configuration) = {
     },
     cosmosdb_mongo_database(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_mongo_database', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23504,7 +23509,7 @@ local provider(configuration) = {
     },
     cosmosdb_restorable_database_accounts(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_restorable_database_accounts', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
       }),
@@ -23515,7 +23520,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_database(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_database', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23529,7 +23534,7 @@ local provider(configuration) = {
     },
     cosmosdb_sql_role_definition(name, block): {
       local resource = blockType.resource('azurerm_cosmosdb_sql_role_definition', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         resource_group_name: build.template(block.resource_group_name),
         role_definition_id: build.template(block.role_definition_id),
@@ -23545,7 +23550,7 @@ local provider(configuration) = {
     },
     dashboard_grafana(name, block): {
       local resource = blockType.resource('azurerm_dashboard_grafana', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23568,7 +23573,7 @@ local provider(configuration) = {
     },
     data_factory(name, block): {
       local resource = blockType.resource('azurerm_data_factory', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23583,7 +23588,7 @@ local provider(configuration) = {
     },
     data_factory_trigger_schedule(name, block): {
       local resource = blockType.resource('azurerm_data_factory_trigger_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         data_factory_id: build.template(block.data_factory_id),
         name: build.template(block.name),
       }),
@@ -23603,7 +23608,7 @@ local provider(configuration) = {
     },
     data_factory_trigger_schedules(name, block): {
       local resource = blockType.resource('azurerm_data_factory_trigger_schedules', name),
-      _: resource._({
+      _: resource._(block, {
         data_factory_id: build.template(block.data_factory_id),
       }),
       data_factory_id: resource.field('data_factory_id'),
@@ -23612,7 +23617,7 @@ local provider(configuration) = {
     },
     data_protection_backup_vault(name, block): {
       local resource = blockType.resource('azurerm_data_protection_backup_vault', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23627,7 +23632,7 @@ local provider(configuration) = {
     },
     data_share(name, block): {
       local resource = blockType.resource('azurerm_data_share', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         name: build.template(block.name),
       }),
@@ -23641,7 +23646,7 @@ local provider(configuration) = {
     },
     data_share_account(name, block): {
       local resource = blockType.resource('azurerm_data_share_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23653,7 +23658,7 @@ local provider(configuration) = {
     },
     data_share_dataset_blob_storage(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_blob_storage', name),
-      _: resource._({
+      _: resource._(block, {
         data_share_id: build.template(block.data_share_id),
         name: build.template(block.name),
       }),
@@ -23668,7 +23673,7 @@ local provider(configuration) = {
     },
     data_share_dataset_data_lake_gen2(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_data_lake_gen2', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         share_id: build.template(block.share_id),
       }),
@@ -23683,7 +23688,7 @@ local provider(configuration) = {
     },
     data_share_dataset_kusto_cluster(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_kusto_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         share_id: build.template(block.share_id),
       }),
@@ -23696,7 +23701,7 @@ local provider(configuration) = {
     },
     data_share_dataset_kusto_database(name, block): {
       local resource = blockType.resource('azurerm_data_share_dataset_kusto_database', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         share_id: build.template(block.share_id),
       }),
@@ -23709,7 +23714,7 @@ local provider(configuration) = {
     },
     database_migration_project(name, block): {
       local resource = blockType.resource('azurerm_database_migration_project', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         service_name: build.template(block.service_name),
@@ -23725,7 +23730,7 @@ local provider(configuration) = {
     },
     database_migration_service(name, block): {
       local resource = blockType.resource('azurerm_database_migration_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23739,7 +23744,7 @@ local provider(configuration) = {
     },
     databox_edge_device(name, block): {
       local resource = blockType.resource('azurerm_databox_edge_device', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23753,7 +23758,7 @@ local provider(configuration) = {
     },
     databricks_access_connector(name, block): {
       local resource = blockType.resource('azurerm_databricks_access_connector', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23766,7 +23771,7 @@ local provider(configuration) = {
     },
     databricks_workspace(name, block): {
       local resource = blockType.resource('azurerm_databricks_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -23784,7 +23789,7 @@ local provider(configuration) = {
     },
     databricks_workspace_private_endpoint_connection(name, block): {
       local resource = blockType.resource('azurerm_databricks_workspace_private_endpoint_connection', name),
-      _: resource._({
+      _: resource._(block, {
         private_endpoint_id: build.template(block.private_endpoint_id),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -23795,7 +23800,7 @@ local provider(configuration) = {
     },
     dedicated_host(name, block): {
       local resource = blockType.resource('azurerm_dedicated_host', name),
-      _: resource._({
+      _: resource._(block, {
         dedicated_host_group_name: build.template(block.dedicated_host_group_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23809,7 +23814,7 @@ local provider(configuration) = {
     },
     dedicated_host_group(name, block): {
       local resource = blockType.resource('azurerm_dedicated_host_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23824,7 +23829,7 @@ local provider(configuration) = {
     },
     dev_test_lab(name, block): {
       local resource = blockType.resource('azurerm_dev_test_lab', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23843,7 +23848,7 @@ local provider(configuration) = {
     },
     dev_test_virtual_network(name, block): {
       local resource = blockType.resource('azurerm_dev_test_virtual_network', name),
-      _: resource._({
+      _: resource._(block, {
         lab_name: build.template(block.lab_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -23858,7 +23863,7 @@ local provider(configuration) = {
     },
     digital_twins_instance(name, block): {
       local resource = blockType.resource('azurerm_digital_twins_instance', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23871,7 +23876,7 @@ local provider(configuration) = {
     },
     disk_access(name, block): {
       local resource = blockType.resource('azurerm_disk_access', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23882,7 +23887,7 @@ local provider(configuration) = {
     },
     disk_encryption_set(name, block): {
       local resource = blockType.resource('azurerm_disk_encryption_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -23897,7 +23902,7 @@ local provider(configuration) = {
     },
     dns_a_record(name, block): {
       local resource = blockType.resource('azurerm_dns_a_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -23914,7 +23919,7 @@ local provider(configuration) = {
     },
     dns_aaaa_record(name, block): {
       local resource = blockType.resource('azurerm_dns_aaaa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -23931,7 +23936,7 @@ local provider(configuration) = {
     },
     dns_caa_record(name, block): {
       local resource = blockType.resource('azurerm_dns_caa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -23947,7 +23952,7 @@ local provider(configuration) = {
     },
     dns_cname_record(name, block): {
       local resource = blockType.resource('azurerm_dns_cname_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -23964,7 +23969,7 @@ local provider(configuration) = {
     },
     dns_mx_record(name, block): {
       local resource = blockType.resource('azurerm_dns_mx_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -23980,7 +23985,7 @@ local provider(configuration) = {
     },
     dns_ns_record(name, block): {
       local resource = blockType.resource('azurerm_dns_ns_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -23996,7 +24001,7 @@ local provider(configuration) = {
     },
     dns_ptr_record(name, block): {
       local resource = blockType.resource('azurerm_dns_ptr_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -24012,7 +24017,7 @@ local provider(configuration) = {
     },
     dns_soa_record(name, block): {
       local resource = blockType.resource('azurerm_dns_soa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -24034,7 +24039,7 @@ local provider(configuration) = {
     },
     dns_srv_record(name, block): {
       local resource = blockType.resource('azurerm_dns_srv_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -24050,7 +24055,7 @@ local provider(configuration) = {
     },
     dns_txt_record(name, block): {
       local resource = blockType.resource('azurerm_dns_txt_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -24066,7 +24071,7 @@ local provider(configuration) = {
     },
     dns_zone(name, block): {
       local resource = blockType.resource('azurerm_dns_zone', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -24079,7 +24084,7 @@ local provider(configuration) = {
     },
     elastic_cloud_elasticsearch(name, block): {
       local resource = blockType.resource('azurerm_elastic_cloud_elasticsearch', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24100,7 +24105,7 @@ local provider(configuration) = {
     },
     elastic_san(name, block): {
       local resource = blockType.resource('azurerm_elastic_san', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24121,7 +24126,7 @@ local provider(configuration) = {
     },
     elastic_san_volume_group(name, block): {
       local resource = blockType.resource('azurerm_elastic_san_volume_group', name),
-      _: resource._({
+      _: resource._(block, {
         elastic_san_id: build.template(block.elastic_san_id),
         name: build.template(block.name),
       }),
@@ -24136,7 +24141,7 @@ local provider(configuration) = {
     },
     elastic_san_volume_snapshot(name, block): {
       local resource = blockType.resource('azurerm_elastic_san_volume_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         volume_group_id: build.template(block.volume_group_id),
       }),
@@ -24149,7 +24154,7 @@ local provider(configuration) = {
     },
     eventgrid_domain(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_domain', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24170,7 +24175,7 @@ local provider(configuration) = {
     },
     eventgrid_domain_topic(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_domain_topic', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -24182,7 +24187,7 @@ local provider(configuration) = {
     },
     eventgrid_system_topic(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_system_topic', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24198,7 +24203,7 @@ local provider(configuration) = {
     },
     eventgrid_topic(name, block): {
       local resource = blockType.resource('azurerm_eventgrid_topic', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24213,7 +24218,7 @@ local provider(configuration) = {
     },
     eventhub(name, block): {
       local resource = blockType.resource('azurerm_eventhub', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -24227,7 +24232,7 @@ local provider(configuration) = {
     },
     eventhub_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_eventhub_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_name: build.template(block.eventhub_name),
         listen: build.template(std.get(block, 'listen', null)),
         manage: build.template(std.get(block, 'manage', null)),
@@ -24253,7 +24258,7 @@ local provider(configuration) = {
     },
     eventhub_cluster(name, block): {
       local resource = blockType.resource('azurerm_eventhub_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24265,7 +24270,7 @@ local provider(configuration) = {
     },
     eventhub_consumer_group(name, block): {
       local resource = blockType.resource('azurerm_eventhub_consumer_group', name),
-      _: resource._({
+      _: resource._(block, {
         eventhub_name: build.template(block.eventhub_name),
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
@@ -24280,7 +24285,7 @@ local provider(configuration) = {
     },
     eventhub_namespace(name, block): {
       local resource = blockType.resource('azurerm_eventhub_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24304,7 +24309,7 @@ local provider(configuration) = {
     },
     eventhub_namespace_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_eventhub_namespace_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -24325,7 +24330,7 @@ local provider(configuration) = {
     },
     eventhub_sas(name, block): {
       local resource = blockType.resource('azurerm_eventhub_sas', name),
-      _: resource._({
+      _: resource._(block, {
         connection_string: build.template(block.connection_string),
         expiry: build.template(block.expiry),
       }),
@@ -24336,7 +24341,7 @@ local provider(configuration) = {
     },
     express_route_circuit(name, block): {
       local resource = blockType.resource('azurerm_express_route_circuit', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24352,7 +24357,7 @@ local provider(configuration) = {
     },
     express_route_circuit_peering(name, block): {
       local resource = blockType.resource('azurerm_express_route_circuit_peering', name),
-      _: resource._({
+      _: resource._(block, {
         express_route_circuit_name: build.template(block.express_route_circuit_name),
         peering_type: build.template(block.peering_type),
         resource_group_name: build.template(block.resource_group_name),
@@ -24375,7 +24380,7 @@ local provider(configuration) = {
     },
     extended_locations(name, block): {
       local resource = blockType.resource('azurerm_extended_locations', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
       }),
       extended_locations: resource.field('extended_locations'),
@@ -24384,7 +24389,7 @@ local provider(configuration) = {
     },
     firewall(name, block): {
       local resource = blockType.resource('azurerm_firewall', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24406,7 +24411,7 @@ local provider(configuration) = {
     },
     firewall_policy(name, block): {
       local resource = blockType.resource('azurerm_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24425,7 +24430,7 @@ local provider(configuration) = {
     },
     function_app(name, block): {
       local resource = blockType.resource('azurerm_function_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -24452,7 +24457,7 @@ local provider(configuration) = {
     },
     function_app_host_keys(name, block): {
       local resource = blockType.resource('azurerm_function_app_host_keys', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24470,7 +24475,7 @@ local provider(configuration) = {
     },
     hdinsight_cluster(name, block): {
       local resource = blockType.resource('azurerm_hdinsight_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24493,7 +24498,7 @@ local provider(configuration) = {
     },
     healthcare_dicom_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_dicom_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -24509,7 +24514,7 @@ local provider(configuration) = {
     },
     healthcare_fhir_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_fhir_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
         workspace_id: build.template(block.workspace_id),
@@ -24529,7 +24534,7 @@ local provider(configuration) = {
     },
     healthcare_medtech_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_medtech_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -24544,7 +24549,7 @@ local provider(configuration) = {
     },
     healthcare_service(name, block): {
       local resource = blockType.resource('azurerm_healthcare_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -24563,7 +24568,7 @@ local provider(configuration) = {
     },
     healthcare_workspace(name, block): {
       local resource = blockType.resource('azurerm_healthcare_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24575,7 +24580,7 @@ local provider(configuration) = {
     },
     image(name, block): {
       local resource = blockType.resource('azurerm_image', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         name_regex: build.template(std.get(block, 'name_regex', null)),
         resource_group_name: build.template(block.resource_group_name),
@@ -24594,7 +24599,7 @@ local provider(configuration) = {
     },
     images(name, block): {
       local resource = blockType.resource('azurerm_images', name),
-      _: resource._({
+      _: resource._(block, {
         resource_group_name: build.template(block.resource_group_name),
         tags_filter: build.template(std.get(block, 'tags_filter', null)),
       }),
@@ -24605,7 +24610,7 @@ local provider(configuration) = {
     },
     iothub(name, block): {
       local resource = blockType.resource('azurerm_iothub', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -24619,7 +24624,7 @@ local provider(configuration) = {
     },
     iothub_dps(name, block): {
       local resource = blockType.resource('azurerm_iothub_dps', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -24636,7 +24641,7 @@ local provider(configuration) = {
     },
     iothub_dps_shared_access_policy(name, block): {
       local resource = blockType.resource('azurerm_iothub_dps_shared_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         iothub_dps_name: build.template(block.iothub_dps_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -24652,7 +24657,7 @@ local provider(configuration) = {
     },
     iothub_shared_access_policy(name, block): {
       local resource = blockType.resource('azurerm_iothub_shared_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         iothub_name: build.template(block.iothub_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -24668,7 +24673,7 @@ local provider(configuration) = {
     },
     ip_group(name, block): {
       local resource = blockType.resource('azurerm_ip_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24681,7 +24686,7 @@ local provider(configuration) = {
     },
     ip_groups(name, block): {
       local resource = blockType.resource('azurerm_ip_groups', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24695,7 +24700,7 @@ local provider(configuration) = {
     },
     key_vault(name, block): {
       local resource = blockType.resource('azurerm_key_vault', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24718,7 +24723,7 @@ local provider(configuration) = {
     },
     key_vault_access_policy(name, block): {
       local resource = blockType.resource('azurerm_key_vault_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       certificate_permissions: resource.field('certificate_permissions'),
@@ -24729,7 +24734,7 @@ local provider(configuration) = {
     },
     key_vault_certificate(name, block): {
       local resource = blockType.resource('azurerm_key_vault_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
       }),
@@ -24752,7 +24757,7 @@ local provider(configuration) = {
     },
     key_vault_certificate_data(name, block): {
       local resource = blockType.resource('azurerm_key_vault_certificate_data', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
       }),
@@ -24770,7 +24775,7 @@ local provider(configuration) = {
     },
     key_vault_certificate_issuer(name, block): {
       local resource = blockType.resource('azurerm_key_vault_certificate_issuer', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
       }),
@@ -24784,7 +24789,7 @@ local provider(configuration) = {
     },
     key_vault_certificates(name, block): {
       local resource = blockType.resource('azurerm_key_vault_certificates', name),
-      _: resource._({
+      _: resource._(block, {
         include_pending: build.template(std.get(block, 'include_pending', null)),
         key_vault_id: build.template(block.key_vault_id),
       }),
@@ -24796,7 +24801,7 @@ local provider(configuration) = {
     },
     key_vault_encrypted_value(name, block): {
       local resource = blockType.resource('azurerm_key_vault_encrypted_value', name),
-      _: resource._({
+      _: resource._(block, {
         algorithm: build.template(block.algorithm),
         encrypted_data: build.template(std.get(block, 'encrypted_data', null)),
         key_vault_key_id: build.template(block.key_vault_key_id),
@@ -24811,7 +24816,7 @@ local provider(configuration) = {
     },
     key_vault_key(name, block): {
       local resource = blockType.resource('azurerm_key_vault_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
       }),
@@ -24836,7 +24841,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24854,7 +24859,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module_key(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module_key', name),
-      _: resource._({
+      _: resource._(block, {
         managed_hsm_id: build.template(block.managed_hsm_id),
         name: build.template(block.name),
       }),
@@ -24873,7 +24878,7 @@ local provider(configuration) = {
     },
     key_vault_managed_hardware_security_module_role_definition(name, block): {
       local resource = blockType.resource('azurerm_key_vault_managed_hardware_security_module_role_definition', name),
-      _: resource._({
+      _: resource._(block, {
         managed_hsm_id: build.template(block.managed_hsm_id),
         name: build.template(block.name),
       }),
@@ -24889,7 +24894,7 @@ local provider(configuration) = {
     },
     key_vault_secret(name, block): {
       local resource = blockType.resource('azurerm_key_vault_secret', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
         name: build.template(block.name),
         version: build.template(std.get(block, 'version', null)),
@@ -24909,7 +24914,7 @@ local provider(configuration) = {
     },
     key_vault_secrets(name, block): {
       local resource = blockType.resource('azurerm_key_vault_secrets', name),
-      _: resource._({
+      _: resource._(block, {
         key_vault_id: build.template(block.key_vault_id),
       }),
       id: resource.field('id'),
@@ -24919,7 +24924,7 @@ local provider(configuration) = {
     },
     kubernetes_cluster(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -24968,7 +24973,7 @@ local provider(configuration) = {
     },
     kubernetes_cluster_node_pool(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_cluster_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         kubernetes_cluster_name: build.template(block.kubernetes_cluster_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -25003,7 +25008,7 @@ local provider(configuration) = {
     },
     kubernetes_node_pool_snapshot(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_node_pool_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25015,7 +25020,7 @@ local provider(configuration) = {
     },
     kubernetes_service_versions(name, block): {
       local resource = blockType.resource('azurerm_kubernetes_service_versions', name),
-      _: resource._({
+      _: resource._(block, {
         include_preview: build.template(std.get(block, 'include_preview', null)),
         location: build.template(block.location),
         version_prefix: build.template(std.get(block, 'version_prefix', null)),
@@ -25030,7 +25035,7 @@ local provider(configuration) = {
     },
     kusto_cluster(name, block): {
       local resource = blockType.resource('azurerm_kusto_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25045,7 +25050,7 @@ local provider(configuration) = {
     },
     kusto_database(name, block): {
       local resource = blockType.resource('azurerm_kusto_database', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -25061,7 +25066,7 @@ local provider(configuration) = {
     },
     lb(name, block): {
       local resource = blockType.resource('azurerm_lb', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25077,7 +25082,7 @@ local provider(configuration) = {
     },
     lb_backend_address_pool(name, block): {
       local resource = blockType.resource('azurerm_lb_backend_address_pool', name),
-      _: resource._({
+      _: resource._(block, {
         loadbalancer_id: build.template(block.loadbalancer_id),
         name: build.template(block.name),
       }),
@@ -25092,7 +25097,7 @@ local provider(configuration) = {
     },
     lb_outbound_rule(name, block): {
       local resource = blockType.resource('azurerm_lb_outbound_rule', name),
-      _: resource._({
+      _: resource._(block, {
         loadbalancer_id: build.template(block.loadbalancer_id),
         name: build.template(block.name),
       }),
@@ -25108,7 +25113,7 @@ local provider(configuration) = {
     },
     lb_rule(name, block): {
       local resource = blockType.resource('azurerm_lb_rule', name),
-      _: resource._({
+      _: resource._(block, {
         loadbalancer_id: build.template(block.loadbalancer_id),
         name: build.template(block.name),
       }),
@@ -25129,7 +25134,7 @@ local provider(configuration) = {
     },
     linux_function_app(name, block): {
       local resource = blockType.resource('azurerm_linux_function_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25178,7 +25183,7 @@ local provider(configuration) = {
     },
     linux_web_app(name, block): {
       local resource = blockType.resource('azurerm_linux_web_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25224,7 +25229,7 @@ local provider(configuration) = {
     },
     load_test(name, block): {
       local resource = blockType.resource('azurerm_load_test', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25240,7 +25245,7 @@ local provider(configuration) = {
     },
     local_network_gateway(name, block): {
       local resource = blockType.resource('azurerm_local_network_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25256,7 +25261,7 @@ local provider(configuration) = {
     },
     location(name, block): {
       local resource = blockType.resource('azurerm_location', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
       }),
       display_name: resource.field('display_name'),
@@ -25266,7 +25271,7 @@ local provider(configuration) = {
     },
     log_analytics_workspace(name, block): {
       local resource = blockType.resource('azurerm_log_analytics_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25284,7 +25289,7 @@ local provider(configuration) = {
     },
     logic_app_integration_account(name, block): {
       local resource = blockType.resource('azurerm_logic_app_integration_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25297,7 +25302,7 @@ local provider(configuration) = {
     },
     logic_app_standard(name, block): {
       local resource = blockType.resource('azurerm_logic_app_standard', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25331,7 +25336,7 @@ local provider(configuration) = {
     },
     logic_app_workflow(name, block): {
       local resource = blockType.resource('azurerm_logic_app_workflow', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25353,7 +25358,7 @@ local provider(configuration) = {
     },
     machine_learning_workspace(name, block): {
       local resource = blockType.resource('azurerm_machine_learning_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25366,7 +25371,7 @@ local provider(configuration) = {
     },
     maintenance_configuration(name, block): {
       local resource = blockType.resource('azurerm_maintenance_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25384,7 +25389,7 @@ local provider(configuration) = {
     },
     managed_api(name, block): {
       local resource = blockType.resource('azurerm_managed_api', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
       }),
@@ -25395,7 +25400,7 @@ local provider(configuration) = {
     },
     managed_application_definition(name, block): {
       local resource = blockType.resource('azurerm_managed_application_definition', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25406,7 +25411,7 @@ local provider(configuration) = {
     },
     managed_disk(name, block): {
       local resource = blockType.resource('azurerm_managed_disk', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25432,7 +25437,7 @@ local provider(configuration) = {
     },
     management_group(name, block): {
       local resource = blockType.resource('azurerm_management_group', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       all_management_group_ids: resource.field('all_management_group_ids'),
       all_subscription_ids: resource.field('all_subscription_ids'),
@@ -25446,7 +25451,7 @@ local provider(configuration) = {
     },
     management_group_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_management_group_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         management_group_id: build.template(block.management_group_id),
         name: build.template(block.name),
       }),
@@ -25457,7 +25462,7 @@ local provider(configuration) = {
     },
     maps_account(name, block): {
       local resource = blockType.resource('azurerm_maps_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25473,7 +25478,7 @@ local provider(configuration) = {
     },
     marketplace_agreement(name, block): {
       local resource = blockType.resource('azurerm_marketplace_agreement', name),
-      _: resource._({
+      _: resource._(block, {
         offer: build.template(block.offer),
         plan: build.template(block.plan),
         publisher: build.template(block.publisher),
@@ -25487,7 +25492,7 @@ local provider(configuration) = {
     },
     mobile_network(name, block): {
       local resource = blockType.resource('azurerm_mobile_network', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25502,7 +25507,7 @@ local provider(configuration) = {
     },
     mobile_network_attached_data_network(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_attached_data_network', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_data_network_name: build.template(block.mobile_network_data_network_name),
         mobile_network_packet_core_data_plane_id: build.template(block.mobile_network_packet_core_data_plane_id),
       }),
@@ -25522,7 +25527,7 @@ local provider(configuration) = {
     },
     mobile_network_data_network(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_data_network', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
       }),
@@ -25535,7 +25540,7 @@ local provider(configuration) = {
     },
     mobile_network_packet_core_control_plane(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_packet_core_control_plane', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25560,7 +25565,7 @@ local provider(configuration) = {
     },
     mobile_network_packet_core_data_plane(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_packet_core_data_plane', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_packet_core_control_plane_id: build.template(block.mobile_network_packet_core_control_plane_id),
         name: build.template(block.name),
       }),
@@ -25576,7 +25581,7 @@ local provider(configuration) = {
     },
     mobile_network_service(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_service', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
       }),
@@ -25591,7 +25596,7 @@ local provider(configuration) = {
     },
     mobile_network_sim(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_sim', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_sim_group_id: build.template(block.mobile_network_sim_group_id),
         name: build.template(block.name),
       }),
@@ -25609,7 +25614,7 @@ local provider(configuration) = {
     },
     mobile_network_sim_group(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_sim_group', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
       }),
@@ -25623,7 +25628,7 @@ local provider(configuration) = {
     },
     mobile_network_sim_policy(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_sim_policy', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
       }),
@@ -25640,7 +25645,7 @@ local provider(configuration) = {
     },
     mobile_network_site(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_site', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
       }),
@@ -25653,7 +25658,7 @@ local provider(configuration) = {
     },
     mobile_network_slice(name, block): {
       local resource = blockType.resource('azurerm_mobile_network_slice', name),
-      _: resource._({
+      _: resource._(block, {
         mobile_network_id: build.template(block.mobile_network_id),
         name: build.template(block.name),
       }),
@@ -25667,7 +25672,7 @@ local provider(configuration) = {
     },
     monitor_action_group(name, block): {
       local resource = blockType.resource('azurerm_monitor_action_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25690,7 +25695,7 @@ local provider(configuration) = {
     },
     monitor_data_collection_endpoint(name, block): {
       local resource = blockType.resource('azurerm_monitor_data_collection_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25708,7 +25713,7 @@ local provider(configuration) = {
     },
     monitor_data_collection_rule(name, block): {
       local resource = blockType.resource('azurerm_monitor_data_collection_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25729,7 +25734,7 @@ local provider(configuration) = {
     },
     monitor_diagnostic_categories(name, block): {
       local resource = blockType.resource('azurerm_monitor_diagnostic_categories', name),
-      _: resource._({
+      _: resource._(block, {
         resource_id: build.template(block.resource_id),
       }),
       id: resource.field('id'),
@@ -25740,7 +25745,7 @@ local provider(configuration) = {
     },
     monitor_scheduled_query_rules_alert(name, block): {
       local resource = blockType.resource('azurerm_monitor_scheduled_query_rules_alert', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25764,7 +25769,7 @@ local provider(configuration) = {
     },
     monitor_scheduled_query_rules_log(name, block): {
       local resource = blockType.resource('azurerm_monitor_scheduled_query_rules_log', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25781,7 +25786,7 @@ local provider(configuration) = {
     },
     monitor_workspace(name, block): {
       local resource = blockType.resource('azurerm_monitor_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25797,7 +25802,7 @@ local provider(configuration) = {
     },
     mssql_database(name, block): {
       local resource = blockType.resource('azurerm_mssql_database', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         server_id: build.template(block.server_id),
       }),
@@ -25822,7 +25827,7 @@ local provider(configuration) = {
     },
     mssql_elasticpool(name, block): {
       local resource = blockType.resource('azurerm_mssql_elasticpool', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         server_name: build.template(block.server_name),
@@ -25844,7 +25849,7 @@ local provider(configuration) = {
     },
     mssql_managed_instance(name, block): {
       local resource = blockType.resource('azurerm_mssql_managed_instance', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25873,7 +25878,7 @@ local provider(configuration) = {
     },
     mssql_server(name, block): {
       local resource = blockType.resource('azurerm_mssql_server', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25891,7 +25896,7 @@ local provider(configuration) = {
     },
     mysql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_mysql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25919,7 +25924,7 @@ local provider(configuration) = {
     },
     nat_gateway(name, block): {
       local resource = blockType.resource('azurerm_nat_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25937,7 +25942,7 @@ local provider(configuration) = {
     },
     netapp_account(name, block): {
       local resource = blockType.resource('azurerm_netapp_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -25949,7 +25954,7 @@ local provider(configuration) = {
     },
     netapp_account_encryption(name, block): {
       local resource = blockType.resource('azurerm_netapp_account_encryption', name),
-      _: resource._({
+      _: resource._(block, {
         netapp_account_id: build.template(block.netapp_account_id),
       }),
       encryption_key: resource.field('encryption_key'),
@@ -25960,7 +25965,7 @@ local provider(configuration) = {
     },
     netapp_backup_policy(name, block): {
       local resource = blockType.resource('azurerm_netapp_backup_policy', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -25978,7 +25983,7 @@ local provider(configuration) = {
     },
     netapp_backup_vault(name, block): {
       local resource = blockType.resource('azurerm_netapp_backup_vault', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -25992,7 +25997,7 @@ local provider(configuration) = {
     },
     netapp_pool(name, block): {
       local resource = blockType.resource('azurerm_netapp_pool', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -26008,7 +26013,7 @@ local provider(configuration) = {
     },
     netapp_snapshot(name, block): {
       local resource = blockType.resource('azurerm_netapp_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         pool_name: build.template(block.pool_name),
@@ -26025,7 +26030,7 @@ local provider(configuration) = {
     },
     netapp_snapshot_policy(name, block): {
       local resource = blockType.resource('azurerm_netapp_snapshot_policy', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -26044,7 +26049,7 @@ local provider(configuration) = {
     },
     netapp_volume(name, block): {
       local resource = blockType.resource('azurerm_netapp_volume', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         pool_name: build.template(block.pool_name),
@@ -26075,7 +26080,7 @@ local provider(configuration) = {
     },
     netapp_volume_group_sap_hana(name, block): {
       local resource = blockType.resource('azurerm_netapp_volume_group_sap_hana', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -26091,7 +26096,7 @@ local provider(configuration) = {
     },
     netapp_volume_quota_rule(name, block): {
       local resource = blockType.resource('azurerm_netapp_volume_quota_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         volume_id: build.template(block.volume_id),
       }),
@@ -26105,7 +26110,7 @@ local provider(configuration) = {
     },
     network_ddos_protection_plan(name, block): {
       local resource = blockType.resource('azurerm_network_ddos_protection_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26118,7 +26123,7 @@ local provider(configuration) = {
     },
     network_interface(name, block): {
       local resource = blockType.resource('azurerm_network_interface', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26141,7 +26146,7 @@ local provider(configuration) = {
     },
     network_manager(name, block): {
       local resource = blockType.resource('azurerm_network_manager', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26157,7 +26162,7 @@ local provider(configuration) = {
     },
     network_manager_connectivity_configuration(name, block): {
       local resource = blockType.resource('azurerm_network_manager_connectivity_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         network_manager_id: build.template(block.network_manager_id),
       }),
@@ -26173,7 +26178,7 @@ local provider(configuration) = {
     },
     network_manager_network_group(name, block): {
       local resource = blockType.resource('azurerm_network_manager_network_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         network_manager_id: build.template(block.network_manager_id),
       }),
@@ -26184,7 +26189,7 @@ local provider(configuration) = {
     },
     network_security_group(name, block): {
       local resource = blockType.resource('azurerm_network_security_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26197,7 +26202,7 @@ local provider(configuration) = {
     },
     network_service_tags(name, block): {
       local resource = blockType.resource('azurerm_network_service_tags', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         location_filter: build.template(std.get(block, 'location_filter', null)),
         service: build.template(block.service),
@@ -26213,7 +26218,7 @@ local provider(configuration) = {
     },
     network_watcher(name, block): {
       local resource = blockType.resource('azurerm_network_watcher', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26225,7 +26230,7 @@ local provider(configuration) = {
     },
     nginx_certificate(name, block): {
       local resource = blockType.resource('azurerm_nginx_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         nginx_deployment_id: build.template(block.nginx_deployment_id),
       }),
@@ -26243,7 +26248,7 @@ local provider(configuration) = {
     },
     nginx_configuration(name, block): {
       local resource = blockType.resource('azurerm_nginx_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         nginx_deployment_id: build.template(block.nginx_deployment_id),
       }),
       config_file: resource.field('config_file'),
@@ -26255,7 +26260,7 @@ local provider(configuration) = {
     },
     nginx_deployment(name, block): {
       local resource = blockType.resource('azurerm_nginx_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26281,7 +26286,7 @@ local provider(configuration) = {
     },
     notification_hub(name, block): {
       local resource = blockType.resource('azurerm_notification_hub', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_name: build.template(block.namespace_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -26297,7 +26302,7 @@ local provider(configuration) = {
     },
     notification_hub_namespace(name, block): {
       local resource = blockType.resource('azurerm_notification_hub_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26313,7 +26318,7 @@ local provider(configuration) = {
     },
     oracle_adbs_character_sets(name, block): {
       local resource = blockType.resource('azurerm_oracle_adbs_character_sets', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
       }),
       character_sets: resource.field('character_sets'),
@@ -26322,7 +26327,7 @@ local provider(configuration) = {
     },
     oracle_adbs_national_character_sets(name, block): {
       local resource = blockType.resource('azurerm_oracle_adbs_national_character_sets', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
       }),
       character_sets: resource.field('character_sets'),
@@ -26331,7 +26336,7 @@ local provider(configuration) = {
     },
     oracle_autonomous_database(name, block): {
       local resource = blockType.resource('azurerm_oracle_autonomous_database', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26397,7 +26402,7 @@ local provider(configuration) = {
     },
     oracle_cloud_vm_cluster(name, block): {
       local resource = blockType.resource('azurerm_oracle_cloud_vm_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26456,7 +26461,7 @@ local provider(configuration) = {
     },
     oracle_db_nodes(name, block): {
       local resource = blockType.resource('azurerm_oracle_db_nodes', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_vm_cluster_id: build.template(block.cloud_vm_cluster_id),
       }),
       cloud_vm_cluster_id: resource.field('cloud_vm_cluster_id'),
@@ -26465,7 +26470,7 @@ local provider(configuration) = {
     },
     oracle_db_servers(name, block): {
       local resource = blockType.resource('azurerm_oracle_db_servers', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_exadata_infrastructure_name: build.template(block.cloud_exadata_infrastructure_name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26476,7 +26481,7 @@ local provider(configuration) = {
     },
     oracle_db_system_shapes(name, block): {
       local resource = blockType.resource('azurerm_oracle_db_system_shapes', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
       }),
       db_system_shapes: resource.field('db_system_shapes'),
@@ -26485,7 +26490,7 @@ local provider(configuration) = {
     },
     oracle_exadata_infrastructure(name, block): {
       local resource = blockType.resource('azurerm_oracle_exadata_infrastructure', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26528,7 +26533,7 @@ local provider(configuration) = {
     },
     oracle_gi_versions(name, block): {
       local resource = blockType.resource('azurerm_oracle_gi_versions', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
       }),
       id: resource.field('id'),
@@ -26537,7 +26542,7 @@ local provider(configuration) = {
     },
     orchestrated_virtual_machine_scale_set(name, block): {
       local resource = blockType.resource('azurerm_orchestrated_virtual_machine_scale_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26550,7 +26555,7 @@ local provider(configuration) = {
     },
     palo_alto_local_rulestack(name, block): {
       local resource = blockType.resource('azurerm_palo_alto_local_rulestack', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26570,7 +26575,7 @@ local provider(configuration) = {
     },
     platform_image(name, block): {
       local resource = blockType.resource('azurerm_platform_image', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         offer: build.template(block.offer),
         publisher: build.template(block.publisher),
@@ -26585,7 +26590,7 @@ local provider(configuration) = {
     },
     policy_assignment(name, block): {
       local resource = blockType.resource('azurerm_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         scope_id: build.template(block.scope_id),
       }),
@@ -26605,7 +26610,7 @@ local provider(configuration) = {
     },
     policy_definition(name, block): {
       local resource = blockType.resource('azurerm_policy_definition', name),
-      _: resource._({
+      _: resource._(block, {
         management_group_name: build.template(std.get(block, 'management_group_name', null)),
       }),
       description: resource.field('description'),
@@ -26623,7 +26628,7 @@ local provider(configuration) = {
     },
     policy_definition_built_in(name, block): {
       local resource = blockType.resource('azurerm_policy_definition_built_in', name),
-      _: resource._({
+      _: resource._(block, {
         management_group_name: build.template(std.get(block, 'management_group_name', null)),
       }),
       description: resource.field('description'),
@@ -26641,7 +26646,7 @@ local provider(configuration) = {
     },
     policy_set_definition(name, block): {
       local resource = blockType.resource('azurerm_policy_set_definition', name),
-      _: resource._({
+      _: resource._(block, {
         management_group_name: build.template(std.get(block, 'management_group_name', null)),
       }),
       description: resource.field('description'),
@@ -26658,7 +26663,7 @@ local provider(configuration) = {
     },
     policy_virtual_machine_configuration_assignment(name, block): {
       local resource = blockType.resource('azurerm_policy_virtual_machine_configuration_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         virtual_machine_name: build.template(block.virtual_machine_name),
@@ -26676,7 +26681,7 @@ local provider(configuration) = {
     },
     portal_dashboard(name, block): {
       local resource = blockType.resource('azurerm_portal_dashboard', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(std.get(block, 'name', null)),
         resource_group_name: build.template(block.resource_group_name),
@@ -26691,7 +26696,7 @@ local provider(configuration) = {
     },
     postgresql_flexible_server(name, block): {
       local resource = blockType.resource('azurerm_postgresql_flexible_server', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26712,7 +26717,7 @@ local provider(configuration) = {
     },
     postgresql_server(name, block): {
       local resource = blockType.resource('azurerm_postgresql_server', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26729,7 +26734,7 @@ local provider(configuration) = {
     },
     private_dns_a_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_a_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26745,7 +26750,7 @@ local provider(configuration) = {
     },
     private_dns_aaaa_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_aaaa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26761,7 +26766,7 @@ local provider(configuration) = {
     },
     private_dns_cname_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_cname_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26778,7 +26783,7 @@ local provider(configuration) = {
     },
     private_dns_mx_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_mx_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26794,7 +26799,7 @@ local provider(configuration) = {
     },
     private_dns_ptr_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_ptr_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26810,7 +26815,7 @@ local provider(configuration) = {
     },
     private_dns_resolver(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26823,7 +26828,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_dns_forwarding_ruleset(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_dns_forwarding_ruleset', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26836,7 +26841,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_forwarding_rule(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_forwarding_rule', name),
-      _: resource._({
+      _: resource._(block, {
         dns_forwarding_ruleset_id: build.template(block.dns_forwarding_ruleset_id),
         name: build.template(block.name),
       }),
@@ -26850,7 +26855,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_inbound_endpoint(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_inbound_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         private_dns_resolver_id: build.template(block.private_dns_resolver_id),
       }),
@@ -26863,7 +26868,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_outbound_endpoint(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_outbound_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         private_dns_resolver_id: build.template(block.private_dns_resolver_id),
       }),
@@ -26876,7 +26881,7 @@ local provider(configuration) = {
     },
     private_dns_resolver_virtual_network_link(name, block): {
       local resource = blockType.resource('azurerm_private_dns_resolver_virtual_network_link', name),
-      _: resource._({
+      _: resource._(block, {
         dns_forwarding_ruleset_id: build.template(block.dns_forwarding_ruleset_id),
         name: build.template(block.name),
       }),
@@ -26888,7 +26893,7 @@ local provider(configuration) = {
     },
     private_dns_soa_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_soa_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26910,7 +26915,7 @@ local provider(configuration) = {
     },
     private_dns_srv_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_srv_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26926,7 +26931,7 @@ local provider(configuration) = {
     },
     private_dns_txt_record(name, block): {
       local resource = blockType.resource('azurerm_private_dns_txt_record', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         zone_name: build.template(block.zone_name),
@@ -26942,7 +26947,7 @@ local provider(configuration) = {
     },
     private_dns_zone(name, block): {
       local resource = blockType.resource('azurerm_private_dns_zone', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -26957,7 +26962,7 @@ local provider(configuration) = {
     },
     private_dns_zone_virtual_network_link(name, block): {
       local resource = blockType.resource('azurerm_private_dns_zone_virtual_network_link', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         private_dns_zone_name: build.template(block.private_dns_zone_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -26972,7 +26977,7 @@ local provider(configuration) = {
     },
     private_endpoint_connection(name, block): {
       local resource = blockType.resource('azurerm_private_endpoint_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -26985,7 +26990,7 @@ local provider(configuration) = {
     },
     private_link_service(name, block): {
       local resource = blockType.resource('azurerm_private_link_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27003,7 +27008,7 @@ local provider(configuration) = {
     },
     private_link_service_endpoint_connections(name, block): {
       local resource = blockType.resource('azurerm_private_link_service_endpoint_connections', name),
-      _: resource._({
+      _: resource._(block, {
         resource_group_name: build.template(block.resource_group_name),
         service_id: build.template(block.service_id),
       }),
@@ -27016,7 +27021,7 @@ local provider(configuration) = {
     },
     proximity_placement_group(name, block): {
       local resource = blockType.resource('azurerm_proximity_placement_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27028,7 +27033,7 @@ local provider(configuration) = {
     },
     public_ip(name, block): {
       local resource = blockType.resource('azurerm_public_ip', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27052,7 +27057,7 @@ local provider(configuration) = {
     },
     public_ip_prefix(name, block): {
       local resource = blockType.resource('azurerm_public_ip_prefix', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27069,7 +27074,7 @@ local provider(configuration) = {
     },
     public_ips(name, block): {
       local resource = blockType.resource('azurerm_public_ips', name),
-      _: resource._({
+      _: resource._(block, {
         allocation_type: build.template(std.get(block, 'allocation_type', null)),
         attachment_status: build.template(std.get(block, 'attachment_status', null)),
         name_prefix: build.template(std.get(block, 'name_prefix', null)),
@@ -27084,7 +27089,7 @@ local provider(configuration) = {
     },
     public_maintenance_configurations(name, block): {
       local resource = blockType.resource('azurerm_public_maintenance_configurations', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         recur_every: build.template(std.get(block, 'recur_every', null)),
         scope: build.template(std.get(block, 'scope', null)),
@@ -27097,7 +27102,7 @@ local provider(configuration) = {
     },
     recovery_services_vault(name, block): {
       local resource = blockType.resource('azurerm_recovery_services_vault', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27111,7 +27116,7 @@ local provider(configuration) = {
     },
     redis_cache(name, block): {
       local resource = blockType.resource('azurerm_redis_cache', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27142,7 +27147,7 @@ local provider(configuration) = {
     },
     redis_enterprise_database(name, block): {
       local resource = blockType.resource('azurerm_redis_enterprise_database', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         name: build.template(block.name),
       }),
@@ -27156,7 +27161,7 @@ local provider(configuration) = {
     },
     resource_group(name, block): {
       local resource = blockType.resource('azurerm_resource_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -27167,7 +27172,7 @@ local provider(configuration) = {
     },
     resource_group_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_resource_group_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27178,7 +27183,7 @@ local provider(configuration) = {
     },
     resources(name, block): {
       local resource = blockType.resource('azurerm_resources', name),
-      _: resource._({
+      _: resource._(block, {
         required_tags: build.template(std.get(block, 'required_tags', null)),
       }),
       id: resource.field('id'),
@@ -27190,7 +27195,7 @@ local provider(configuration) = {
     },
     role_definition(name, block): {
       local resource = blockType.resource('azurerm_role_definition', name),
-      _: resource._({
+      _: resource._(block, {
         scope: build.template(std.get(block, 'scope', null)),
       }),
       assignable_scopes: resource.field('assignable_scopes'),
@@ -27204,7 +27209,7 @@ local provider(configuration) = {
     },
     role_management_policy(name, block): {
       local resource = blockType.resource('azurerm_role_management_policy', name),
-      _: resource._({
+      _: resource._(block, {
         role_definition_id: build.template(block.role_definition_id),
         scope: build.template(block.scope),
       }),
@@ -27220,7 +27225,7 @@ local provider(configuration) = {
     },
     route_filter(name, block): {
       local resource = blockType.resource('azurerm_route_filter', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27233,7 +27238,7 @@ local provider(configuration) = {
     },
     route_table(name, block): {
       local resource = blockType.resource('azurerm_route_table', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27248,7 +27253,7 @@ local provider(configuration) = {
     },
     search_service(name, block): {
       local resource = blockType.resource('azurerm_search_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27266,7 +27271,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
         name: build.template(block.name),
       }),
@@ -27276,7 +27281,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_anomaly(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_anomaly', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
       }),
       anomaly_settings_version: resource.field('anomaly_settings_version'),
@@ -27300,7 +27305,7 @@ local provider(configuration) = {
     },
     sentinel_alert_rule_template(name, block): {
       local resource = blockType.resource('azurerm_sentinel_alert_rule_template', name),
-      _: resource._({
+      _: resource._(block, {
         log_analytics_workspace_id: build.template(block.log_analytics_workspace_id),
       }),
       display_name: resource.field('display_name'),
@@ -27313,7 +27318,7 @@ local provider(configuration) = {
     },
     service_plan(name, block): {
       local resource = blockType.resource('azurerm_service_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27334,7 +27339,7 @@ local provider(configuration) = {
     },
     servicebus_namespace(name, block): {
       local resource = blockType.resource('azurerm_servicebus_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27354,7 +27359,7 @@ local provider(configuration) = {
     },
     servicebus_namespace_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_servicebus_namespace_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_id: build.template(std.get(block, 'namespace_id', null)),
         namespace_name: build.template(std.get(block, 'namespace_name', null)),
@@ -27374,7 +27379,7 @@ local provider(configuration) = {
     },
     servicebus_namespace_disaster_recovery_config(name, block): {
       local resource = blockType.resource('azurerm_servicebus_namespace_disaster_recovery_config', name),
-      _: resource._({
+      _: resource._(block, {
         alias_authorization_rule_id: build.template(std.get(block, 'alias_authorization_rule_id', null)),
         name: build.template(block.name),
         namespace_id: build.template(std.get(block, 'namespace_id', null)),
@@ -27395,7 +27400,7 @@ local provider(configuration) = {
     },
     servicebus_queue(name, block): {
       local resource = blockType.resource('azurerm_servicebus_queue', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_id: build.template(std.get(block, 'namespace_id', null)),
         namespace_name: build.template(std.get(block, 'namespace_name', null)),
@@ -27424,7 +27429,7 @@ local provider(configuration) = {
     },
     servicebus_queue_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_servicebus_queue_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_name: build.template(std.get(block, 'namespace_name', null)),
         queue_id: build.template(std.get(block, 'queue_id', null)),
@@ -27449,7 +27454,7 @@ local provider(configuration) = {
     },
     servicebus_subscription(name, block): {
       local resource = blockType.resource('azurerm_servicebus_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_name: build.template(std.get(block, 'namespace_name', null)),
         resource_group_name: build.template(std.get(block, 'resource_group_name', null)),
@@ -27475,7 +27480,7 @@ local provider(configuration) = {
     },
     servicebus_topic(name, block): {
       local resource = blockType.resource('azurerm_servicebus_topic', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_id: build.template(std.get(block, 'namespace_id', null)),
         namespace_name: build.template(std.get(block, 'namespace_name', null)),
@@ -27499,7 +27504,7 @@ local provider(configuration) = {
     },
     servicebus_topic_authorization_rule(name, block): {
       local resource = blockType.resource('azurerm_servicebus_topic_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_name: build.template(std.get(block, 'namespace_name', null)),
         queue_name: build.template(std.get(block, 'queue_name', null)),
@@ -27526,7 +27531,7 @@ local provider(configuration) = {
     },
     shared_image(name, block): {
       local resource = blockType.resource('azurerm_shared_image', name),
-      _: resource._({
+      _: resource._(block, {
         gallery_name: build.template(block.gallery_name),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -27556,7 +27561,7 @@ local provider(configuration) = {
     },
     shared_image_gallery(name, block): {
       local resource = blockType.resource('azurerm_shared_image_gallery', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27571,7 +27576,7 @@ local provider(configuration) = {
     },
     shared_image_version(name, block): {
       local resource = blockType.resource('azurerm_shared_image_version', name),
-      _: resource._({
+      _: resource._(block, {
         gallery_name: build.template(block.gallery_name),
         image_name: build.template(block.image_name),
         name: build.template(block.name),
@@ -27595,7 +27600,7 @@ local provider(configuration) = {
     },
     shared_image_versions(name, block): {
       local resource = blockType.resource('azurerm_shared_image_versions', name),
-      _: resource._({
+      _: resource._(block, {
         gallery_name: build.template(block.gallery_name),
         image_name: build.template(block.image_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -27610,7 +27615,7 @@ local provider(configuration) = {
     },
     signalr_service(name, block): {
       local resource = blockType.resource('azurerm_signalr_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27635,7 +27640,7 @@ local provider(configuration) = {
     },
     site_recovery_fabric(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_fabric', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -27648,7 +27653,7 @@ local provider(configuration) = {
     },
     site_recovery_protection_container(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_protection_container', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_fabric_name: build.template(block.recovery_fabric_name),
         recovery_vault_name: build.template(block.recovery_vault_name),
@@ -27662,7 +27667,7 @@ local provider(configuration) = {
     },
     site_recovery_replication_policy(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_replication_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_name: build.template(block.recovery_vault_name),
         resource_group_name: build.template(block.resource_group_name),
@@ -27676,7 +27681,7 @@ local provider(configuration) = {
     },
     site_recovery_replication_recovery_plan(name, block): {
       local resource = blockType.resource('azurerm_site_recovery_replication_recovery_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         recovery_vault_id: build.template(block.recovery_vault_id),
       }),
@@ -27691,7 +27696,7 @@ local provider(configuration) = {
     },
     snapshot(name, block): {
       local resource = blockType.resource('azurerm_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27710,7 +27715,7 @@ local provider(configuration) = {
     },
     source_control_token(name, block): {
       local resource = blockType.resource('azurerm_source_control_token', name),
-      _: resource._({
+      _: resource._(block, {
         type: build.template(block.type),
       }),
       id: resource.field('id'),
@@ -27720,7 +27725,7 @@ local provider(configuration) = {
     },
     spatial_anchors_account(name, block): {
       local resource = blockType.resource('azurerm_spatial_anchors_account', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27734,7 +27739,7 @@ local provider(configuration) = {
     },
     spring_cloud_app(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         service_name: build.template(block.service_name),
@@ -27753,7 +27758,7 @@ local provider(configuration) = {
     },
     spring_cloud_service(name, block): {
       local resource = blockType.resource('azurerm_spring_cloud_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27768,7 +27773,7 @@ local provider(configuration) = {
     },
     ssh_public_key(name, block): {
       local resource = blockType.resource('azurerm_ssh_public_key', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -27781,7 +27786,7 @@ local provider(configuration) = {
     },
     stack_hci_cluster(name, block): {
       local resource = blockType.resource('azurerm_stack_hci_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27800,7 +27805,7 @@ local provider(configuration) = {
     },
     static_web_app(name, block): {
       local resource = blockType.resource('azurerm_static_web_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -27822,7 +27827,7 @@ local provider(configuration) = {
     },
     storage_account(name, block): {
       local resource = blockType.resource('azurerm_storage_account', name),
-      _: resource._({
+      _: resource._(block, {
         min_tls_version: build.template(std.get(block, 'min_tls_version', null)),
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
@@ -27923,7 +27928,7 @@ local provider(configuration) = {
     },
     storage_account_blob_container_sas(name, block): {
       local resource = blockType.resource('azurerm_storage_account_blob_container_sas', name),
-      _: resource._({
+      _: resource._(block, {
         cache_control: build.template(std.get(block, 'cache_control', null)),
         connection_string: build.template(block.connection_string),
         container_name: build.template(block.container_name),
@@ -27952,7 +27957,7 @@ local provider(configuration) = {
     },
     storage_account_sas(name, block): {
       local resource = blockType.resource('azurerm_storage_account_sas', name),
-      _: resource._({
+      _: resource._(block, {
         connection_string: build.template(block.connection_string),
         expiry: build.template(block.expiry),
         https_only: build.template(std.get(block, 'https_only', null)),
@@ -27971,7 +27976,7 @@ local provider(configuration) = {
     },
     storage_blob(name, block): {
       local resource = blockType.resource('azurerm_storage_blob', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_account_name: build.template(block.storage_account_name),
         storage_container_name: build.template(block.storage_container_name),
@@ -27990,7 +27995,7 @@ local provider(configuration) = {
     },
     storage_container(name, block): {
       local resource = blockType.resource('azurerm_storage_container', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_account_id: build.template(std.get(block, 'storage_account_id', null)),
         storage_account_name: build.template(std.get(block, 'storage_account_name', null)),
@@ -28009,7 +28014,7 @@ local provider(configuration) = {
     },
     storage_containers(name, block): {
       local resource = blockType.resource('azurerm_storage_containers', name),
-      _: resource._({
+      _: resource._(block, {
         name_prefix: build.template(std.get(block, 'name_prefix', null)),
         storage_account_id: build.template(block.storage_account_id),
       }),
@@ -28020,7 +28025,7 @@ local provider(configuration) = {
     },
     storage_encryption_scope(name, block): {
       local resource = blockType.resource('azurerm_storage_encryption_scope', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_account_id: build.template(block.storage_account_id),
       }),
@@ -28032,7 +28037,7 @@ local provider(configuration) = {
     },
     storage_management_policy(name, block): {
       local resource = blockType.resource('azurerm_storage_management_policy', name),
-      _: resource._({
+      _: resource._(block, {
         storage_account_id: build.template(block.storage_account_id),
       }),
       id: resource.field('id'),
@@ -28041,7 +28046,7 @@ local provider(configuration) = {
     },
     storage_queue(name, block): {
       local resource = blockType.resource('azurerm_storage_queue', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_account_name: build.template(block.storage_account_name),
       }),
@@ -28053,7 +28058,7 @@ local provider(configuration) = {
     },
     storage_share(name, block): {
       local resource = blockType.resource('azurerm_storage_share', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_account_id: build.template(std.get(block, 'storage_account_id', null)),
         storage_account_name: build.template(std.get(block, 'storage_account_name', null)),
@@ -28068,7 +28073,7 @@ local provider(configuration) = {
     },
     storage_sync(name, block): {
       local resource = blockType.resource('azurerm_storage_sync', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28081,7 +28086,7 @@ local provider(configuration) = {
     },
     storage_sync_group(name, block): {
       local resource = blockType.resource('azurerm_storage_sync_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_sync_id: build.template(block.storage_sync_id),
       }),
@@ -28091,7 +28096,7 @@ local provider(configuration) = {
     },
     storage_table(name, block): {
       local resource = blockType.resource('azurerm_storage_table', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         storage_account_name: build.template(block.storage_account_name),
       }),
@@ -28103,7 +28108,7 @@ local provider(configuration) = {
     },
     storage_table_entities(name, block): {
       local resource = blockType.resource('azurerm_storage_table_entities', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(block.filter),
         select: build.template(std.get(block, 'select', null)),
         storage_table_id: build.template(block.storage_table_id),
@@ -28116,7 +28121,7 @@ local provider(configuration) = {
     },
     storage_table_entity(name, block): {
       local resource = blockType.resource('azurerm_storage_table_entity', name),
-      _: resource._({
+      _: resource._(block, {
         partition_key: build.template(block.partition_key),
         row_key: build.template(block.row_key),
         storage_table_id: build.template(block.storage_table_id),
@@ -28129,7 +28134,7 @@ local provider(configuration) = {
     },
     stream_analytics_job(name, block): {
       local resource = blockType.resource('azurerm_stream_analytics_job', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28154,7 +28159,7 @@ local provider(configuration) = {
     },
     subnet(name, block): {
       local resource = blockType.resource('azurerm_subnet', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         virtual_network_name: build.template(block.virtual_network_name),
@@ -28174,7 +28179,7 @@ local provider(configuration) = {
     },
     subscription(name, block): {
       local resource = blockType.resource('azurerm_subscription', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       display_name: resource.field('display_name'),
       id: resource.field('id'),
@@ -28188,7 +28193,7 @@ local provider(configuration) = {
     },
     subscription_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_subscription_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -28197,7 +28202,7 @@ local provider(configuration) = {
     },
     subscriptions(name, block): {
       local resource = blockType.resource('azurerm_subscriptions', name),
-      _: resource._({
+      _: resource._(block, {
         display_name_contains: build.template(std.get(block, 'display_name_contains', null)),
         display_name_prefix: build.template(std.get(block, 'display_name_prefix', null)),
       }),
@@ -28208,7 +28213,7 @@ local provider(configuration) = {
     },
     synapse_workspace(name, block): {
       local resource = blockType.resource('azurerm_synapse_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28222,7 +28227,7 @@ local provider(configuration) = {
     },
     system_center_virtual_machine_manager_inventory_items(name, block): {
       local resource = blockType.resource('azurerm_system_center_virtual_machine_manager_inventory_items', name),
-      _: resource._({
+      _: resource._(block, {
         inventory_type: build.template(block.inventory_type),
         system_center_virtual_machine_manager_server_id: build.template(block.system_center_virtual_machine_manager_server_id),
       }),
@@ -28233,7 +28238,7 @@ local provider(configuration) = {
     },
     template_spec_version(name, block): {
       local resource = blockType.resource('azurerm_template_spec_version', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         version: build.template(block.version),
@@ -28247,7 +28252,7 @@ local provider(configuration) = {
     },
     tenant_template_deployment(name, block): {
       local resource = blockType.resource('azurerm_tenant_template_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -28256,7 +28261,7 @@ local provider(configuration) = {
     },
     traffic_manager_geographical_location(name, block): {
       local resource = blockType.resource('azurerm_traffic_manager_geographical_location', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -28264,7 +28269,7 @@ local provider(configuration) = {
     },
     traffic_manager_profile(name, block): {
       local resource = blockType.resource('azurerm_traffic_manager_profile', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -28283,7 +28288,7 @@ local provider(configuration) = {
     },
     user_assigned_identity(name, block): {
       local resource = blockType.resource('azurerm_user_assigned_identity', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28298,7 +28303,7 @@ local provider(configuration) = {
     },
     virtual_desktop_application_group(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_application_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28315,7 +28320,7 @@ local provider(configuration) = {
     },
     virtual_desktop_host_pool(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_host_pool', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28338,7 +28343,7 @@ local provider(configuration) = {
     },
     virtual_desktop_workspace(name, block): {
       local resource = blockType.resource('azurerm_virtual_desktop_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28353,7 +28358,7 @@ local provider(configuration) = {
     },
     virtual_hub(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28370,7 +28375,7 @@ local provider(configuration) = {
     },
     virtual_hub_connection(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         virtual_hub_name: build.template(block.virtual_hub_name),
@@ -28386,7 +28391,7 @@ local provider(configuration) = {
     },
     virtual_hub_route_table(name, block): {
       local resource = blockType.resource('azurerm_virtual_hub_route_table', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         virtual_hub_name: build.template(block.virtual_hub_name),
@@ -28401,7 +28406,7 @@ local provider(configuration) = {
     },
     virtual_machine(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28418,7 +28423,7 @@ local provider(configuration) = {
     },
     virtual_machine_scale_set(name, block): {
       local resource = blockType.resource('azurerm_virtual_machine_scale_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28432,7 +28437,7 @@ local provider(configuration) = {
     },
     virtual_network(name, block): {
       local resource = blockType.resource('azurerm_virtual_network', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28450,7 +28455,7 @@ local provider(configuration) = {
     },
     virtual_network_gateway(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28474,7 +28479,7 @@ local provider(configuration) = {
     },
     virtual_network_gateway_connection(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_gateway_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28506,7 +28511,7 @@ local provider(configuration) = {
     },
     virtual_network_peering(name, block): {
       local resource = blockType.resource('azurerm_virtual_network_peering', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         virtual_network_id: build.template(block.virtual_network_id),
       }),
@@ -28523,7 +28528,7 @@ local provider(configuration) = {
     },
     virtual_wan(name, block): {
       local resource = blockType.resource('azurerm_virtual_wan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28541,7 +28546,7 @@ local provider(configuration) = {
     },
     vmware_private_cloud(name, block): {
       local resource = blockType.resource('azurerm_vmware_private_cloud', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28566,7 +28571,7 @@ local provider(configuration) = {
     },
     vpn_gateway(name, block): {
       local resource = blockType.resource('azurerm_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28581,7 +28586,7 @@ local provider(configuration) = {
     },
     vpn_server_configuration(name, block): {
       local resource = blockType.resource('azurerm_vpn_server_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28600,7 +28605,7 @@ local provider(configuration) = {
     },
     web_application_firewall_policy(name, block): {
       local resource = blockType.resource('azurerm_web_application_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -28613,7 +28618,7 @@ local provider(configuration) = {
     },
     web_pubsub(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28640,7 +28645,7 @@ local provider(configuration) = {
     },
     web_pubsub_private_link_resource(name, block): {
       local resource = blockType.resource('azurerm_web_pubsub_private_link_resource', name),
-      _: resource._({
+      _: resource._(block, {
         web_pubsub_id: build.template(block.web_pubsub_id),
       }),
       id: resource.field('id'),
@@ -28649,7 +28654,7 @@ local provider(configuration) = {
     },
     windows_function_app(name, block): {
       local resource = blockType.resource('azurerm_windows_function_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),
@@ -28696,7 +28701,7 @@ local provider(configuration) = {
     },
     windows_web_app(name, block): {
       local resource = blockType.resource('azurerm_windows_web_app', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_name: build.template(block.resource_group_name),
       }),

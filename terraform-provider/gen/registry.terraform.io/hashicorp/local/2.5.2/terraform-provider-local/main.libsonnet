@@ -15,7 +15,12 @@ local providerTemplate(provider, requirements, configuration) = {
     resource(type, name): {
       local resourceType = std.substr(type, std.length(provider) + 1, std.length(type)),
       local resourcePath = blockTypePath + [type, name],
-      _(block): {
+      _(rawBlock, block): {
+        local metaBlock = {
+          depends_on: build.template(std.get(rawBlock, 'depends_on', null)),
+          count: build.template(std.get(rawBlock, 'count', null)),
+          for_each: build.template(std.get(rawBlock, 'for_each', null)),
+        },
         providerRequirements: providerRequirements,
         providerConfiguration: providerConfiguration,
         provider: provider,
@@ -26,7 +31,7 @@ local providerTemplate(provider, requirements, configuration) = {
         block: {
           [blockType]: {
             [type]: {
-              [name]: std.prune(block + providerReference),
+              [name]: std.prune(metaBlock + block + providerReference),
             },
           },
         },
@@ -59,7 +64,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('resource'),
     file(name, block): {
       local resource = blockType.resource('local_file', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(std.get(block, 'content', null)),
         content_base64: build.template(std.get(block, 'content_base64', null)),
         filename: build.template(block.filename),
@@ -83,7 +88,7 @@ local provider(configuration) = {
     },
     sensitive_file(name, block): {
       local resource = blockType.resource('local_sensitive_file', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(std.get(block, 'content', null)),
         content_base64: build.template(std.get(block, 'content_base64', null)),
         filename: build.template(block.filename),
@@ -108,7 +113,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('data'),
     file(name, block): {
       local resource = blockType.resource('local_file', name),
-      _: resource._({
+      _: resource._(block, {
         filename: build.template(block.filename),
       }),
       content: resource.field('content'),
@@ -124,7 +129,7 @@ local provider(configuration) = {
     },
     sensitive_file(name, block): {
       local resource = blockType.resource('local_sensitive_file', name),
-      _: resource._({
+      _: resource._(block, {
         filename: build.template(block.filename),
       }),
       content: resource.field('content'),

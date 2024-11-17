@@ -15,7 +15,12 @@ local providerTemplate(provider, requirements, configuration) = {
     resource(type, name): {
       local resourceType = std.substr(type, std.length(provider) + 1, std.length(type)),
       local resourcePath = blockTypePath + [type, name],
-      _(block): {
+      _(rawBlock, block): {
+        local metaBlock = {
+          depends_on: build.template(std.get(rawBlock, 'depends_on', null)),
+          count: build.template(std.get(rawBlock, 'count', null)),
+          for_each: build.template(std.get(rawBlock, 'for_each', null)),
+        },
         providerRequirements: providerRequirements,
         providerConfiguration: providerConfiguration,
         provider: provider,
@@ -26,7 +31,7 @@ local providerTemplate(provider, requirements, configuration) = {
         block: {
           [blockType]: {
             [type]: {
-              [name]: std.prune(block + providerReference),
+              [name]: std.prune(metaBlock + block + providerReference),
             },
           },
         },
@@ -59,7 +64,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('resource'),
     accessanalyzer_analyzer(name, block): {
       local resource = blockType.resource('aws_accessanalyzer_analyzer', name),
-      _: resource._({
+      _: resource._(block, {
         analyzer_name: build.template(block.analyzer_name),
         tags: build.template(std.get(block, 'tags', null)),
         type: build.template(std.get(block, 'type', null)),
@@ -73,7 +78,7 @@ local provider(configuration) = {
     },
     accessanalyzer_archive_rule(name, block): {
       local resource = blockType.resource('aws_accessanalyzer_archive_rule', name),
-      _: resource._({
+      _: resource._(block, {
         analyzer_name: build.template(block.analyzer_name),
         rule_name: build.template(block.rule_name),
       }),
@@ -83,7 +88,7 @@ local provider(configuration) = {
     },
     account_alternate_contact(name, block): {
       local resource = blockType.resource('aws_account_alternate_contact', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(std.get(block, 'account_id', null)),
         alternate_contact_type: build.template(block.alternate_contact_type),
         email_address: build.template(block.email_address),
@@ -101,7 +106,7 @@ local provider(configuration) = {
     },
     account_primary_contact(name, block): {
       local resource = blockType.resource('aws_account_primary_contact', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(std.get(block, 'account_id', null)),
         address_line_1: build.template(block.address_line_1),
         address_line_2: build.template(std.get(block, 'address_line_2', null)),
@@ -133,7 +138,7 @@ local provider(configuration) = {
     },
     account_region(name, block): {
       local resource = blockType.resource('aws_account_region', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(std.get(block, 'account_id', null)),
         enabled: build.template(block.enabled),
         region_name: build.template(block.region_name),
@@ -146,7 +151,7 @@ local provider(configuration) = {
     },
     acm_certificate(name, block): {
       local resource = blockType.resource('aws_acm_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_authority_arn: build.template(std.get(block, 'certificate_authority_arn', null)),
         certificate_body: build.template(std.get(block, 'certificate_body', null)),
         certificate_chain: build.template(std.get(block, 'certificate_chain', null)),
@@ -179,7 +184,7 @@ local provider(configuration) = {
     },
     acm_certificate_validation(name, block): {
       local resource = blockType.resource('aws_acm_certificate_validation', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_arn: build.template(block.certificate_arn),
         validation_record_fqdns: build.template(std.get(block, 'validation_record_fqdns', null)),
       }),
@@ -189,7 +194,7 @@ local provider(configuration) = {
     },
     acmpca_certificate(name, block): {
       local resource = blockType.resource('aws_acmpca_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         api_passthrough: build.template(std.get(block, 'api_passthrough', null)),
         certificate_authority_arn: build.template(block.certificate_authority_arn),
         certificate_signing_request: build.template(block.certificate_signing_request),
@@ -208,7 +213,7 @@ local provider(configuration) = {
     },
     acmpca_certificate_authority(name, block): {
       local resource = blockType.resource('aws_acmpca_certificate_authority', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         permanent_deletion_time_in_days: build.template(std.get(block, 'permanent_deletion_time_in_days', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -232,7 +237,7 @@ local provider(configuration) = {
     },
     acmpca_certificate_authority_certificate(name, block): {
       local resource = blockType.resource('aws_acmpca_certificate_authority_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate: build.template(block.certificate),
         certificate_authority_arn: build.template(block.certificate_authority_arn),
         certificate_chain: build.template(std.get(block, 'certificate_chain', null)),
@@ -244,7 +249,7 @@ local provider(configuration) = {
     },
     acmpca_permission(name, block): {
       local resource = blockType.resource('aws_acmpca_permission', name),
-      _: resource._({
+      _: resource._(block, {
         actions: build.template(block.actions),
         certificate_authority_arn: build.template(block.certificate_authority_arn),
         principal: build.template(block.principal),
@@ -258,7 +263,7 @@ local provider(configuration) = {
     },
     acmpca_policy(name, block): {
       local resource = blockType.resource('aws_acmpca_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -268,7 +273,7 @@ local provider(configuration) = {
     },
     alb(name, block): {
       local resource = blockType.resource('aws_alb', name),
-      _: resource._({
+      _: resource._(block, {
         client_keep_alive: build.template(std.get(block, 'client_keep_alive', null)),
         customer_owned_ipv4_pool: build.template(std.get(block, 'customer_owned_ipv4_pool', null)),
         desync_mitigation_mode: build.template(std.get(block, 'desync_mitigation_mode', null)),
@@ -321,7 +326,7 @@ local provider(configuration) = {
     },
     alb_listener(name, block): {
       local resource = blockType.resource('aws_alb_listener', name),
-      _: resource._({
+      _: resource._(block, {
         alpn_policy: build.template(std.get(block, 'alpn_policy', null)),
         certificate_arn: build.template(std.get(block, 'certificate_arn', null)),
         load_balancer_arn: build.template(block.load_balancer_arn),
@@ -342,7 +347,7 @@ local provider(configuration) = {
     },
     alb_listener_certificate(name, block): {
       local resource = blockType.resource('aws_alb_listener_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_arn: build.template(block.certificate_arn),
         listener_arn: build.template(block.listener_arn),
       }),
@@ -352,7 +357,7 @@ local provider(configuration) = {
     },
     alb_listener_rule(name, block): {
       local resource = blockType.resource('aws_alb_listener_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listener_arn: build.template(block.listener_arn),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -365,7 +370,7 @@ local provider(configuration) = {
     },
     alb_target_group(name, block): {
       local resource = blockType.resource('aws_alb_target_group', name),
-      _: resource._({
+      _: resource._(block, {
         deregistration_delay: build.template(std.get(block, 'deregistration_delay', null)),
         lambda_multi_value_headers_enabled: build.template(std.get(block, 'lambda_multi_value_headers_enabled', null)),
         port: build.template(std.get(block, 'port', null)),
@@ -402,7 +407,7 @@ local provider(configuration) = {
     },
     alb_target_group_attachment(name, block): {
       local resource = blockType.resource('aws_alb_target_group_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(std.get(block, 'availability_zone', null)),
         port: build.template(std.get(block, 'port', null)),
         target_group_arn: build.template(block.target_group_arn),
@@ -416,7 +421,7 @@ local provider(configuration) = {
     },
     ami(name, block): {
       local resource = blockType.resource('aws_ami', name),
-      _: resource._({
+      _: resource._(block, {
         architecture: build.template(std.get(block, 'architecture', null)),
         boot_mode: build.template(std.get(block, 'boot_mode', null)),
         deprecation_time: build.template(std.get(block, 'deprecation_time', null)),
@@ -463,7 +468,7 @@ local provider(configuration) = {
     },
     ami_copy(name, block): {
       local resource = blockType.resource('aws_ami_copy', name),
-      _: resource._({
+      _: resource._(block, {
         deprecation_time: build.template(std.get(block, 'deprecation_time', null)),
         description: build.template(std.get(block, 'description', null)),
         destination_outpost_arn: build.template(std.get(block, 'destination_outpost_arn', null)),
@@ -509,7 +514,7 @@ local provider(configuration) = {
     },
     ami_from_instance(name, block): {
       local resource = blockType.resource('aws_ami_from_instance', name),
-      _: resource._({
+      _: resource._(block, {
         deprecation_time: build.template(std.get(block, 'deprecation_time', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -550,7 +555,7 @@ local provider(configuration) = {
     },
     ami_launch_permission(name, block): {
       local resource = blockType.resource('aws_ami_launch_permission', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(std.get(block, 'account_id', null)),
         group: build.template(std.get(block, 'group', null)),
         image_id: build.template(block.image_id),
@@ -566,7 +571,7 @@ local provider(configuration) = {
     },
     amplify_app(name, block): {
       local resource = blockType.resource('aws_amplify_app', name),
-      _: resource._({
+      _: resource._(block, {
         access_token: build.template(std.get(block, 'access_token', null)),
         auto_branch_creation_patterns: build.template(std.get(block, 'auto_branch_creation_patterns', null)),
         basic_auth_credentials: build.template(std.get(block, 'basic_auth_credentials', null)),
@@ -608,7 +613,7 @@ local provider(configuration) = {
     },
     amplify_backend_environment(name, block): {
       local resource = blockType.resource('aws_amplify_backend_environment', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         environment_name: build.template(block.environment_name),
       }),
@@ -621,7 +626,7 @@ local provider(configuration) = {
     },
     amplify_branch(name, block): {
       local resource = blockType.resource('aws_amplify_branch', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         backend_environment_arn: build.template(std.get(block, 'backend_environment_arn', null)),
         basic_auth_credentials: build.template(std.get(block, 'basic_auth_credentials', null)),
@@ -666,7 +671,7 @@ local provider(configuration) = {
     },
     amplify_domain_association(name, block): {
       local resource = blockType.resource('aws_amplify_domain_association', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         domain_name: build.template(block.domain_name),
         enable_auto_sub_domain: build.template(std.get(block, 'enable_auto_sub_domain', null)),
@@ -682,7 +687,7 @@ local provider(configuration) = {
     },
     amplify_webhook(name, block): {
       local resource = blockType.resource('aws_amplify_webhook', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         branch_name: build.template(block.branch_name),
         description: build.template(std.get(block, 'description', null)),
@@ -696,7 +701,7 @@ local provider(configuration) = {
     },
     api_gateway_account(name, block): {
       local resource = blockType.resource('aws_api_gateway_account', name),
-      _: resource._({
+      _: resource._(block, {
         reset_on_delete: build.template(std.get(block, 'reset_on_delete', null)),
       }),
       api_key_version: resource.field('api_key_version'),
@@ -708,7 +713,7 @@ local provider(configuration) = {
     },
     api_gateway_api_key(name, block): {
       local resource = blockType.resource('aws_api_gateway_api_key', name),
-      _: resource._({
+      _: resource._(block, {
         customer_id: build.template(std.get(block, 'customer_id', null)),
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -729,7 +734,7 @@ local provider(configuration) = {
     },
     api_gateway_authorizer(name, block): {
       local resource = blockType.resource('aws_api_gateway_authorizer', name),
-      _: resource._({
+      _: resource._(block, {
         authorizer_credentials: build.template(std.get(block, 'authorizer_credentials', null)),
         authorizer_result_ttl_in_seconds: build.template(std.get(block, 'authorizer_result_ttl_in_seconds', null)),
         authorizer_uri: build.template(std.get(block, 'authorizer_uri', null)),
@@ -754,7 +759,7 @@ local provider(configuration) = {
     },
     api_gateway_base_path_mapping(name, block): {
       local resource = blockType.resource('aws_api_gateway_base_path_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         base_path: build.template(std.get(block, 'base_path', null)),
         domain_name: build.template(block.domain_name),
@@ -768,7 +773,7 @@ local provider(configuration) = {
     },
     api_gateway_client_certificate(name, block): {
       local resource = blockType.resource('aws_api_gateway_client_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -783,7 +788,7 @@ local provider(configuration) = {
     },
     api_gateway_deployment(name, block): {
       local resource = blockType.resource('aws_api_gateway_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         rest_api_id: build.template(block.rest_api_id),
         stage_description: build.template(std.get(block, 'stage_description', null)),
@@ -804,7 +809,7 @@ local provider(configuration) = {
     },
     api_gateway_documentation_part(name, block): {
       local resource = blockType.resource('aws_api_gateway_documentation_part', name),
-      _: resource._({
+      _: resource._(block, {
         properties: build.template(block.properties),
         rest_api_id: build.template(block.rest_api_id),
       }),
@@ -815,7 +820,7 @@ local provider(configuration) = {
     },
     api_gateway_documentation_version(name, block): {
       local resource = blockType.resource('aws_api_gateway_documentation_version', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         rest_api_id: build.template(block.rest_api_id),
         version: build.template(block.version),
@@ -827,7 +832,7 @@ local provider(configuration) = {
     },
     api_gateway_domain_name(name, block): {
       local resource = blockType.resource('aws_api_gateway_domain_name', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_arn: build.template(std.get(block, 'certificate_arn', null)),
         certificate_body: build.template(std.get(block, 'certificate_body', null)),
         certificate_chain: build.template(std.get(block, 'certificate_chain', null)),
@@ -860,7 +865,7 @@ local provider(configuration) = {
     },
     api_gateway_gateway_response(name, block): {
       local resource = blockType.resource('aws_api_gateway_gateway_response', name),
-      _: resource._({
+      _: resource._(block, {
         response_parameters: build.template(std.get(block, 'response_parameters', null)),
         response_templates: build.template(std.get(block, 'response_templates', null)),
         response_type: build.template(block.response_type),
@@ -876,7 +881,7 @@ local provider(configuration) = {
     },
     api_gateway_integration(name, block): {
       local resource = blockType.resource('aws_api_gateway_integration', name),
-      _: resource._({
+      _: resource._(block, {
         cache_key_parameters: build.template(std.get(block, 'cache_key_parameters', null)),
         connection_id: build.template(std.get(block, 'connection_id', null)),
         connection_type: build.template(std.get(block, 'connection_type', null)),
@@ -912,7 +917,7 @@ local provider(configuration) = {
     },
     api_gateway_integration_response(name, block): {
       local resource = blockType.resource('aws_api_gateway_integration_response', name),
-      _: resource._({
+      _: resource._(block, {
         content_handling: build.template(std.get(block, 'content_handling', null)),
         http_method: build.template(block.http_method),
         resource_id: build.template(block.resource_id),
@@ -934,7 +939,7 @@ local provider(configuration) = {
     },
     api_gateway_method(name, block): {
       local resource = blockType.resource('aws_api_gateway_method', name),
-      _: resource._({
+      _: resource._(block, {
         api_key_required: build.template(std.get(block, 'api_key_required', null)),
         authorization: build.template(block.authorization),
         authorization_scopes: build.template(std.get(block, 'authorization_scopes', null)),
@@ -962,7 +967,7 @@ local provider(configuration) = {
     },
     api_gateway_method_response(name, block): {
       local resource = blockType.resource('aws_api_gateway_method_response', name),
-      _: resource._({
+      _: resource._(block, {
         http_method: build.template(block.http_method),
         resource_id: build.template(block.resource_id),
         response_models: build.template(std.get(block, 'response_models', null)),
@@ -980,7 +985,7 @@ local provider(configuration) = {
     },
     api_gateway_method_settings(name, block): {
       local resource = blockType.resource('aws_api_gateway_method_settings', name),
-      _: resource._({
+      _: resource._(block, {
         method_path: build.template(block.method_path),
         rest_api_id: build.template(block.rest_api_id),
         stage_name: build.template(block.stage_name),
@@ -992,7 +997,7 @@ local provider(configuration) = {
     },
     api_gateway_model(name, block): {
       local resource = blockType.resource('aws_api_gateway_model', name),
-      _: resource._({
+      _: resource._(block, {
         content_type: build.template(block.content_type),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -1008,7 +1013,7 @@ local provider(configuration) = {
     },
     api_gateway_request_validator(name, block): {
       local resource = blockType.resource('aws_api_gateway_request_validator', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         rest_api_id: build.template(block.rest_api_id),
         validate_request_body: build.template(std.get(block, 'validate_request_body', null)),
@@ -1022,7 +1027,7 @@ local provider(configuration) = {
     },
     api_gateway_resource(name, block): {
       local resource = blockType.resource('aws_api_gateway_resource', name),
-      _: resource._({
+      _: resource._(block, {
         parent_id: build.template(block.parent_id),
         path_part: build.template(block.path_part),
         rest_api_id: build.template(block.rest_api_id),
@@ -1035,7 +1040,7 @@ local provider(configuration) = {
     },
     api_gateway_rest_api(name, block): {
       local resource = blockType.resource('aws_api_gateway_rest_api', name),
-      _: resource._({
+      _: resource._(block, {
         body: build.template(std.get(block, 'body', null)),
         fail_on_warnings: build.template(std.get(block, 'fail_on_warnings', null)),
         name: build.template(block.name),
@@ -1064,7 +1069,7 @@ local provider(configuration) = {
     },
     api_gateway_rest_api_policy(name, block): {
       local resource = blockType.resource('aws_api_gateway_rest_api_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         rest_api_id: build.template(block.rest_api_id),
       }),
@@ -1074,7 +1079,7 @@ local provider(configuration) = {
     },
     api_gateway_stage(name, block): {
       local resource = blockType.resource('aws_api_gateway_stage', name),
-      _: resource._({
+      _: resource._(block, {
         cache_cluster_enabled: build.template(std.get(block, 'cache_cluster_enabled', null)),
         cache_cluster_size: build.template(std.get(block, 'cache_cluster_size', null)),
         client_certificate_id: build.template(std.get(block, 'client_certificate_id', null)),
@@ -1107,7 +1112,7 @@ local provider(configuration) = {
     },
     api_gateway_usage_plan(name, block): {
       local resource = blockType.resource('aws_api_gateway_usage_plan', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         product_code: build.template(std.get(block, 'product_code', null)),
@@ -1123,7 +1128,7 @@ local provider(configuration) = {
     },
     api_gateway_usage_plan_key(name, block): {
       local resource = blockType.resource('aws_api_gateway_usage_plan_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_id: build.template(block.key_id),
         key_type: build.template(block.key_type),
         usage_plan_id: build.template(block.usage_plan_id),
@@ -1137,7 +1142,7 @@ local provider(configuration) = {
     },
     api_gateway_vpc_link(name, block): {
       local resource = blockType.resource('aws_api_gateway_vpc_link', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1153,7 +1158,7 @@ local provider(configuration) = {
     },
     apigatewayv2_api(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_api', name),
-      _: resource._({
+      _: resource._(block, {
         api_key_selection_expression: build.template(std.get(block, 'api_key_selection_expression', null)),
         body: build.template(std.get(block, 'body', null)),
         credentials_arn: build.template(std.get(block, 'credentials_arn', null)),
@@ -1189,7 +1194,7 @@ local provider(configuration) = {
     },
     apigatewayv2_api_mapping(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_api_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         api_mapping_key: build.template(std.get(block, 'api_mapping_key', null)),
         domain_name: build.template(block.domain_name),
@@ -1203,7 +1208,7 @@ local provider(configuration) = {
     },
     apigatewayv2_authorizer(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_authorizer', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         authorizer_credentials_arn: build.template(std.get(block, 'authorizer_credentials_arn', null)),
         authorizer_payload_format_version: build.template(std.get(block, 'authorizer_payload_format_version', null)),
@@ -1226,7 +1231,7 @@ local provider(configuration) = {
     },
     apigatewayv2_deployment(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         description: build.template(std.get(block, 'description', null)),
         triggers: build.template(std.get(block, 'triggers', null)),
@@ -1239,7 +1244,7 @@ local provider(configuration) = {
     },
     apigatewayv2_domain_name(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_domain_name', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -1252,7 +1257,7 @@ local provider(configuration) = {
     },
     apigatewayv2_integration(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_integration', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         connection_id: build.template(std.get(block, 'connection_id', null)),
         connection_type: build.template(std.get(block, 'connection_type', null)),
@@ -1290,7 +1295,7 @@ local provider(configuration) = {
     },
     apigatewayv2_integration_response(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_integration_response', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         content_handling_strategy: build.template(std.get(block, 'content_handling_strategy', null)),
         integration_id: build.template(block.integration_id),
@@ -1308,7 +1313,7 @@ local provider(configuration) = {
     },
     apigatewayv2_model(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_model', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         content_type: build.template(block.content_type),
         description: build.template(std.get(block, 'description', null)),
@@ -1324,7 +1329,7 @@ local provider(configuration) = {
     },
     apigatewayv2_route(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_route', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         api_key_required: build.template(std.get(block, 'api_key_required', null)),
         authorization_scopes: build.template(std.get(block, 'authorization_scopes', null)),
@@ -1352,7 +1357,7 @@ local provider(configuration) = {
     },
     apigatewayv2_route_response(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_route_response', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         model_selection_expression: build.template(std.get(block, 'model_selection_expression', null)),
         response_models: build.template(std.get(block, 'response_models', null)),
@@ -1368,7 +1373,7 @@ local provider(configuration) = {
     },
     apigatewayv2_stage(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_stage', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         auto_deploy: build.template(std.get(block, 'auto_deploy', null)),
         client_certificate_id: build.template(std.get(block, 'client_certificate_id', null)),
@@ -1393,7 +1398,7 @@ local provider(configuration) = {
     },
     apigatewayv2_vpc_link(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_vpc_link', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         security_group_ids: build.template(block.security_group_ids),
         subnet_ids: build.template(block.subnet_ids),
@@ -1409,7 +1414,7 @@ local provider(configuration) = {
     },
     app_cookie_stickiness_policy(name, block): {
       local resource = blockType.resource('aws_app_cookie_stickiness_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cookie_name: build.template(block.cookie_name),
         lb_port: build.template(block.lb_port),
         load_balancer: build.template(block.load_balancer),
@@ -1423,7 +1428,7 @@ local provider(configuration) = {
     },
     appautoscaling_policy(name, block): {
       local resource = blockType.resource('aws_appautoscaling_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_type: build.template(std.get(block, 'policy_type', null)),
         resource_id: build.template(block.resource_id),
@@ -1441,7 +1446,7 @@ local provider(configuration) = {
     },
     appautoscaling_scheduled_action(name, block): {
       local resource = blockType.resource('aws_appautoscaling_scheduled_action', name),
-      _: resource._({
+      _: resource._(block, {
         end_time: build.template(std.get(block, 'end_time', null)),
         name: build.template(block.name),
         resource_id: build.template(block.resource_id),
@@ -1464,7 +1469,7 @@ local provider(configuration) = {
     },
     appautoscaling_target(name, block): {
       local resource = blockType.resource('aws_appautoscaling_target', name),
-      _: resource._({
+      _: resource._(block, {
         max_capacity: build.template(block.max_capacity),
         min_capacity: build.template(block.min_capacity),
         resource_id: build.template(block.resource_id),
@@ -1485,7 +1490,7 @@ local provider(configuration) = {
     },
     appconfig_application(name, block): {
       local resource = blockType.resource('aws_appconfig_application', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1499,7 +1504,7 @@ local provider(configuration) = {
     },
     appconfig_configuration_profile(name, block): {
       local resource = blockType.resource('aws_appconfig_configuration_profile', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         description: build.template(std.get(block, 'description', null)),
         kms_key_identifier: build.template(std.get(block, 'kms_key_identifier', null)),
@@ -1524,7 +1529,7 @@ local provider(configuration) = {
     },
     appconfig_deployment(name, block): {
       local resource = blockType.resource('aws_appconfig_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         configuration_profile_id: build.template(block.configuration_profile_id),
         configuration_version: build.template(block.configuration_version),
@@ -1551,7 +1556,7 @@ local provider(configuration) = {
     },
     appconfig_deployment_strategy(name, block): {
       local resource = blockType.resource('aws_appconfig_deployment_strategy', name),
-      _: resource._({
+      _: resource._(block, {
         deployment_duration_in_minutes: build.template(block.deployment_duration_in_minutes),
         description: build.template(std.get(block, 'description', null)),
         final_bake_time_in_minutes: build.template(std.get(block, 'final_bake_time_in_minutes', null)),
@@ -1575,7 +1580,7 @@ local provider(configuration) = {
     },
     appconfig_environment(name, block): {
       local resource = blockType.resource('aws_appconfig_environment', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1592,7 +1597,7 @@ local provider(configuration) = {
     },
     appconfig_extension(name, block): {
       local resource = blockType.resource('aws_appconfig_extension', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -1606,7 +1611,7 @@ local provider(configuration) = {
     },
     appconfig_extension_association(name, block): {
       local resource = blockType.resource('aws_appconfig_extension_association', name),
-      _: resource._({
+      _: resource._(block, {
         extension_arn: build.template(block.extension_arn),
         parameters: build.template(std.get(block, 'parameters', null)),
         resource_arn: build.template(block.resource_arn),
@@ -1620,7 +1625,7 @@ local provider(configuration) = {
     },
     appconfig_hosted_configuration_version(name, block): {
       local resource = blockType.resource('aws_appconfig_hosted_configuration_version', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         configuration_profile_id: build.template(block.configuration_profile_id),
         content: build.template(block.content),
@@ -1638,7 +1643,7 @@ local provider(configuration) = {
     },
     appfabric_app_authorization(name, block): {
       local resource = blockType.resource('aws_appfabric_app_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         app: build.template(block.app),
         app_bundle_arn: build.template(block.app_bundle_arn),
         auth_type: build.template(block.auth_type),
@@ -1658,7 +1663,7 @@ local provider(configuration) = {
     },
     appfabric_app_authorization_connection(name, block): {
       local resource = blockType.resource('aws_appfabric_app_authorization_connection', name),
-      _: resource._({
+      _: resource._(block, {
         app_authorization_arn: build.template(block.app_authorization_arn),
         app_bundle_arn: build.template(block.app_bundle_arn),
       }),
@@ -1670,7 +1675,7 @@ local provider(configuration) = {
     },
     appfabric_app_bundle(name, block): {
       local resource = blockType.resource('aws_appfabric_app_bundle', name),
-      _: resource._({
+      _: resource._(block, {
         customer_managed_key_arn: build.template(std.get(block, 'customer_managed_key_arn', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -1682,7 +1687,7 @@ local provider(configuration) = {
     },
     appfabric_ingestion(name, block): {
       local resource = blockType.resource('aws_appfabric_ingestion', name),
-      _: resource._({
+      _: resource._(block, {
         app: build.template(block.app),
         app_bundle_arn: build.template(block.app_bundle_arn),
         ingestion_type: build.template(block.ingestion_type),
@@ -1700,7 +1705,7 @@ local provider(configuration) = {
     },
     appfabric_ingestion_destination(name, block): {
       local resource = blockType.resource('aws_appfabric_ingestion_destination', name),
-      _: resource._({
+      _: resource._(block, {
         app_bundle_arn: build.template(block.app_bundle_arn),
         ingestion_arn: build.template(block.ingestion_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1714,7 +1719,7 @@ local provider(configuration) = {
     },
     appflow_connector_profile(name, block): {
       local resource = blockType.resource('aws_appflow_connector_profile', name),
-      _: resource._({
+      _: resource._(block, {
         connection_mode: build.template(block.connection_mode),
         connector_label: build.template(std.get(block, 'connector_label', null)),
         connector_type: build.template(block.connector_type),
@@ -1731,7 +1736,7 @@ local provider(configuration) = {
     },
     appflow_flow(name, block): {
       local resource = blockType.resource('aws_appflow_flow', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1747,7 +1752,7 @@ local provider(configuration) = {
     },
     appintegrations_data_integration(name, block): {
       local resource = blockType.resource('aws_appintegrations_data_integration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         kms_key: build.template(block.kms_key),
         name: build.template(block.name),
@@ -1765,7 +1770,7 @@ local provider(configuration) = {
     },
     appintegrations_event_integration(name, block): {
       local resource = blockType.resource('aws_appintegrations_event_integration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         eventbridge_bus: build.template(block.eventbridge_bus),
         name: build.template(block.name),
@@ -1781,7 +1786,7 @@ local provider(configuration) = {
     },
     applicationinsights_application(name, block): {
       local resource = blockType.resource('aws_applicationinsights_application', name),
-      _: resource._({
+      _: resource._(block, {
         auto_config_enabled: build.template(std.get(block, 'auto_config_enabled', null)),
         auto_create: build.template(std.get(block, 'auto_create', null)),
         cwe_monitor_enabled: build.template(std.get(block, 'cwe_monitor_enabled', null)),
@@ -1805,7 +1810,7 @@ local provider(configuration) = {
     },
     appmesh_gateway_route(name, block): {
       local resource = blockType.resource('aws_appmesh_gateway_route', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1825,7 +1830,7 @@ local provider(configuration) = {
     },
     appmesh_mesh(name, block): {
       local resource = blockType.resource('aws_appmesh_mesh', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -1841,7 +1846,7 @@ local provider(configuration) = {
     },
     appmesh_route(name, block): {
       local resource = blockType.resource('aws_appmesh_route', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1861,7 +1866,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_gateway(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1879,7 +1884,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_node(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_node', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1897,7 +1902,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_router(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_router', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1915,7 +1920,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_service(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_service', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1933,7 +1938,7 @@ local provider(configuration) = {
     },
     apprunner_auto_scaling_configuration_version(name, block): {
       local resource = blockType.resource('aws_apprunner_auto_scaling_configuration_version', name),
-      _: resource._({
+      _: resource._(block, {
         auto_scaling_configuration_name: build.template(block.auto_scaling_configuration_name),
         max_concurrency: build.template(std.get(block, 'max_concurrency', null)),
         max_size: build.template(std.get(block, 'max_size', null)),
@@ -1956,7 +1961,7 @@ local provider(configuration) = {
     },
     apprunner_connection(name, block): {
       local resource = blockType.resource('aws_apprunner_connection', name),
-      _: resource._({
+      _: resource._(block, {
         connection_name: build.template(block.connection_name),
         provider_type: build.template(block.provider_type),
         tags: build.template(std.get(block, 'tags', null)),
@@ -1971,7 +1976,7 @@ local provider(configuration) = {
     },
     apprunner_custom_domain_association(name, block): {
       local resource = blockType.resource('aws_apprunner_custom_domain_association', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         enable_www_subdomain: build.template(std.get(block, 'enable_www_subdomain', null)),
         service_arn: build.template(block.service_arn),
@@ -1986,7 +1991,7 @@ local provider(configuration) = {
     },
     apprunner_default_auto_scaling_configuration_version(name, block): {
       local resource = blockType.resource('aws_apprunner_default_auto_scaling_configuration_version', name),
-      _: resource._({
+      _: resource._(block, {
         auto_scaling_configuration_arn: build.template(block.auto_scaling_configuration_arn),
       }),
       auto_scaling_configuration_arn: resource.field('auto_scaling_configuration_arn'),
@@ -1994,7 +1999,7 @@ local provider(configuration) = {
     },
     apprunner_deployment(name, block): {
       local resource = blockType.resource('aws_apprunner_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         service_arn: build.template(block.service_arn),
       }),
       id: resource.field('id'),
@@ -2004,7 +2009,7 @@ local provider(configuration) = {
     },
     apprunner_observability_configuration(name, block): {
       local resource = blockType.resource('aws_apprunner_observability_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         observability_configuration_name: build.template(block.observability_configuration_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -2019,7 +2024,7 @@ local provider(configuration) = {
     },
     apprunner_service(name, block): {
       local resource = blockType.resource('aws_apprunner_service', name),
-      _: resource._({
+      _: resource._(block, {
         service_name: build.template(block.service_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -2035,7 +2040,7 @@ local provider(configuration) = {
     },
     apprunner_vpc_connector(name, block): {
       local resource = blockType.resource('aws_apprunner_vpc_connector', name),
-      _: resource._({
+      _: resource._(block, {
         security_groups: build.template(block.security_groups),
         subnets: build.template(block.subnets),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2053,7 +2058,7 @@ local provider(configuration) = {
     },
     apprunner_vpc_ingress_connection(name, block): {
       local resource = blockType.resource('aws_apprunner_vpc_ingress_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         service_arn: build.template(block.service_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2069,7 +2074,7 @@ local provider(configuration) = {
     },
     appstream_directory_config(name, block): {
       local resource = blockType.resource('aws_appstream_directory_config', name),
-      _: resource._({
+      _: resource._(block, {
         directory_name: build.template(block.directory_name),
         organizational_unit_distinguished_names: build.template(block.organizational_unit_distinguished_names),
       }),
@@ -2080,7 +2085,7 @@ local provider(configuration) = {
     },
     appstream_fleet(name, block): {
       local resource = blockType.resource('aws_appstream_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         idle_disconnect_timeout_in_seconds: build.template(std.get(block, 'idle_disconnect_timeout_in_seconds', null)),
         instance_type: build.template(block.instance_type),
         max_sessions_per_instance: build.template(std.get(block, 'max_sessions_per_instance', null)),
@@ -2110,7 +2115,7 @@ local provider(configuration) = {
     },
     appstream_fleet_stack_association(name, block): {
       local resource = blockType.resource('aws_appstream_fleet_stack_association', name),
-      _: resource._({
+      _: resource._(block, {
         fleet_name: build.template(block.fleet_name),
         stack_name: build.template(block.stack_name),
       }),
@@ -2120,7 +2125,7 @@ local provider(configuration) = {
     },
     appstream_image_builder(name, block): {
       local resource = blockType.resource('aws_appstream_image_builder', name),
-      _: resource._({
+      _: resource._(block, {
         instance_type: build.template(block.instance_type),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2143,7 +2148,7 @@ local provider(configuration) = {
     },
     appstream_stack(name, block): {
       local resource = blockType.resource('aws_appstream_stack', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(block.name),
@@ -2163,7 +2168,7 @@ local provider(configuration) = {
     },
     appstream_user(name, block): {
       local resource = blockType.resource('aws_appstream_user', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(block.authentication_type),
         enabled: build.template(std.get(block, 'enabled', null)),
         first_name: build.template(std.get(block, 'first_name', null)),
@@ -2183,7 +2188,7 @@ local provider(configuration) = {
     },
     appstream_user_stack_association(name, block): {
       local resource = blockType.resource('aws_appstream_user_stack_association', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_type: build.template(block.authentication_type),
         send_email_notification: build.template(std.get(block, 'send_email_notification', null)),
         stack_name: build.template(block.stack_name),
@@ -2197,7 +2202,7 @@ local provider(configuration) = {
     },
     appsync_api_cache(name, block): {
       local resource = blockType.resource('aws_appsync_api_cache', name),
-      _: resource._({
+      _: resource._(block, {
         api_caching_behavior: build.template(block.api_caching_behavior),
         api_id: build.template(block.api_id),
         at_rest_encryption_enabled: build.template(std.get(block, 'at_rest_encryption_enabled', null)),
@@ -2215,7 +2220,7 @@ local provider(configuration) = {
     },
     appsync_api_key(name, block): {
       local resource = blockType.resource('aws_appsync_api_key', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         description: build.template(std.get(block, 'description', null)),
         expires: build.template(std.get(block, 'expires', null)),
@@ -2229,7 +2234,7 @@ local provider(configuration) = {
     },
     appsync_datasource(name, block): {
       local resource = blockType.resource('aws_appsync_datasource', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -2246,7 +2251,7 @@ local provider(configuration) = {
     },
     appsync_domain_name(name, block): {
       local resource = blockType.resource('aws_appsync_domain_name', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_arn: build.template(block.certificate_arn),
         description: build.template(std.get(block, 'description', null)),
         domain_name: build.template(block.domain_name),
@@ -2260,7 +2265,7 @@ local provider(configuration) = {
     },
     appsync_domain_name_api_association(name, block): {
       local resource = blockType.resource('aws_appsync_domain_name_api_association', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         domain_name: build.template(block.domain_name),
       }),
@@ -2270,7 +2275,7 @@ local provider(configuration) = {
     },
     appsync_function(name, block): {
       local resource = blockType.resource('aws_appsync_function', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         code: build.template(std.get(block, 'code', null)),
         data_source: build.template(block.data_source),
@@ -2295,7 +2300,7 @@ local provider(configuration) = {
     },
     appsync_graphql_api(name, block): {
       local resource = blockType.resource('aws_appsync_graphql_api', name),
-      _: resource._({
+      _: resource._(block, {
         api_type: build.template(std.get(block, 'api_type', null)),
         authentication_type: build.template(block.authentication_type),
         introspection_config: build.template(std.get(block, 'introspection_config', null)),
@@ -2326,7 +2331,7 @@ local provider(configuration) = {
     },
     appsync_resolver(name, block): {
       local resource = blockType.resource('aws_appsync_resolver', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         code: build.template(std.get(block, 'code', null)),
         data_source: build.template(std.get(block, 'data_source', null)),
@@ -2351,7 +2356,7 @@ local provider(configuration) = {
     },
     appsync_source_api_association(name, block): {
       local resource = blockType.resource('aws_appsync_source_api_association', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
       }),
       arn: resource.field('arn'),
@@ -2366,7 +2371,7 @@ local provider(configuration) = {
     },
     appsync_type(name, block): {
       local resource = blockType.resource('aws_appsync_type', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         definition: build.template(block.definition),
         format: build.template(block.format),
@@ -2381,7 +2386,7 @@ local provider(configuration) = {
     },
     athena_data_catalog(name, block): {
       local resource = blockType.resource('aws_athena_data_catalog', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         name: build.template(block.name),
         parameters: build.template(block.parameters),
@@ -2399,7 +2404,7 @@ local provider(configuration) = {
     },
     athena_database(name, block): {
       local resource = blockType.resource('aws_athena_database', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(std.get(block, 'bucket', null)),
         comment: build.template(std.get(block, 'comment', null)),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
@@ -2417,7 +2422,7 @@ local provider(configuration) = {
     },
     athena_named_query(name, block): {
       local resource = blockType.resource('aws_athena_named_query', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -2433,7 +2438,7 @@ local provider(configuration) = {
     },
     athena_prepared_statement(name, block): {
       local resource = blockType.resource('aws_athena_prepared_statement', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         query_statement: build.template(block.query_statement),
@@ -2447,7 +2452,7 @@ local provider(configuration) = {
     },
     athena_workgroup(name, block): {
       local resource = blockType.resource('aws_athena_workgroup', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         name: build.template(block.name),
@@ -2465,7 +2470,7 @@ local provider(configuration) = {
     },
     auditmanager_account_registration(name, block): {
       local resource = blockType.resource('aws_auditmanager_account_registration', name),
-      _: resource._({
+      _: resource._(block, {
         delegated_admin_account: build.template(std.get(block, 'delegated_admin_account', null)),
         deregister_on_destroy: build.template(std.get(block, 'deregister_on_destroy', null)),
         kms_key: build.template(std.get(block, 'kms_key', null)),
@@ -2478,7 +2483,7 @@ local provider(configuration) = {
     },
     auditmanager_assessment(name, block): {
       local resource = blockType.resource('aws_auditmanager_assessment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         framework_id: build.template(block.framework_id),
         name: build.template(block.name),
@@ -2498,7 +2503,7 @@ local provider(configuration) = {
     },
     auditmanager_assessment_delegation(name, block): {
       local resource = blockType.resource('aws_auditmanager_assessment_delegation', name),
-      _: resource._({
+      _: resource._(block, {
         assessment_id: build.template(block.assessment_id),
         comment: build.template(std.get(block, 'comment', null)),
         control_set_id: build.template(block.control_set_id),
@@ -2516,7 +2521,7 @@ local provider(configuration) = {
     },
     auditmanager_assessment_report(name, block): {
       local resource = blockType.resource('aws_auditmanager_assessment_report', name),
-      _: resource._({
+      _: resource._(block, {
         assessment_id: build.template(block.assessment_id),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -2530,7 +2535,7 @@ local provider(configuration) = {
     },
     auditmanager_control(name, block): {
       local resource = blockType.resource('aws_auditmanager_control', name),
-      _: resource._({
+      _: resource._(block, {
         action_plan_instructions: build.template(std.get(block, 'action_plan_instructions', null)),
         action_plan_title: build.template(std.get(block, 'action_plan_title', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -2551,7 +2556,7 @@ local provider(configuration) = {
     },
     auditmanager_framework(name, block): {
       local resource = blockType.resource('aws_auditmanager_framework', name),
-      _: resource._({
+      _: resource._(block, {
         compliance_type: build.template(std.get(block, 'compliance_type', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -2568,7 +2573,7 @@ local provider(configuration) = {
     },
     auditmanager_framework_share(name, block): {
       local resource = blockType.resource('aws_auditmanager_framework_share', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         destination_account: build.template(block.destination_account),
         destination_region: build.template(block.destination_region),
@@ -2583,7 +2588,7 @@ local provider(configuration) = {
     },
     auditmanager_organization_admin_account_registration(name, block): {
       local resource = blockType.resource('aws_auditmanager_organization_admin_account_registration', name),
-      _: resource._({
+      _: resource._(block, {
         admin_account_id: build.template(block.admin_account_id),
       }),
       admin_account_id: resource.field('admin_account_id'),
@@ -2592,7 +2597,7 @@ local provider(configuration) = {
     },
     autoscaling_attachment(name, block): {
       local resource = blockType.resource('aws_autoscaling_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         autoscaling_group_name: build.template(block.autoscaling_group_name),
         elb: build.template(std.get(block, 'elb', null)),
         lb_target_group_arn: build.template(std.get(block, 'lb_target_group_arn', null)),
@@ -2604,7 +2609,7 @@ local provider(configuration) = {
     },
     autoscaling_group(name, block): {
       local resource = blockType.resource('aws_autoscaling_group', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_rebalance: build.template(std.get(block, 'capacity_rebalance', null)),
         context: build.template(std.get(block, 'context', null)),
         default_instance_warmup: build.template(std.get(block, 'default_instance_warmup', null)),
@@ -2665,7 +2670,7 @@ local provider(configuration) = {
     },
     autoscaling_group_tag(name, block): {
       local resource = blockType.resource('aws_autoscaling_group_tag', name),
-      _: resource._({
+      _: resource._(block, {
         autoscaling_group_name: build.template(block.autoscaling_group_name),
       }),
       autoscaling_group_name: resource.field('autoscaling_group_name'),
@@ -2673,7 +2678,7 @@ local provider(configuration) = {
     },
     autoscaling_lifecycle_hook(name, block): {
       local resource = blockType.resource('aws_autoscaling_lifecycle_hook', name),
-      _: resource._({
+      _: resource._(block, {
         autoscaling_group_name: build.template(block.autoscaling_group_name),
         heartbeat_timeout: build.template(std.get(block, 'heartbeat_timeout', null)),
         lifecycle_transition: build.template(block.lifecycle_transition),
@@ -2694,7 +2699,7 @@ local provider(configuration) = {
     },
     autoscaling_notification(name, block): {
       local resource = blockType.resource('aws_autoscaling_notification', name),
-      _: resource._({
+      _: resource._(block, {
         group_names: build.template(block.group_names),
         notifications: build.template(block.notifications),
         topic_arn: build.template(block.topic_arn),
@@ -2706,7 +2711,7 @@ local provider(configuration) = {
     },
     autoscaling_policy(name, block): {
       local resource = blockType.resource('aws_autoscaling_policy', name),
-      _: resource._({
+      _: resource._(block, {
         adjustment_type: build.template(std.get(block, 'adjustment_type', null)),
         autoscaling_group_name: build.template(block.autoscaling_group_name),
         cooldown: build.template(std.get(block, 'cooldown', null)),
@@ -2732,7 +2737,7 @@ local provider(configuration) = {
     },
     autoscaling_schedule(name, block): {
       local resource = blockType.resource('aws_autoscaling_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         autoscaling_group_name: build.template(block.autoscaling_group_name),
         scheduled_action_name: build.template(block.scheduled_action_name),
       }),
@@ -2750,7 +2755,7 @@ local provider(configuration) = {
     },
     autoscaling_traffic_source_attachment(name, block): {
       local resource = blockType.resource('aws_autoscaling_traffic_source_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         autoscaling_group_name: build.template(block.autoscaling_group_name),
       }),
       autoscaling_group_name: resource.field('autoscaling_group_name'),
@@ -2758,7 +2763,7 @@ local provider(configuration) = {
     },
     autoscalingplans_scaling_plan(name, block): {
       local resource = blockType.resource('aws_autoscalingplans_scaling_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -2767,7 +2772,7 @@ local provider(configuration) = {
     },
     backup_framework(name, block): {
       local resource = blockType.resource('aws_backup_framework', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2784,7 +2789,7 @@ local provider(configuration) = {
     },
     backup_global_settings(name, block): {
       local resource = blockType.resource('aws_backup_global_settings', name),
-      _: resource._({
+      _: resource._(block, {
         global_settings: build.template(block.global_settings),
       }),
       global_settings: resource.field('global_settings'),
@@ -2792,7 +2797,7 @@ local provider(configuration) = {
     },
     backup_logically_air_gapped_vault(name, block): {
       local resource = blockType.resource('aws_backup_logically_air_gapped_vault', name),
-      _: resource._({
+      _: resource._(block, {
         max_retention_days: build.template(block.max_retention_days),
         min_retention_days: build.template(block.min_retention_days),
         name: build.template(block.name),
@@ -2808,7 +2813,7 @@ local provider(configuration) = {
     },
     backup_plan(name, block): {
       local resource = blockType.resource('aws_backup_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -2821,7 +2826,7 @@ local provider(configuration) = {
     },
     backup_region_settings(name, block): {
       local resource = blockType.resource('aws_backup_region_settings', name),
-      _: resource._({
+      _: resource._(block, {
         resource_type_opt_in_preference: build.template(block.resource_type_opt_in_preference),
       }),
       id: resource.field('id'),
@@ -2830,7 +2835,7 @@ local provider(configuration) = {
     },
     backup_report_plan(name, block): {
       local resource = blockType.resource('aws_backup_report_plan', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2846,7 +2851,7 @@ local provider(configuration) = {
     },
     backup_restore_testing_plan(name, block): {
       local resource = blockType.resource('aws_backup_restore_testing_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         schedule_expression: build.template(block.schedule_expression),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2861,7 +2866,7 @@ local provider(configuration) = {
     },
     backup_restore_testing_selection(name, block): {
       local resource = blockType.resource('aws_backup_restore_testing_selection', name),
-      _: resource._({
+      _: resource._(block, {
         iam_role_arn: build.template(block.iam_role_arn),
         name: build.template(block.name),
         protected_resource_type: build.template(block.protected_resource_type),
@@ -2877,7 +2882,7 @@ local provider(configuration) = {
     },
     backup_selection(name, block): {
       local resource = blockType.resource('aws_backup_selection', name),
-      _: resource._({
+      _: resource._(block, {
         iam_role_arn: build.template(block.iam_role_arn),
         name: build.template(block.name),
         plan_id: build.template(block.plan_id),
@@ -2892,7 +2897,7 @@ local provider(configuration) = {
     },
     backup_vault(name, block): {
       local resource = blockType.resource('aws_backup_vault', name),
-      _: resource._({
+      _: resource._(block, {
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -2908,7 +2913,7 @@ local provider(configuration) = {
     },
     backup_vault_lock_configuration(name, block): {
       local resource = blockType.resource('aws_backup_vault_lock_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         backup_vault_name: build.template(block.backup_vault_name),
         changeable_for_days: build.template(std.get(block, 'changeable_for_days', null)),
         max_retention_days: build.template(std.get(block, 'max_retention_days', null)),
@@ -2923,7 +2928,7 @@ local provider(configuration) = {
     },
     backup_vault_notifications(name, block): {
       local resource = blockType.resource('aws_backup_vault_notifications', name),
-      _: resource._({
+      _: resource._(block, {
         backup_vault_events: build.template(block.backup_vault_events),
         backup_vault_name: build.template(block.backup_vault_name),
         sns_topic_arn: build.template(block.sns_topic_arn),
@@ -2936,7 +2941,7 @@ local provider(configuration) = {
     },
     backup_vault_policy(name, block): {
       local resource = blockType.resource('aws_backup_vault_policy', name),
-      _: resource._({
+      _: resource._(block, {
         backup_vault_name: build.template(block.backup_vault_name),
         policy: build.template(block.policy),
       }),
@@ -2947,7 +2952,7 @@ local provider(configuration) = {
     },
     batch_compute_environment(name, block): {
       local resource = blockType.resource('aws_batch_compute_environment', name),
-      _: resource._({
+      _: resource._(block, {
         state: build.template(std.get(block, 'state', null)),
         tags: build.template(std.get(block, 'tags', null)),
         type: build.template(block.type),
@@ -2967,7 +2972,7 @@ local provider(configuration) = {
     },
     batch_job_definition(name, block): {
       local resource = blockType.resource('aws_batch_job_definition', name),
-      _: resource._({
+      _: resource._(block, {
         container_properties: build.template(std.get(block, 'container_properties', null)),
         deregister_on_new_revision: build.template(std.get(block, 'deregister_on_new_revision', null)),
         ecs_properties: build.template(std.get(block, 'ecs_properties', null)),
@@ -2999,7 +3004,7 @@ local provider(configuration) = {
     },
     batch_job_queue(name, block): {
       local resource = blockType.resource('aws_batch_job_queue', name),
-      _: resource._({
+      _: resource._(block, {
         compute_environments: build.template(std.get(block, 'compute_environments', null)),
         name: build.template(block.name),
         priority: build.template(block.priority),
@@ -3019,7 +3024,7 @@ local provider(configuration) = {
     },
     batch_scheduling_policy(name, block): {
       local resource = blockType.resource('aws_batch_scheduling_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -3031,7 +3036,7 @@ local provider(configuration) = {
     },
     bcmdataexports_export(name, block): {
       local resource = blockType.resource('aws_bcmdataexports_export', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       id: resource.field('id'),
@@ -3040,7 +3045,7 @@ local provider(configuration) = {
     },
     bedrock_custom_model(name, block): {
       local resource = blockType.resource('aws_bedrock_custom_model', name),
-      _: resource._({
+      _: resource._(block, {
         base_model_identifier: build.template(block.base_model_identifier),
         custom_model_kms_key_id: build.template(std.get(block, 'custom_model_kms_key_id', null)),
         custom_model_name: build.template(block.custom_model_name),
@@ -3067,7 +3072,7 @@ local provider(configuration) = {
     },
     bedrock_guardrail(name, block): {
       local resource = blockType.resource('aws_bedrock_guardrail', name),
-      _: resource._({
+      _: resource._(block, {
         blocked_input_messaging: build.template(block.blocked_input_messaging),
         blocked_outputs_messaging: build.template(block.blocked_outputs_messaging),
         kms_key_arn: build.template(std.get(block, 'kms_key_arn', null)),
@@ -3089,7 +3094,7 @@ local provider(configuration) = {
     },
     bedrock_guardrail_version(name, block): {
       local resource = blockType.resource('aws_bedrock_guardrail_version', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         guardrail_arn: build.template(block.guardrail_arn),
         skip_destroy: build.template(std.get(block, 'skip_destroy', null)),
@@ -3101,13 +3106,13 @@ local provider(configuration) = {
     },
     bedrock_model_invocation_logging_configuration(name, block): {
       local resource = blockType.resource('aws_bedrock_model_invocation_logging_configuration', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     bedrock_provisioned_model_throughput(name, block): {
       local resource = blockType.resource('aws_bedrock_provisioned_model_throughput', name),
-      _: resource._({
+      _: resource._(block, {
         commitment_duration: build.template(std.get(block, 'commitment_duration', null)),
         model_arn: build.template(block.model_arn),
         model_units: build.template(block.model_units),
@@ -3125,7 +3130,7 @@ local provider(configuration) = {
     },
     bedrockagent_agent(name, block): {
       local resource = blockType.resource('aws_bedrockagent_agent', name),
-      _: resource._({
+      _: resource._(block, {
         agent_name: build.template(block.agent_name),
         agent_resource_role_arn: build.template(block.agent_resource_role_arn),
         customer_encryption_key_arn: build.template(std.get(block, 'customer_encryption_key_arn', null)),
@@ -3154,7 +3159,7 @@ local provider(configuration) = {
     },
     bedrockagent_agent_action_group(name, block): {
       local resource = blockType.resource('aws_bedrockagent_agent_action_group', name),
-      _: resource._({
+      _: resource._(block, {
         action_group_name: build.template(block.action_group_name),
         agent_id: build.template(block.agent_id),
         agent_version: build.template(block.agent_version),
@@ -3174,7 +3179,7 @@ local provider(configuration) = {
     },
     bedrockagent_agent_alias(name, block): {
       local resource = blockType.resource('aws_bedrockagent_agent_alias', name),
-      _: resource._({
+      _: resource._(block, {
         agent_alias_name: build.template(block.agent_alias_name),
         agent_id: build.template(block.agent_id),
         description: build.template(std.get(block, 'description', null)),
@@ -3192,7 +3197,7 @@ local provider(configuration) = {
     },
     bedrockagent_agent_knowledge_base_association(name, block): {
       local resource = blockType.resource('aws_bedrockagent_agent_knowledge_base_association', name),
-      _: resource._({
+      _: resource._(block, {
         agent_id: build.template(block.agent_id),
         description: build.template(block.description),
         knowledge_base_id: build.template(block.knowledge_base_id),
@@ -3207,7 +3212,7 @@ local provider(configuration) = {
     },
     bedrockagent_data_source(name, block): {
       local resource = blockType.resource('aws_bedrockagent_data_source', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         knowledge_base_id: build.template(block.knowledge_base_id),
         name: build.template(block.name),
@@ -3221,7 +3226,7 @@ local provider(configuration) = {
     },
     bedrockagent_knowledge_base(name, block): {
       local resource = blockType.resource('aws_bedrockagent_knowledge_base', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         role_arn: build.template(block.role_arn),
@@ -3240,7 +3245,7 @@ local provider(configuration) = {
     },
     budgets_budget(name, block): {
       local resource = blockType.resource('aws_budgets_budget', name),
-      _: resource._({
+      _: resource._(block, {
         budget_type: build.template(block.budget_type),
         tags: build.template(std.get(block, 'tags', null)),
         time_period_end: build.template(std.get(block, 'time_period_end', null)),
@@ -3262,7 +3267,7 @@ local provider(configuration) = {
     },
     budgets_budget_action(name, block): {
       local resource = blockType.resource('aws_budgets_budget_action', name),
-      _: resource._({
+      _: resource._(block, {
         action_type: build.template(block.action_type),
         approval_model: build.template(block.approval_model),
         budget_name: build.template(block.budget_name),
@@ -3285,7 +3290,7 @@ local provider(configuration) = {
     },
     ce_anomaly_monitor(name, block): {
       local resource = blockType.resource('aws_ce_anomaly_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         monitor_dimension: build.template(std.get(block, 'monitor_dimension', null)),
         monitor_specification: build.template(std.get(block, 'monitor_specification', null)),
         monitor_type: build.template(block.monitor_type),
@@ -3303,7 +3308,7 @@ local provider(configuration) = {
     },
     ce_anomaly_subscription(name, block): {
       local resource = blockType.resource('aws_ce_anomaly_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         frequency: build.template(block.frequency),
         monitor_arn_list: build.template(block.monitor_arn_list),
         name: build.template(block.name),
@@ -3320,7 +3325,7 @@ local provider(configuration) = {
     },
     ce_cost_allocation_tag(name, block): {
       local resource = blockType.resource('aws_ce_cost_allocation_tag', name),
-      _: resource._({
+      _: resource._(block, {
         status: build.template(block.status),
         tag_key: build.template(block.tag_key),
       }),
@@ -3331,7 +3336,7 @@ local provider(configuration) = {
     },
     ce_cost_category(name, block): {
       local resource = blockType.resource('aws_ce_cost_category', name),
-      _: resource._({
+      _: resource._(block, {
         default_value: build.template(std.get(block, 'default_value', null)),
         name: build.template(block.name),
         rule_version: build.template(block.rule_version),
@@ -3349,7 +3354,7 @@ local provider(configuration) = {
     },
     chatbot_slack_channel_configuration(name, block): {
       local resource = blockType.resource('aws_chatbot_slack_channel_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_name: build.template(block.configuration_name),
         iam_role_arn: build.template(block.iam_role_arn),
         slack_channel_id: build.template(block.slack_channel_id),
@@ -3372,7 +3377,7 @@ local provider(configuration) = {
     },
     chatbot_teams_channel_configuration(name, block): {
       local resource = blockType.resource('aws_chatbot_teams_channel_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         channel_id: build.template(block.channel_id),
         configuration_name: build.template(block.configuration_name),
         iam_role_arn: build.template(block.iam_role_arn),
@@ -3397,7 +3402,7 @@ local provider(configuration) = {
     },
     chime_voice_connector(name, block): {
       local resource = blockType.resource('aws_chime_voice_connector', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         require_encryption: build.template(block.require_encryption),
         tags: build.template(std.get(block, 'tags', null)),
@@ -3413,7 +3418,7 @@ local provider(configuration) = {
     },
     chime_voice_connector_group(name, block): {
       local resource = blockType.resource('aws_chime_voice_connector_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -3421,7 +3426,7 @@ local provider(configuration) = {
     },
     chime_voice_connector_logging(name, block): {
       local resource = blockType.resource('aws_chime_voice_connector_logging', name),
-      _: resource._({
+      _: resource._(block, {
         enable_media_metric_logs: build.template(std.get(block, 'enable_media_metric_logs', null)),
         enable_sip_logs: build.template(std.get(block, 'enable_sip_logs', null)),
         voice_connector_id: build.template(block.voice_connector_id),
@@ -3433,7 +3438,7 @@ local provider(configuration) = {
     },
     chime_voice_connector_origination(name, block): {
       local resource = blockType.resource('aws_chime_voice_connector_origination', name),
-      _: resource._({
+      _: resource._(block, {
         disabled: build.template(std.get(block, 'disabled', null)),
         voice_connector_id: build.template(block.voice_connector_id),
       }),
@@ -3443,7 +3448,7 @@ local provider(configuration) = {
     },
     chime_voice_connector_streaming(name, block): {
       local resource = blockType.resource('aws_chime_voice_connector_streaming', name),
-      _: resource._({
+      _: resource._(block, {
         data_retention: build.template(block.data_retention),
         disabled: build.template(std.get(block, 'disabled', null)),
         streaming_notification_targets: build.template(std.get(block, 'streaming_notification_targets', null)),
@@ -3457,7 +3462,7 @@ local provider(configuration) = {
     },
     chime_voice_connector_termination(name, block): {
       local resource = blockType.resource('aws_chime_voice_connector_termination', name),
-      _: resource._({
+      _: resource._(block, {
         calling_regions: build.template(block.calling_regions),
         cidr_allow_list: build.template(block.cidr_allow_list),
         cps_limit: build.template(std.get(block, 'cps_limit', null)),
@@ -3475,7 +3480,7 @@ local provider(configuration) = {
     },
     chime_voice_connector_termination_credentials(name, block): {
       local resource = blockType.resource('aws_chime_voice_connector_termination_credentials', name),
-      _: resource._({
+      _: resource._(block, {
         voice_connector_id: build.template(block.voice_connector_id),
       }),
       id: resource.field('id'),
@@ -3483,7 +3488,7 @@ local provider(configuration) = {
     },
     chimesdkmediapipelines_media_insights_pipeline_configuration(name, block): {
       local resource = blockType.resource('aws_chimesdkmediapipelines_media_insights_pipeline_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_access_role_arn: build.template(block.resource_access_role_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -3497,13 +3502,13 @@ local provider(configuration) = {
     },
     chimesdkvoice_global_settings(name, block): {
       local resource = blockType.resource('aws_chimesdkvoice_global_settings', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     chimesdkvoice_sip_media_application(name, block): {
       local resource = blockType.resource('aws_chimesdkvoice_sip_media_application', name),
-      _: resource._({
+      _: resource._(block, {
         aws_region: build.template(block.aws_region),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -3517,7 +3522,7 @@ local provider(configuration) = {
     },
     chimesdkvoice_sip_rule(name, block): {
       local resource = blockType.resource('aws_chimesdkvoice_sip_rule', name),
-      _: resource._({
+      _: resource._(block, {
         disabled: build.template(std.get(block, 'disabled', null)),
         name: build.template(block.name),
         trigger_type: build.template(block.trigger_type),
@@ -3531,7 +3536,7 @@ local provider(configuration) = {
     },
     chimesdkvoice_voice_profile_domain(name, block): {
       local resource = blockType.resource('aws_chimesdkvoice_voice_profile_domain', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -3545,7 +3550,7 @@ local provider(configuration) = {
     },
     cleanrooms_collaboration(name, block): {
       local resource = blockType.resource('aws_cleanrooms_collaboration', name),
-      _: resource._({
+      _: resource._(block, {
         creator_display_name: build.template(block.creator_display_name),
         creator_member_abilities: build.template(block.creator_member_abilities),
         description: build.template(block.description),
@@ -3567,7 +3572,7 @@ local provider(configuration) = {
     },
     cleanrooms_configured_table(name, block): {
       local resource = blockType.resource('aws_cleanrooms_configured_table', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_columns: build.template(block.allowed_columns),
         analysis_method: build.template(block.analysis_method),
         description: build.template(std.get(block, 'description', null)),
@@ -3587,7 +3592,7 @@ local provider(configuration) = {
     },
     cloud9_environment_ec2(name, block): {
       local resource = blockType.resource('aws_cloud9_environment_ec2', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_stop_time_minutes: build.template(std.get(block, 'automatic_stop_time_minutes', null)),
         connection_type: build.template(std.get(block, 'connection_type', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -3613,7 +3618,7 @@ local provider(configuration) = {
     },
     cloud9_environment_membership(name, block): {
       local resource = blockType.resource('aws_cloud9_environment_membership', name),
-      _: resource._({
+      _: resource._(block, {
         environment_id: build.template(block.environment_id),
         permissions: build.template(block.permissions),
         user_arn: build.template(block.user_arn),
@@ -3626,7 +3631,7 @@ local provider(configuration) = {
     },
     cloudcontrolapi_resource(name, block): {
       local resource = blockType.resource('aws_cloudcontrolapi_resource', name),
-      _: resource._({
+      _: resource._(block, {
         desired_state: build.template(block.desired_state),
         role_arn: build.template(std.get(block, 'role_arn', null)),
         type_name: build.template(block.type_name),
@@ -3642,7 +3647,7 @@ local provider(configuration) = {
     },
     cloudformation_stack(name, block): {
       local resource = blockType.resource('aws_cloudformation_stack', name),
-      _: resource._({
+      _: resource._(block, {
         capabilities: build.template(std.get(block, 'capabilities', null)),
         disable_rollback: build.template(std.get(block, 'disable_rollback', null)),
         iam_role_arn: build.template(std.get(block, 'iam_role_arn', null)),
@@ -3673,7 +3678,7 @@ local provider(configuration) = {
     },
     cloudformation_stack_instances(name, block): {
       local resource = blockType.resource('aws_cloudformation_stack_instances', name),
-      _: resource._({
+      _: resource._(block, {
         call_as: build.template(std.get(block, 'call_as', null)),
         parameter_overrides: build.template(std.get(block, 'parameter_overrides', null)),
         retain_stacks: build.template(std.get(block, 'retain_stacks', null)),
@@ -3691,7 +3696,7 @@ local provider(configuration) = {
     },
     cloudformation_stack_set(name, block): {
       local resource = blockType.resource('aws_cloudformation_stack_set', name),
-      _: resource._({
+      _: resource._(block, {
         administration_role_arn: build.template(std.get(block, 'administration_role_arn', null)),
         call_as: build.template(std.get(block, 'call_as', null)),
         capabilities: build.template(std.get(block, 'capabilities', null)),
@@ -3720,7 +3725,7 @@ local provider(configuration) = {
     },
     cloudformation_stack_set_instance(name, block): {
       local resource = blockType.resource('aws_cloudformation_stack_set_instance', name),
-      _: resource._({
+      _: resource._(block, {
         call_as: build.template(std.get(block, 'call_as', null)),
         parameter_overrides: build.template(std.get(block, 'parameter_overrides', null)),
         retain_stack: build.template(std.get(block, 'retain_stack', null)),
@@ -3739,7 +3744,7 @@ local provider(configuration) = {
     },
     cloudformation_type(name, block): {
       local resource = blockType.resource('aws_cloudformation_type', name),
-      _: resource._({
+      _: resource._(block, {
         execution_role_arn: build.template(std.get(block, 'execution_role_arn', null)),
         schema_handler_package: build.template(block.schema_handler_package),
         type_name: build.template(block.type_name),
@@ -3764,7 +3769,7 @@ local provider(configuration) = {
     },
     cloudfront_cache_policy(name, block): {
       local resource = blockType.resource('aws_cloudfront_cache_policy', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         default_ttl: build.template(std.get(block, 'default_ttl', null)),
         max_ttl: build.template(std.get(block, 'max_ttl', null)),
@@ -3781,7 +3786,7 @@ local provider(configuration) = {
     },
     cloudfront_continuous_deployment_policy(name, block): {
       local resource = blockType.resource('aws_cloudfront_continuous_deployment_policy', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
       }),
       enabled: resource.field('enabled'),
@@ -3791,7 +3796,7 @@ local provider(configuration) = {
     },
     cloudfront_distribution(name, block): {
       local resource = blockType.resource('aws_cloudfront_distribution', name),
-      _: resource._({
+      _: resource._(block, {
         aliases: build.template(std.get(block, 'aliases', null)),
         comment: build.template(std.get(block, 'comment', null)),
         default_root_object: build.template(std.get(block, 'default_root_object', null)),
@@ -3833,7 +3838,7 @@ local provider(configuration) = {
     },
     cloudfront_field_level_encryption_config(name, block): {
       local resource = blockType.resource('aws_cloudfront_field_level_encryption_config', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
       }),
       caller_reference: resource.field('caller_reference'),
@@ -3843,7 +3848,7 @@ local provider(configuration) = {
     },
     cloudfront_field_level_encryption_profile(name, block): {
       local resource = blockType.resource('aws_cloudfront_field_level_encryption_profile', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         name: build.template(block.name),
       }),
@@ -3855,7 +3860,7 @@ local provider(configuration) = {
     },
     cloudfront_function(name, block): {
       local resource = blockType.resource('aws_cloudfront_function', name),
-      _: resource._({
+      _: resource._(block, {
         code: build.template(block.code),
         comment: build.template(std.get(block, 'comment', null)),
         key_value_store_associations: build.template(std.get(block, 'key_value_store_associations', null)),
@@ -3877,7 +3882,7 @@ local provider(configuration) = {
     },
     cloudfront_key_group(name, block): {
       local resource = blockType.resource('aws_cloudfront_key_group', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         items: build.template(block.items),
         name: build.template(block.name),
@@ -3890,7 +3895,7 @@ local provider(configuration) = {
     },
     cloudfront_key_value_store(name, block): {
       local resource = blockType.resource('aws_cloudfront_key_value_store', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         name: build.template(block.name),
       }),
@@ -3903,7 +3908,7 @@ local provider(configuration) = {
     },
     cloudfront_monitoring_subscription(name, block): {
       local resource = blockType.resource('aws_cloudfront_monitoring_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         distribution_id: build.template(block.distribution_id),
       }),
       distribution_id: resource.field('distribution_id'),
@@ -3911,7 +3916,7 @@ local provider(configuration) = {
     },
     cloudfront_origin_access_control(name, block): {
       local resource = blockType.resource('aws_cloudfront_origin_access_control', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         origin_access_control_origin_type: build.template(block.origin_access_control_origin_type),
@@ -3928,7 +3933,7 @@ local provider(configuration) = {
     },
     cloudfront_origin_access_identity(name, block): {
       local resource = blockType.resource('aws_cloudfront_origin_access_identity', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
       }),
       caller_reference: resource.field('caller_reference'),
@@ -3941,7 +3946,7 @@ local provider(configuration) = {
     },
     cloudfront_origin_request_policy(name, block): {
       local resource = blockType.resource('aws_cloudfront_origin_request_policy', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         name: build.template(block.name),
       }),
@@ -3952,7 +3957,7 @@ local provider(configuration) = {
     },
     cloudfront_public_key(name, block): {
       local resource = blockType.resource('aws_cloudfront_public_key', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         encoded_key: build.template(block.encoded_key),
       }),
@@ -3966,7 +3971,7 @@ local provider(configuration) = {
     },
     cloudfront_realtime_log_config(name, block): {
       local resource = blockType.resource('aws_cloudfront_realtime_log_config', name),
-      _: resource._({
+      _: resource._(block, {
         fields: build.template(block.fields),
         name: build.template(block.name),
         sampling_rate: build.template(block.sampling_rate),
@@ -3979,7 +3984,7 @@ local provider(configuration) = {
     },
     cloudfront_response_headers_policy(name, block): {
       local resource = blockType.resource('aws_cloudfront_response_headers_policy', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         name: build.template(block.name),
       }),
@@ -3990,7 +3995,7 @@ local provider(configuration) = {
     },
     cloudfrontkeyvaluestore_key(name, block): {
       local resource = blockType.resource('aws_cloudfrontkeyvaluestore_key', name),
-      _: resource._({
+      _: resource._(block, {
         key: build.template(block.key),
         key_value_store_arn: build.template(block.key_value_store_arn),
         value: build.template(block.value),
@@ -4003,7 +4008,7 @@ local provider(configuration) = {
     },
     cloudhsm_v2_cluster(name, block): {
       local resource = blockType.resource('aws_cloudhsm_v2_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         hsm_type: build.template(block.hsm_type),
         source_backup_identifier: build.template(std.get(block, 'source_backup_identifier', null)),
         subnet_ids: build.template(block.subnet_ids),
@@ -4024,7 +4029,7 @@ local provider(configuration) = {
     },
     cloudhsm_v2_hsm(name, block): {
       local resource = blockType.resource('aws_cloudhsm_v2_hsm', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
       }),
       availability_zone: resource.field('availability_zone'),
@@ -4038,7 +4043,7 @@ local provider(configuration) = {
     },
     cloudsearch_domain(name, block): {
       local resource = blockType.resource('aws_cloudsearch_domain', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -4051,7 +4056,7 @@ local provider(configuration) = {
     },
     cloudsearch_domain_service_access_policy(name, block): {
       local resource = blockType.resource('aws_cloudsearch_domain_service_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy: build.template(block.access_policy),
         domain_name: build.template(block.domain_name),
       }),
@@ -4061,7 +4066,7 @@ local provider(configuration) = {
     },
     cloudtrail(name, block): {
       local resource = blockType.resource('aws_cloudtrail', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_watch_logs_group_arn: build.template(std.get(block, 'cloud_watch_logs_group_arn', null)),
         cloud_watch_logs_role_arn: build.template(std.get(block, 'cloud_watch_logs_role_arn', null)),
         enable_log_file_validation: build.template(std.get(block, 'enable_log_file_validation', null)),
@@ -4096,7 +4101,7 @@ local provider(configuration) = {
     },
     cloudtrail_event_data_store(name, block): {
       local resource = blockType.resource('aws_cloudtrail_event_data_store', name),
-      _: resource._({
+      _: resource._(block, {
         billing_mode: build.template(std.get(block, 'billing_mode', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
         multi_region_enabled: build.template(std.get(block, 'multi_region_enabled', null)),
@@ -4120,7 +4125,7 @@ local provider(configuration) = {
     },
     cloudtrail_organization_delegated_admin_account(name, block): {
       local resource = blockType.resource('aws_cloudtrail_organization_delegated_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
       }),
       account_id: resource.field('account_id'),
@@ -4132,7 +4137,7 @@ local provider(configuration) = {
     },
     cloudwatch_composite_alarm(name, block): {
       local resource = blockType.resource('aws_cloudwatch_composite_alarm', name),
-      _: resource._({
+      _: resource._(block, {
         actions_enabled: build.template(std.get(block, 'actions_enabled', null)),
         alarm_actions: build.template(std.get(block, 'alarm_actions', null)),
         alarm_description: build.template(std.get(block, 'alarm_description', null)),
@@ -4156,7 +4161,7 @@ local provider(configuration) = {
     },
     cloudwatch_dashboard(name, block): {
       local resource = blockType.resource('aws_cloudwatch_dashboard', name),
-      _: resource._({
+      _: resource._(block, {
         dashboard_body: build.template(block.dashboard_body),
         dashboard_name: build.template(block.dashboard_name),
       }),
@@ -4167,7 +4172,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_api_destination(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_api_destination', name),
-      _: resource._({
+      _: resource._(block, {
         connection_arn: build.template(block.connection_arn),
         description: build.template(std.get(block, 'description', null)),
         http_method: build.template(block.http_method),
@@ -4186,7 +4191,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_archive(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_archive', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         event_pattern: build.template(std.get(block, 'event_pattern', null)),
         event_source_arn: build.template(block.event_source_arn),
@@ -4203,7 +4208,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_bus(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_bus', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         event_source_name: build.template(std.get(block, 'event_source_name', null)),
         kms_key_identifier: build.template(std.get(block, 'kms_key_identifier', null)),
@@ -4221,7 +4226,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_bus_policy(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_bus_policy', name),
-      _: resource._({
+      _: resource._(block, {
         event_bus_name: build.template(std.get(block, 'event_bus_name', null)),
         policy: build.template(block.policy),
       }),
@@ -4231,7 +4236,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_connection(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_connection', name),
-      _: resource._({
+      _: resource._(block, {
         authorization_type: build.template(block.authorization_type),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -4245,7 +4250,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_endpoint(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         role_arn: build.template(std.get(block, 'role_arn', null)),
@@ -4259,7 +4264,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_permission(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_permission', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(std.get(block, 'action', null)),
         event_bus_name: build.template(std.get(block, 'event_bus_name', null)),
         principal: build.template(block.principal),
@@ -4273,7 +4278,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_rule(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         event_bus_name: build.template(std.get(block, 'event_bus_name', null)),
         event_pattern: build.template(std.get(block, 'event_pattern', null)),
@@ -4301,7 +4306,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_target(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_target', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         event_bus_name: build.template(std.get(block, 'event_bus_name', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -4322,7 +4327,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_account_policy(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_account_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_document: build.template(block.policy_document),
         policy_name: build.template(block.policy_name),
         policy_type: build.template(block.policy_type),
@@ -4338,7 +4343,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_data_protection_policy(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_data_protection_policy', name),
-      _: resource._({
+      _: resource._(block, {
         log_group_name: build.template(block.log_group_name),
         policy_document: build.template(block.policy_document),
       }),
@@ -4348,7 +4353,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_destination(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_destination', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         role_arn: build.template(block.role_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -4364,7 +4369,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_destination_policy(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_destination_policy', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy: build.template(block.access_policy),
         destination_name: build.template(block.destination_name),
         force_update: build.template(std.get(block, 'force_update', null)),
@@ -4376,7 +4381,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_group(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_group', name),
-      _: resource._({
+      _: resource._(block, {
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
         retention_in_days: build.template(std.get(block, 'retention_in_days', null)),
         skip_destroy: build.template(std.get(block, 'skip_destroy', null)),
@@ -4395,7 +4400,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_metric_filter(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_metric_filter', name),
-      _: resource._({
+      _: resource._(block, {
         log_group_name: build.template(block.log_group_name),
         name: build.template(block.name),
         pattern: build.template(block.pattern),
@@ -4407,7 +4412,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_resource_policy(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_document: build.template(block.policy_document),
         policy_name: build.template(block.policy_name),
       }),
@@ -4417,7 +4422,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_stream(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_stream', name),
-      _: resource._({
+      _: resource._(block, {
         log_group_name: build.template(block.log_group_name),
         name: build.template(block.name),
       }),
@@ -4428,7 +4433,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_subscription_filter(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_subscription_filter', name),
-      _: resource._({
+      _: resource._(block, {
         destination_arn: build.template(block.destination_arn),
         distribution: build.template(std.get(block, 'distribution', null)),
         filter_pattern: build.template(block.filter_pattern),
@@ -4445,7 +4450,7 @@ local provider(configuration) = {
     },
     cloudwatch_metric_alarm(name, block): {
       local resource = blockType.resource('aws_cloudwatch_metric_alarm', name),
-      _: resource._({
+      _: resource._(block, {
         actions_enabled: build.template(std.get(block, 'actions_enabled', null)),
         alarm_actions: build.template(std.get(block, 'alarm_actions', null)),
         alarm_description: build.template(std.get(block, 'alarm_description', null)),
@@ -4494,7 +4499,7 @@ local provider(configuration) = {
     },
     cloudwatch_metric_stream(name, block): {
       local resource = blockType.resource('aws_cloudwatch_metric_stream', name),
-      _: resource._({
+      _: resource._(block, {
         firehose_arn: build.template(block.firehose_arn),
         include_linked_accounts_metrics: build.template(std.get(block, 'include_linked_accounts_metrics', null)),
         output_format: build.template(block.output_format),
@@ -4517,7 +4522,7 @@ local provider(configuration) = {
     },
     cloudwatch_query_definition(name, block): {
       local resource = blockType.resource('aws_cloudwatch_query_definition', name),
-      _: resource._({
+      _: resource._(block, {
         log_group_names: build.template(std.get(block, 'log_group_names', null)),
         name: build.template(block.name),
         query_string: build.template(block.query_string),
@@ -4530,7 +4535,7 @@ local provider(configuration) = {
     },
     codeartifact_domain(name, block): {
       local resource = blockType.resource('aws_codeartifact_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -4548,7 +4553,7 @@ local provider(configuration) = {
     },
     codeartifact_domain_permissions_policy(name, block): {
       local resource = blockType.resource('aws_codeartifact_domain_permissions_policy', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
         policy_document: build.template(block.policy_document),
       }),
@@ -4561,7 +4566,7 @@ local provider(configuration) = {
     },
     codeartifact_repository(name, block): {
       local resource = blockType.resource('aws_codeartifact_repository', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain: build.template(block.domain),
         repository: build.template(block.repository),
@@ -4579,7 +4584,7 @@ local provider(configuration) = {
     },
     codeartifact_repository_permissions_policy(name, block): {
       local resource = blockType.resource('aws_codeartifact_repository_permissions_policy', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
         policy_document: build.template(block.policy_document),
         repository: build.template(block.repository),
@@ -4594,7 +4599,7 @@ local provider(configuration) = {
     },
     codebuild_fleet(name, block): {
       local resource = blockType.resource('aws_codebuild_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         base_capacity: build.template(block.base_capacity),
         compute_type: build.template(block.compute_type),
         environment_type: build.template(block.environment_type),
@@ -4620,7 +4625,7 @@ local provider(configuration) = {
     },
     codebuild_project(name, block): {
       local resource = blockType.resource('aws_codebuild_project', name),
-      _: resource._({
+      _: resource._(block, {
         badge_enabled: build.template(std.get(block, 'badge_enabled', null)),
         build_timeout: build.template(std.get(block, 'build_timeout', null)),
         concurrent_build_limit: build.template(std.get(block, 'concurrent_build_limit', null)),
@@ -4652,7 +4657,7 @@ local provider(configuration) = {
     },
     codebuild_report_group(name, block): {
       local resource = blockType.resource('aws_codebuild_report_group', name),
-      _: resource._({
+      _: resource._(block, {
         delete_reports: build.template(std.get(block, 'delete_reports', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -4669,7 +4674,7 @@ local provider(configuration) = {
     },
     codebuild_resource_policy(name, block): {
       local resource = blockType.resource('aws_codebuild_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -4679,7 +4684,7 @@ local provider(configuration) = {
     },
     codebuild_source_credential(name, block): {
       local resource = blockType.resource('aws_codebuild_source_credential', name),
-      _: resource._({
+      _: resource._(block, {
         auth_type: build.template(block.auth_type),
         server_type: build.template(block.server_type),
         token: build.template(block.token),
@@ -4694,7 +4699,7 @@ local provider(configuration) = {
     },
     codebuild_webhook(name, block): {
       local resource = blockType.resource('aws_codebuild_webhook', name),
-      _: resource._({
+      _: resource._(block, {
         branch_filter: build.template(std.get(block, 'branch_filter', null)),
         build_type: build.template(std.get(block, 'build_type', null)),
         project_name: build.template(block.project_name),
@@ -4709,7 +4714,7 @@ local provider(configuration) = {
     },
     codecatalyst_dev_environment(name, block): {
       local resource = blockType.resource('aws_codecatalyst_dev_environment', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(std.get(block, 'alias', null)),
         inactivity_timeout_minutes: build.template(std.get(block, 'inactivity_timeout_minutes', null)),
         instance_type: build.template(block.instance_type),
@@ -4725,7 +4730,7 @@ local provider(configuration) = {
     },
     codecatalyst_project(name, block): {
       local resource = blockType.resource('aws_codecatalyst_project', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         space_name: build.template(block.space_name),
@@ -4738,7 +4743,7 @@ local provider(configuration) = {
     },
     codecatalyst_source_repository(name, block): {
       local resource = blockType.resource('aws_codecatalyst_source_repository', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         project_name: build.template(block.project_name),
@@ -4752,7 +4757,7 @@ local provider(configuration) = {
     },
     codecommit_approval_rule_template(name, block): {
       local resource = blockType.resource('aws_codecommit_approval_rule_template', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -4769,7 +4774,7 @@ local provider(configuration) = {
     },
     codecommit_approval_rule_template_association(name, block): {
       local resource = blockType.resource('aws_codecommit_approval_rule_template_association', name),
-      _: resource._({
+      _: resource._(block, {
         approval_rule_template_name: build.template(block.approval_rule_template_name),
         repository_name: build.template(block.repository_name),
       }),
@@ -4779,7 +4784,7 @@ local provider(configuration) = {
     },
     codecommit_repository(name, block): {
       local resource = blockType.resource('aws_codecommit_repository', name),
-      _: resource._({
+      _: resource._(block, {
         default_branch: build.template(std.get(block, 'default_branch', null)),
         description: build.template(std.get(block, 'description', null)),
         repository_name: build.template(block.repository_name),
@@ -4799,7 +4804,7 @@ local provider(configuration) = {
     },
     codecommit_trigger(name, block): {
       local resource = blockType.resource('aws_codecommit_trigger', name),
-      _: resource._({
+      _: resource._(block, {
         repository_name: build.template(block.repository_name),
       }),
       configuration_id: resource.field('configuration_id'),
@@ -4808,7 +4813,7 @@ local provider(configuration) = {
     },
     codedeploy_app(name, block): {
       local resource = blockType.resource('aws_codedeploy_app', name),
-      _: resource._({
+      _: resource._(block, {
         compute_platform: build.template(std.get(block, 'compute_platform', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -4825,7 +4830,7 @@ local provider(configuration) = {
     },
     codedeploy_deployment_config(name, block): {
       local resource = blockType.resource('aws_codedeploy_deployment_config', name),
-      _: resource._({
+      _: resource._(block, {
         compute_platform: build.template(std.get(block, 'compute_platform', null)),
         deployment_config_name: build.template(block.deployment_config_name),
       }),
@@ -4837,7 +4842,7 @@ local provider(configuration) = {
     },
     codedeploy_deployment_group(name, block): {
       local resource = blockType.resource('aws_codedeploy_deployment_group', name),
-      _: resource._({
+      _: resource._(block, {
         app_name: build.template(block.app_name),
         autoscaling_groups: build.template(std.get(block, 'autoscaling_groups', null)),
         deployment_config_name: build.template(std.get(block, 'deployment_config_name', null)),
@@ -4863,7 +4868,7 @@ local provider(configuration) = {
     },
     codeguruprofiler_profiling_group(name, block): {
       local resource = blockType.resource('aws_codeguruprofiler_profiling_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -4876,7 +4881,7 @@ local provider(configuration) = {
     },
     codegurureviewer_repository_association(name, block): {
       local resource = blockType.resource('aws_codegurureviewer_repository_association', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -4894,7 +4899,7 @@ local provider(configuration) = {
     },
     codepipeline(name, block): {
       local resource = blockType.resource('aws_codepipeline', name),
-      _: resource._({
+      _: resource._(block, {
         execution_mode: build.template(std.get(block, 'execution_mode', null)),
         name: build.template(block.name),
         pipeline_type: build.template(std.get(block, 'pipeline_type', null)),
@@ -4912,7 +4917,7 @@ local provider(configuration) = {
     },
     codepipeline_custom_action_type(name, block): {
       local resource = blockType.resource('aws_codepipeline_custom_action_type', name),
-      _: resource._({
+      _: resource._(block, {
         category: build.template(block.category),
         provider_name: build.template(block.provider_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -4929,7 +4934,7 @@ local provider(configuration) = {
     },
     codepipeline_webhook(name, block): {
       local resource = blockType.resource('aws_codepipeline_webhook', name),
-      _: resource._({
+      _: resource._(block, {
         authentication: build.template(block.authentication),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -4948,7 +4953,7 @@ local provider(configuration) = {
     },
     codestarconnections_connection(name, block): {
       local resource = blockType.resource('aws_codestarconnections_connection', name),
-      _: resource._({
+      _: resource._(block, {
         host_arn: build.template(std.get(block, 'host_arn', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -4964,7 +4969,7 @@ local provider(configuration) = {
     },
     codestarconnections_host(name, block): {
       local resource = blockType.resource('aws_codestarconnections_host', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         provider_endpoint: build.template(block.provider_endpoint),
         provider_type: build.template(block.provider_type),
@@ -4978,7 +4983,7 @@ local provider(configuration) = {
     },
     codestarnotifications_notification_rule(name, block): {
       local resource = blockType.resource('aws_codestarnotifications_notification_rule', name),
-      _: resource._({
+      _: resource._(block, {
         detail_type: build.template(block.detail_type),
         event_type_ids: build.template(block.event_type_ids),
         name: build.template(block.name),
@@ -4998,7 +5003,7 @@ local provider(configuration) = {
     },
     cognito_identity_pool(name, block): {
       local resource = blockType.resource('aws_cognito_identity_pool', name),
-      _: resource._({
+      _: resource._(block, {
         allow_classic_flow: build.template(std.get(block, 'allow_classic_flow', null)),
         allow_unauthenticated_identities: build.template(std.get(block, 'allow_unauthenticated_identities', null)),
         developer_provider_name: build.template(std.get(block, 'developer_provider_name', null)),
@@ -5022,7 +5027,7 @@ local provider(configuration) = {
     },
     cognito_identity_pool_provider_principal_tag(name, block): {
       local resource = blockType.resource('aws_cognito_identity_pool_provider_principal_tag', name),
-      _: resource._({
+      _: resource._(block, {
         identity_pool_id: build.template(block.identity_pool_id),
         identity_provider_name: build.template(block.identity_provider_name),
         principal_tags: build.template(std.get(block, 'principal_tags', null)),
@@ -5036,7 +5041,7 @@ local provider(configuration) = {
     },
     cognito_identity_pool_roles_attachment(name, block): {
       local resource = blockType.resource('aws_cognito_identity_pool_roles_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         identity_pool_id: build.template(block.identity_pool_id),
         roles: build.template(block.roles),
       }),
@@ -5046,7 +5051,7 @@ local provider(configuration) = {
     },
     cognito_identity_provider(name, block): {
       local resource = blockType.resource('aws_cognito_identity_provider', name),
-      _: resource._({
+      _: resource._(block, {
         idp_identifiers: build.template(std.get(block, 'idp_identifiers', null)),
         provider_details: build.template(block.provider_details),
         provider_name: build.template(block.provider_name),
@@ -5063,7 +5068,7 @@ local provider(configuration) = {
     },
     cognito_managed_user_pool_client(name, block): {
       local resource = blockType.resource('aws_cognito_managed_user_pool_client', name),
-      _: resource._({
+      _: resource._(block, {
         name_pattern: build.template(std.get(block, 'name_pattern', null)),
         name_prefix: build.template(std.get(block, 'name_prefix', null)),
         user_pool_id: build.template(block.user_pool_id),
@@ -5094,7 +5099,7 @@ local provider(configuration) = {
     },
     cognito_resource_server(name, block): {
       local resource = blockType.resource('aws_cognito_resource_server', name),
-      _: resource._({
+      _: resource._(block, {
         identifier: build.template(block.identifier),
         name: build.template(block.name),
         user_pool_id: build.template(block.user_pool_id),
@@ -5107,7 +5112,7 @@ local provider(configuration) = {
     },
     cognito_risk_configuration(name, block): {
       local resource = blockType.resource('aws_cognito_risk_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         client_id: build.template(std.get(block, 'client_id', null)),
         user_pool_id: build.template(block.user_pool_id),
       }),
@@ -5117,7 +5122,7 @@ local provider(configuration) = {
     },
     cognito_user(name, block): {
       local resource = blockType.resource('aws_cognito_user', name),
-      _: resource._({
+      _: resource._(block, {
         attributes: build.template(std.get(block, 'attributes', null)),
         client_metadata: build.template(std.get(block, 'client_metadata', null)),
         desired_delivery_mediums: build.template(std.get(block, 'desired_delivery_mediums', null)),
@@ -5151,7 +5156,7 @@ local provider(configuration) = {
     },
     cognito_user_group(name, block): {
       local resource = blockType.resource('aws_cognito_user_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         precedence: build.template(std.get(block, 'precedence', null)),
@@ -5167,7 +5172,7 @@ local provider(configuration) = {
     },
     cognito_user_in_group(name, block): {
       local resource = blockType.resource('aws_cognito_user_in_group', name),
-      _: resource._({
+      _: resource._(block, {
         group_name: build.template(block.group_name),
         user_pool_id: build.template(block.user_pool_id),
         username: build.template(block.username),
@@ -5179,7 +5184,7 @@ local provider(configuration) = {
     },
     cognito_user_pool(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool', name),
-      _: resource._({
+      _: resource._(block, {
         alias_attributes: build.template(std.get(block, 'alias_attributes', null)),
         auto_verified_attributes: build.template(std.get(block, 'auto_verified_attributes', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
@@ -5212,7 +5217,7 @@ local provider(configuration) = {
     },
     cognito_user_pool_client(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool_client', name),
-      _: resource._({
+      _: resource._(block, {
         generate_secret: build.template(std.get(block, 'generate_secret', null)),
         name: build.template(block.name),
         user_pool_id: build.template(block.user_pool_id),
@@ -5242,7 +5247,7 @@ local provider(configuration) = {
     },
     cognito_user_pool_domain(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool_domain', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_arn: build.template(std.get(block, 'certificate_arn', null)),
         domain: build.template(block.domain),
         user_pool_id: build.template(block.user_pool_id),
@@ -5260,7 +5265,7 @@ local provider(configuration) = {
     },
     cognito_user_pool_ui_customization(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool_ui_customization', name),
-      _: resource._({
+      _: resource._(block, {
         client_id: build.template(std.get(block, 'client_id', null)),
         css: build.template(std.get(block, 'css', null)),
         image_file: build.template(std.get(block, 'image_file', null)),
@@ -5278,7 +5283,7 @@ local provider(configuration) = {
     },
     comprehend_document_classifier(name, block): {
       local resource = blockType.resource('aws_comprehend_document_classifier', name),
-      _: resource._({
+      _: resource._(block, {
         data_access_role_arn: build.template(block.data_access_role_arn),
         language_code: build.template(block.language_code),
         mode: build.template(std.get(block, 'mode', null)),
@@ -5302,7 +5307,7 @@ local provider(configuration) = {
     },
     comprehend_entity_recognizer(name, block): {
       local resource = blockType.resource('aws_comprehend_entity_recognizer', name),
-      _: resource._({
+      _: resource._(block, {
         data_access_role_arn: build.template(block.data_access_role_arn),
         language_code: build.template(block.language_code),
         model_kms_key_id: build.template(std.get(block, 'model_kms_key_id', null)),
@@ -5324,7 +5329,7 @@ local provider(configuration) = {
     },
     computeoptimizer_enrollment_status(name, block): {
       local resource = blockType.resource('aws_computeoptimizer_enrollment_status', name),
-      _: resource._({
+      _: resource._(block, {
         status: build.template(block.status),
       }),
       id: resource.field('id'),
@@ -5334,7 +5339,7 @@ local provider(configuration) = {
     },
     computeoptimizer_recommendation_preferences(name, block): {
       local resource = blockType.resource('aws_computeoptimizer_recommendation_preferences', name),
-      _: resource._({
+      _: resource._(block, {
         enhanced_infrastructure_metrics: build.template(std.get(block, 'enhanced_infrastructure_metrics', null)),
         inferred_workload_types: build.template(std.get(block, 'inferred_workload_types', null)),
         resource_type: build.template(block.resource_type),
@@ -5349,7 +5354,7 @@ local provider(configuration) = {
     },
     config_aggregate_authorization(name, block): {
       local resource = blockType.resource('aws_config_aggregate_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         region: build.template(block.region),
         tags: build.template(std.get(block, 'tags', null)),
@@ -5363,7 +5368,7 @@ local provider(configuration) = {
     },
     config_config_rule(name, block): {
       local resource = blockType.resource('aws_config_config_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         input_parameters: build.template(std.get(block, 'input_parameters', null)),
         maximum_execution_frequency: build.template(std.get(block, 'maximum_execution_frequency', null)),
@@ -5382,7 +5387,7 @@ local provider(configuration) = {
     },
     config_configuration_aggregator(name, block): {
       local resource = blockType.resource('aws_config_configuration_aggregator', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -5394,7 +5399,7 @@ local provider(configuration) = {
     },
     config_configuration_recorder(name, block): {
       local resource = blockType.resource('aws_config_configuration_recorder', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         role_arn: build.template(block.role_arn),
       }),
@@ -5404,7 +5409,7 @@ local provider(configuration) = {
     },
     config_configuration_recorder_status(name, block): {
       local resource = blockType.resource('aws_config_configuration_recorder_status', name),
-      _: resource._({
+      _: resource._(block, {
         is_enabled: build.template(block.is_enabled),
         name: build.template(block.name),
       }),
@@ -5414,7 +5419,7 @@ local provider(configuration) = {
     },
     config_conformance_pack(name, block): {
       local resource = blockType.resource('aws_config_conformance_pack', name),
-      _: resource._({
+      _: resource._(block, {
         delivery_s3_bucket: build.template(std.get(block, 'delivery_s3_bucket', null)),
         delivery_s3_key_prefix: build.template(std.get(block, 'delivery_s3_key_prefix', null)),
         name: build.template(block.name),
@@ -5431,7 +5436,7 @@ local provider(configuration) = {
     },
     config_delivery_channel(name, block): {
       local resource = blockType.resource('aws_config_delivery_channel', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         s3_bucket_name: build.template(block.s3_bucket_name),
         s3_key_prefix: build.template(std.get(block, 's3_key_prefix', null)),
@@ -5447,7 +5452,7 @@ local provider(configuration) = {
     },
     config_organization_conformance_pack(name, block): {
       local resource = blockType.resource('aws_config_organization_conformance_pack', name),
-      _: resource._({
+      _: resource._(block, {
         delivery_s3_bucket: build.template(std.get(block, 'delivery_s3_bucket', null)),
         delivery_s3_key_prefix: build.template(std.get(block, 'delivery_s3_key_prefix', null)),
         excluded_accounts: build.template(std.get(block, 'excluded_accounts', null)),
@@ -5466,7 +5471,7 @@ local provider(configuration) = {
     },
     config_organization_custom_policy_rule(name, block): {
       local resource = blockType.resource('aws_config_organization_custom_policy_rule', name),
-      _: resource._({
+      _: resource._(block, {
         debug_log_delivery_accounts: build.template(std.get(block, 'debug_log_delivery_accounts', null)),
         description: build.template(std.get(block, 'description', null)),
         excluded_accounts: build.template(std.get(block, 'excluded_accounts', null)),
@@ -5499,7 +5504,7 @@ local provider(configuration) = {
     },
     config_organization_custom_rule(name, block): {
       local resource = blockType.resource('aws_config_organization_custom_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         excluded_accounts: build.template(std.get(block, 'excluded_accounts', null)),
         input_parameters: build.template(std.get(block, 'input_parameters', null)),
@@ -5528,7 +5533,7 @@ local provider(configuration) = {
     },
     config_organization_managed_rule(name, block): {
       local resource = blockType.resource('aws_config_organization_managed_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         excluded_accounts: build.template(std.get(block, 'excluded_accounts', null)),
         input_parameters: build.template(std.get(block, 'input_parameters', null)),
@@ -5555,7 +5560,7 @@ local provider(configuration) = {
     },
     config_remediation_configuration(name, block): {
       local resource = blockType.resource('aws_config_remediation_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         automatic: build.template(std.get(block, 'automatic', null)),
         config_rule_name: build.template(block.config_rule_name),
         maximum_automatic_attempts: build.template(std.get(block, 'maximum_automatic_attempts', null)),
@@ -5578,7 +5583,7 @@ local provider(configuration) = {
     },
     config_retention_configuration(name, block): {
       local resource = blockType.resource('aws_config_retention_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         retention_period_in_days: build.template(block.retention_period_in_days),
       }),
       id: resource.field('id'),
@@ -5587,7 +5592,7 @@ local provider(configuration) = {
     },
     connect_bot_association(name, block): {
       local resource = blockType.resource('aws_connect_bot_association', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       id: resource.field('id'),
@@ -5595,7 +5600,7 @@ local provider(configuration) = {
     },
     connect_contact_flow(name, block): {
       local resource = blockType.resource('aws_connect_contact_flow', name),
-      _: resource._({
+      _: resource._(block, {
         content_hash: build.template(std.get(block, 'content_hash', null)),
         description: build.template(std.get(block, 'description', null)),
         filename: build.template(std.get(block, 'filename', null)),
@@ -5619,7 +5624,7 @@ local provider(configuration) = {
     },
     connect_contact_flow_module(name, block): {
       local resource = blockType.resource('aws_connect_contact_flow_module', name),
-      _: resource._({
+      _: resource._(block, {
         content_hash: build.template(std.get(block, 'content_hash', null)),
         description: build.template(std.get(block, 'description', null)),
         filename: build.template(std.get(block, 'filename', null)),
@@ -5641,7 +5646,7 @@ local provider(configuration) = {
     },
     connect_hours_of_operation(name, block): {
       local resource = blockType.resource('aws_connect_hours_of_operation', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance_id: build.template(block.instance_id),
         name: build.template(block.name),
@@ -5660,7 +5665,7 @@ local provider(configuration) = {
     },
     connect_instance(name, block): {
       local resource = blockType.resource('aws_connect_instance', name),
-      _: resource._({
+      _: resource._(block, {
         auto_resolve_best_voices_enabled: build.template(std.get(block, 'auto_resolve_best_voices_enabled', null)),
         contact_flow_logs_enabled: build.template(std.get(block, 'contact_flow_logs_enabled', null)),
         contact_lens_enabled: build.template(std.get(block, 'contact_lens_enabled', null)),
@@ -5693,7 +5698,7 @@ local provider(configuration) = {
     },
     connect_instance_storage_config(name, block): {
       local resource = blockType.resource('aws_connect_instance_storage_config', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         resource_type: build.template(block.resource_type),
       }),
@@ -5704,7 +5709,7 @@ local provider(configuration) = {
     },
     connect_lambda_function_association(name, block): {
       local resource = blockType.resource('aws_connect_lambda_function_association', name),
-      _: resource._({
+      _: resource._(block, {
         function_arn: build.template(block.function_arn),
         instance_id: build.template(block.instance_id),
       }),
@@ -5714,7 +5719,7 @@ local provider(configuration) = {
     },
     connect_phone_number(name, block): {
       local resource = blockType.resource('aws_connect_phone_number', name),
-      _: resource._({
+      _: resource._(block, {
         country_code: build.template(block.country_code),
         description: build.template(std.get(block, 'description', null)),
         prefix: build.template(std.get(block, 'prefix', null)),
@@ -5736,7 +5741,7 @@ local provider(configuration) = {
     },
     connect_queue(name, block): {
       local resource = blockType.resource('aws_connect_queue', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         hours_of_operation_id: build.template(block.hours_of_operation_id),
         instance_id: build.template(block.instance_id),
@@ -5760,7 +5765,7 @@ local provider(configuration) = {
     },
     connect_quick_connect(name, block): {
       local resource = blockType.resource('aws_connect_quick_connect', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance_id: build.template(block.instance_id),
         name: build.template(block.name),
@@ -5777,7 +5782,7 @@ local provider(configuration) = {
     },
     connect_routing_profile(name, block): {
       local resource = blockType.resource('aws_connect_routing_profile', name),
-      _: resource._({
+      _: resource._(block, {
         default_outbound_queue_id: build.template(block.default_outbound_queue_id),
         description: build.template(block.description),
         instance_id: build.template(block.instance_id),
@@ -5796,7 +5801,7 @@ local provider(configuration) = {
     },
     connect_security_profile(name, block): {
       local resource = blockType.resource('aws_connect_security_profile', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance_id: build.template(block.instance_id),
         name: build.template(block.name),
@@ -5816,7 +5821,7 @@ local provider(configuration) = {
     },
     connect_user(name, block): {
       local resource = blockType.resource('aws_connect_user', name),
-      _: resource._({
+      _: resource._(block, {
         hierarchy_group_id: build.template(std.get(block, 'hierarchy_group_id', null)),
         instance_id: build.template(block.instance_id),
         name: build.template(block.name),
@@ -5840,7 +5845,7 @@ local provider(configuration) = {
     },
     connect_user_hierarchy_group(name, block): {
       local resource = blockType.resource('aws_connect_user_hierarchy_group', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         name: build.template(block.name),
         parent_group_id: build.template(std.get(block, 'parent_group_id', null)),
@@ -5859,7 +5864,7 @@ local provider(configuration) = {
     },
     connect_user_hierarchy_structure(name, block): {
       local resource = blockType.resource('aws_connect_user_hierarchy_structure', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       id: resource.field('id'),
@@ -5867,7 +5872,7 @@ local provider(configuration) = {
     },
     connect_vocabulary(name, block): {
       local resource = blockType.resource('aws_connect_vocabulary', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         instance_id: build.template(block.instance_id),
         language_code: build.template(block.language_code),
@@ -5889,7 +5894,7 @@ local provider(configuration) = {
     },
     controltower_control(name, block): {
       local resource = blockType.resource('aws_controltower_control', name),
-      _: resource._({
+      _: resource._(block, {
         control_identifier: build.template(block.control_identifier),
         target_identifier: build.template(block.target_identifier),
       }),
@@ -5900,7 +5905,7 @@ local provider(configuration) = {
     },
     controltower_landing_zone(name, block): {
       local resource = blockType.resource('aws_controltower_landing_zone', name),
-      _: resource._({
+      _: resource._(block, {
         manifest_json: build.template(block.manifest_json),
         tags: build.template(std.get(block, 'tags', null)),
         version: build.template(block.version),
@@ -5916,7 +5921,7 @@ local provider(configuration) = {
     },
     costoptimizationhub_enrollment_status(name, block): {
       local resource = blockType.resource('aws_costoptimizationhub_enrollment_status', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       include_member_accounts: resource.field('include_member_accounts'),
@@ -5924,7 +5929,7 @@ local provider(configuration) = {
     },
     costoptimizationhub_preferences(name, block): {
       local resource = blockType.resource('aws_costoptimizationhub_preferences', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       member_account_discount_visibility: resource.field('member_account_discount_visibility'),
@@ -5932,7 +5937,7 @@ local provider(configuration) = {
     },
     cur_report_definition(name, block): {
       local resource = blockType.resource('aws_cur_report_definition', name),
-      _: resource._({
+      _: resource._(block, {
         additional_artifacts: build.template(std.get(block, 'additional_artifacts', null)),
         additional_schema_elements: build.template(block.additional_schema_elements),
         compression: build.template(block.compression),
@@ -5964,7 +5969,7 @@ local provider(configuration) = {
     },
     customer_gateway(name, block): {
       local resource = blockType.resource('aws_customer_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         bgp_asn: build.template(std.get(block, 'bgp_asn', null)),
         bgp_asn_extended: build.template(std.get(block, 'bgp_asn_extended', null)),
         certificate_arn: build.template(std.get(block, 'certificate_arn', null)),
@@ -5986,7 +5991,7 @@ local provider(configuration) = {
     },
     customerprofiles_domain(name, block): {
       local resource = blockType.resource('aws_customerprofiles_domain', name),
-      _: resource._({
+      _: resource._(block, {
         dead_letter_queue_url: build.template(std.get(block, 'dead_letter_queue_url', null)),
         default_encryption_key: build.template(std.get(block, 'default_encryption_key', null)),
         default_expiration_days: build.template(block.default_expiration_days),
@@ -6004,7 +6009,7 @@ local provider(configuration) = {
     },
     customerprofiles_profile(name, block): {
       local resource = blockType.resource('aws_customerprofiles_profile', name),
-      _: resource._({
+      _: resource._(block, {
         account_number: build.template(std.get(block, 'account_number', null)),
         additional_information: build.template(std.get(block, 'additional_information', null)),
         attributes: build.template(std.get(block, 'attributes', null)),
@@ -6046,7 +6051,7 @@ local provider(configuration) = {
     },
     dataexchange_data_set(name, block): {
       local resource = blockType.resource('aws_dataexchange_data_set', name),
-      _: resource._({
+      _: resource._(block, {
         asset_type: build.template(block.asset_type),
         description: build.template(block.description),
         name: build.template(block.name),
@@ -6062,7 +6067,7 @@ local provider(configuration) = {
     },
     dataexchange_revision(name, block): {
       local resource = blockType.resource('aws_dataexchange_revision', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         data_set_id: build.template(block.data_set_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6077,7 +6082,7 @@ local provider(configuration) = {
     },
     datapipeline_pipeline(name, block): {
       local resource = blockType.resource('aws_datapipeline_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6090,7 +6095,7 @@ local provider(configuration) = {
     },
     datapipeline_pipeline_definition(name, block): {
       local resource = blockType.resource('aws_datapipeline_pipeline_definition', name),
-      _: resource._({
+      _: resource._(block, {
         pipeline_id: build.template(block.pipeline_id),
       }),
       id: resource.field('id'),
@@ -6098,7 +6103,7 @@ local provider(configuration) = {
     },
     datasync_agent(name, block): {
       local resource = blockType.resource('aws_datasync_agent', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         security_group_arns: build.template(std.get(block, 'security_group_arns', null)),
         subnet_arns: build.template(std.get(block, 'subnet_arns', null)),
@@ -6119,7 +6124,7 @@ local provider(configuration) = {
     },
     datasync_location_azure_blob(name, block): {
       local resource = blockType.resource('aws_datasync_location_azure_blob', name),
-      _: resource._({
+      _: resource._(block, {
         access_tier: build.template(std.get(block, 'access_tier', null)),
         agent_arns: build.template(block.agent_arns),
         authentication_type: build.template(block.authentication_type),
@@ -6141,7 +6146,7 @@ local provider(configuration) = {
     },
     datasync_location_efs(name, block): {
       local resource = blockType.resource('aws_datasync_location_efs', name),
-      _: resource._({
+      _: resource._(block, {
         access_point_arn: build.template(std.get(block, 'access_point_arn', null)),
         efs_file_system_arn: build.template(block.efs_file_system_arn),
         file_system_access_role_arn: build.template(std.get(block, 'file_system_access_role_arn', null)),
@@ -6162,7 +6167,7 @@ local provider(configuration) = {
     },
     datasync_location_fsx_lustre_file_system(name, block): {
       local resource = blockType.resource('aws_datasync_location_fsx_lustre_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         fsx_filesystem_arn: build.template(block.fsx_filesystem_arn),
         security_group_arns: build.template(block.security_group_arns),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6179,7 +6184,7 @@ local provider(configuration) = {
     },
     datasync_location_fsx_ontap_file_system(name, block): {
       local resource = blockType.resource('aws_datasync_location_fsx_ontap_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         security_group_arns: build.template(block.security_group_arns),
         storage_virtual_machine_arn: build.template(block.storage_virtual_machine_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6197,7 +6202,7 @@ local provider(configuration) = {
     },
     datasync_location_fsx_openzfs_file_system(name, block): {
       local resource = blockType.resource('aws_datasync_location_fsx_openzfs_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         fsx_filesystem_arn: build.template(block.fsx_filesystem_arn),
         security_group_arns: build.template(block.security_group_arns),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6214,7 +6219,7 @@ local provider(configuration) = {
     },
     datasync_location_fsx_windows_file_system(name, block): {
       local resource = blockType.resource('aws_datasync_location_fsx_windows_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(std.get(block, 'domain', null)),
         fsx_filesystem_arn: build.template(block.fsx_filesystem_arn),
         password: build.template(block.password),
@@ -6237,7 +6242,7 @@ local provider(configuration) = {
     },
     datasync_location_hdfs(name, block): {
       local resource = blockType.resource('aws_datasync_location_hdfs', name),
-      _: resource._({
+      _: resource._(block, {
         agent_arns: build.template(block.agent_arns),
         authentication_type: build.template(std.get(block, 'authentication_type', null)),
         block_size: build.template(std.get(block, 'block_size', null)),
@@ -6272,7 +6277,7 @@ local provider(configuration) = {
     },
     datasync_location_nfs(name, block): {
       local resource = blockType.resource('aws_datasync_location_nfs', name),
-      _: resource._({
+      _: resource._(block, {
         server_hostname: build.template(block.server_hostname),
         subdirectory: build.template(block.subdirectory),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6287,7 +6292,7 @@ local provider(configuration) = {
     },
     datasync_location_object_storage(name, block): {
       local resource = blockType.resource('aws_datasync_location_object_storage', name),
-      _: resource._({
+      _: resource._(block, {
         access_key: build.template(std.get(block, 'access_key', null)),
         agent_arns: build.template(block.agent_arns),
         bucket_name: build.template(block.bucket_name),
@@ -6315,7 +6320,7 @@ local provider(configuration) = {
     },
     datasync_location_s3(name, block): {
       local resource = blockType.resource('aws_datasync_location_s3', name),
-      _: resource._({
+      _: resource._(block, {
         agent_arns: build.template(std.get(block, 'agent_arns', null)),
         s3_bucket_arn: build.template(block.s3_bucket_arn),
         subdirectory: build.template(block.subdirectory),
@@ -6333,7 +6338,7 @@ local provider(configuration) = {
     },
     datasync_location_smb(name, block): {
       local resource = blockType.resource('aws_datasync_location_smb', name),
-      _: resource._({
+      _: resource._(block, {
         agent_arns: build.template(block.agent_arns),
         password: build.template(block.password),
         server_hostname: build.template(block.server_hostname),
@@ -6355,7 +6360,7 @@ local provider(configuration) = {
     },
     datasync_task(name, block): {
       local resource = blockType.resource('aws_datasync_task', name),
-      _: resource._({
+      _: resource._(block, {
         cloudwatch_log_group_arn: build.template(std.get(block, 'cloudwatch_log_group_arn', null)),
         destination_location_arn: build.template(block.destination_location_arn),
         name: build.template(std.get(block, 'name', null)),
@@ -6373,7 +6378,7 @@ local provider(configuration) = {
     },
     datazone_asset_type(name, block): {
       local resource = blockType.resource('aws_datazone_asset_type', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain_identifier: build.template(block.domain_identifier),
         name: build.template(block.name),
@@ -6389,7 +6394,7 @@ local provider(configuration) = {
     },
     datazone_domain(name, block): {
       local resource = blockType.resource('aws_datazone_domain', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain_execution_role: build.template(block.domain_execution_role),
         kms_key_identifier: build.template(std.get(block, 'kms_key_identifier', null)),
@@ -6410,7 +6415,7 @@ local provider(configuration) = {
     },
     datazone_environment(name, block): {
       local resource = blockType.resource('aws_datazone_environment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain_identifier: build.template(block.domain_identifier),
         glossary_terms: build.template(std.get(block, 'glossary_terms', null)),
@@ -6436,7 +6441,7 @@ local provider(configuration) = {
     },
     datazone_environment_blueprint_configuration(name, block): {
       local resource = blockType.resource('aws_datazone_environment_blueprint_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         domain_id: build.template(block.domain_id),
         enabled_regions: build.template(block.enabled_regions),
         environment_blueprint_id: build.template(block.environment_blueprint_id),
@@ -6453,7 +6458,7 @@ local provider(configuration) = {
     },
     datazone_environment_profile(name, block): {
       local resource = blockType.resource('aws_datazone_environment_profile', name),
-      _: resource._({
+      _: resource._(block, {
         aws_account_region: build.template(block.aws_account_region),
         domain_identifier: build.template(block.domain_identifier),
         environment_blueprint_identifier: build.template(block.environment_blueprint_identifier),
@@ -6474,7 +6479,7 @@ local provider(configuration) = {
     },
     datazone_form_type(name, block): {
       local resource = blockType.resource('aws_datazone_form_type', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain_identifier: build.template(block.domain_identifier),
         name: build.template(block.name),
@@ -6494,7 +6499,7 @@ local provider(configuration) = {
     },
     datazone_glossary(name, block): {
       local resource = blockType.resource('aws_datazone_glossary', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain_identifier: build.template(block.domain_identifier),
         name: build.template(block.name),
@@ -6510,7 +6515,7 @@ local provider(configuration) = {
     },
     datazone_glossary_term(name, block): {
       local resource = blockType.resource('aws_datazone_glossary_term', name),
-      _: resource._({
+      _: resource._(block, {
         domain_identifier: build.template(std.get(block, 'domain_identifier', null)),
         glossary_identifier: build.template(block.glossary_identifier),
         long_description: build.template(std.get(block, 'long_description', null)),
@@ -6530,7 +6535,7 @@ local provider(configuration) = {
     },
     datazone_project(name, block): {
       local resource = blockType.resource('aws_datazone_project', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain_identifier: build.template(block.domain_identifier),
         glossary_terms: build.template(std.get(block, 'glossary_terms', null)),
@@ -6551,7 +6556,7 @@ local provider(configuration) = {
     },
     datazone_user_profile(name, block): {
       local resource = blockType.resource('aws_datazone_user_profile', name),
-      _: resource._({
+      _: resource._(block, {
         domain_identifier: build.template(block.domain_identifier),
         user_identifier: build.template(block.user_identifier),
       }),
@@ -6565,7 +6570,7 @@ local provider(configuration) = {
     },
     dax_cluster(name, block): {
       local resource = blockType.resource('aws_dax_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zones: build.template(std.get(block, 'availability_zones', null)),
         cluster_endpoint_encryption_type: build.template(std.get(block, 'cluster_endpoint_encryption_type', null)),
         cluster_name: build.template(block.cluster_name),
@@ -6599,7 +6604,7 @@ local provider(configuration) = {
     },
     dax_parameter_group(name, block): {
       local resource = blockType.resource('aws_dax_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -6609,7 +6614,7 @@ local provider(configuration) = {
     },
     dax_subnet_group(name, block): {
       local resource = blockType.resource('aws_dax_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         subnet_ids: build.template(block.subnet_ids),
@@ -6622,7 +6627,7 @@ local provider(configuration) = {
     },
     db_cluster_snapshot(name, block): {
       local resource = blockType.resource('aws_db_cluster_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         db_cluster_identifier: build.template(block.db_cluster_identifier),
         db_cluster_snapshot_identifier: build.template(block.db_cluster_snapshot_identifier),
         shared_accounts: build.template(std.get(block, 'shared_accounts', null)),
@@ -6650,7 +6655,7 @@ local provider(configuration) = {
     },
     db_event_subscription(name, block): {
       local resource = blockType.resource('aws_db_event_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         event_categories: build.template(std.get(block, 'event_categories', null)),
         sns_topic: build.template(block.sns_topic),
@@ -6673,7 +6678,7 @@ local provider(configuration) = {
     },
     db_instance(name, block): {
       local resource = blockType.resource('aws_db_instance', name),
-      _: resource._({
+      _: resource._(block, {
         allow_major_version_upgrade: build.template(std.get(block, 'allow_major_version_upgrade', null)),
         apply_immediately: build.template(std.get(block, 'apply_immediately', null)),
         auto_minor_version_upgrade: build.template(std.get(block, 'auto_minor_version_upgrade', null)),
@@ -6785,7 +6790,7 @@ local provider(configuration) = {
     },
     db_instance_automated_backups_replication(name, block): {
       local resource = blockType.resource('aws_db_instance_automated_backups_replication', name),
-      _: resource._({
+      _: resource._(block, {
         pre_signed_url: build.template(std.get(block, 'pre_signed_url', null)),
         retention_period: build.template(std.get(block, 'retention_period', null)),
         source_db_instance_arn: build.template(block.source_db_instance_arn),
@@ -6798,7 +6803,7 @@ local provider(configuration) = {
     },
     db_instance_role_association(name, block): {
       local resource = blockType.resource('aws_db_instance_role_association', name),
-      _: resource._({
+      _: resource._(block, {
         db_instance_identifier: build.template(block.db_instance_identifier),
         feature_name: build.template(block.feature_name),
         role_arn: build.template(block.role_arn),
@@ -6810,7 +6815,7 @@ local provider(configuration) = {
     },
     db_option_group(name, block): {
       local resource = blockType.resource('aws_db_option_group', name),
-      _: resource._({
+      _: resource._(block, {
         engine_name: build.template(block.engine_name),
         major_engine_version: build.template(block.major_engine_version),
         option_group_description: build.template(std.get(block, 'option_group_description', null)),
@@ -6830,7 +6835,7 @@ local provider(configuration) = {
     },
     db_parameter_group(name, block): {
       local resource = blockType.resource('aws_db_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         skip_destroy: build.template(std.get(block, 'skip_destroy', null)),
@@ -6848,7 +6853,7 @@ local provider(configuration) = {
     },
     db_proxy(name, block): {
       local resource = blockType.resource('aws_db_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         debug_logging: build.template(std.get(block, 'debug_logging', null)),
         engine_family: build.template(block.engine_family),
         name: build.template(block.name),
@@ -6873,7 +6878,7 @@ local provider(configuration) = {
     },
     db_proxy_default_target_group(name, block): {
       local resource = blockType.resource('aws_db_proxy_default_target_group', name),
-      _: resource._({
+      _: resource._(block, {
         db_proxy_name: build.template(block.db_proxy_name),
       }),
       arn: resource.field('arn'),
@@ -6883,7 +6888,7 @@ local provider(configuration) = {
     },
     db_proxy_endpoint(name, block): {
       local resource = blockType.resource('aws_db_proxy_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         db_proxy_endpoint_name: build.template(block.db_proxy_endpoint_name),
         db_proxy_name: build.template(block.db_proxy_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -6905,7 +6910,7 @@ local provider(configuration) = {
     },
     db_proxy_target(name, block): {
       local resource = blockType.resource('aws_db_proxy_target', name),
-      _: resource._({
+      _: resource._(block, {
         db_cluster_identifier: build.template(std.get(block, 'db_cluster_identifier', null)),
         db_instance_identifier: build.template(std.get(block, 'db_instance_identifier', null)),
         db_proxy_name: build.template(block.db_proxy_name),
@@ -6925,7 +6930,7 @@ local provider(configuration) = {
     },
     db_snapshot(name, block): {
       local resource = blockType.resource('aws_db_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         db_instance_identifier: build.template(block.db_instance_identifier),
         db_snapshot_identifier: build.template(block.db_snapshot_identifier),
         shared_accounts: build.template(std.get(block, 'shared_accounts', null)),
@@ -6957,7 +6962,7 @@ local provider(configuration) = {
     },
     db_snapshot_copy(name, block): {
       local resource = blockType.resource('aws_db_snapshot_copy', name),
-      _: resource._({
+      _: resource._(block, {
         copy_tags: build.template(std.get(block, 'copy_tags', null)),
         destination_region: build.template(std.get(block, 'destination_region', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -6996,7 +7001,7 @@ local provider(configuration) = {
     },
     db_subnet_group(name, block): {
       local resource = blockType.resource('aws_db_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         subnet_ids: build.template(block.subnet_ids),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7014,7 +7019,7 @@ local provider(configuration) = {
     },
     default_network_acl(name, block): {
       local resource = blockType.resource('aws_default_network_acl', name),
-      _: resource._({
+      _: resource._(block, {
         default_network_acl_id: build.template(block.default_network_acl_id),
         subnet_ids: build.template(std.get(block, 'subnet_ids', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7030,7 +7035,7 @@ local provider(configuration) = {
     },
     default_route_table(name, block): {
       local resource = blockType.resource('aws_default_route_table', name),
-      _: resource._({
+      _: resource._(block, {
         default_route_table_id: build.template(block.default_route_table_id),
         propagating_vgws: build.template(std.get(block, 'propagating_vgws', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7047,7 +7052,7 @@ local provider(configuration) = {
     },
     default_security_group(name, block): {
       local resource = blockType.resource('aws_default_security_group', name),
-      _: resource._({
+      _: resource._(block, {
         revoke_rules_on_delete: build.template(std.get(block, 'revoke_rules_on_delete', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -7066,7 +7071,7 @@ local provider(configuration) = {
     },
     default_subnet(name, block): {
       local resource = blockType.resource('aws_default_subnet', name),
-      _: resource._({
+      _: resource._(block, {
         assign_ipv6_address_on_creation: build.template(std.get(block, 'assign_ipv6_address_on_creation', null)),
         availability_zone: build.template(block.availability_zone),
         customer_owned_ipv4_pool: build.template(std.get(block, 'customer_owned_ipv4_pool', null)),
@@ -7106,7 +7111,7 @@ local provider(configuration) = {
     },
     default_vpc(name, block): {
       local resource = blockType.resource('aws_default_vpc', name),
-      _: resource._({
+      _: resource._(block, {
         assign_generated_ipv6_cidr_block: build.template(std.get(block, 'assign_generated_ipv6_cidr_block', null)),
         enable_dns_hostnames: build.template(std.get(block, 'enable_dns_hostnames', null)),
         enable_dns_support: build.template(std.get(block, 'enable_dns_support', null)),
@@ -7141,7 +7146,7 @@ local provider(configuration) = {
     },
     default_vpc_dhcp_options(name, block): {
       local resource = blockType.resource('aws_default_vpc_dhcp_options', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -7158,7 +7163,7 @@ local provider(configuration) = {
     },
     detective_graph(name, block): {
       local resource = blockType.resource('aws_detective_graph', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       created_time: resource.field('created_time'),
@@ -7169,7 +7174,7 @@ local provider(configuration) = {
     },
     detective_invitation_accepter(name, block): {
       local resource = blockType.resource('aws_detective_invitation_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         graph_arn: build.template(block.graph_arn),
       }),
       graph_arn: resource.field('graph_arn'),
@@ -7177,7 +7182,7 @@ local provider(configuration) = {
     },
     detective_member(name, block): {
       local resource = blockType.resource('aws_detective_member', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         disable_email_notification: build.template(std.get(block, 'disable_email_notification', null)),
         email_address: build.template(block.email_address),
@@ -7199,7 +7204,7 @@ local provider(configuration) = {
     },
     detective_organization_admin_account(name, block): {
       local resource = blockType.resource('aws_detective_organization_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
       }),
       account_id: resource.field('account_id'),
@@ -7207,7 +7212,7 @@ local provider(configuration) = {
     },
     detective_organization_configuration(name, block): {
       local resource = blockType.resource('aws_detective_organization_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         auto_enable: build.template(block.auto_enable),
         graph_arn: build.template(block.graph_arn),
       }),
@@ -7217,7 +7222,7 @@ local provider(configuration) = {
     },
     devicefarm_device_pool(name, block): {
       local resource = blockType.resource('aws_devicefarm_device_pool', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         max_devices: build.template(std.get(block, 'max_devices', null)),
         name: build.template(block.name),
@@ -7236,7 +7241,7 @@ local provider(configuration) = {
     },
     devicefarm_instance_profile(name, block): {
       local resource = blockType.resource('aws_devicefarm_instance_profile', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         exclude_app_packages_from_cleanup: build.template(std.get(block, 'exclude_app_packages_from_cleanup', null)),
         name: build.template(block.name),
@@ -7256,7 +7261,7 @@ local provider(configuration) = {
     },
     devicefarm_network_profile(name, block): {
       local resource = blockType.resource('aws_devicefarm_network_profile', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         downlink_bandwidth_bits: build.template(std.get(block, 'downlink_bandwidth_bits', null)),
         downlink_delay_ms: build.template(std.get(block, 'downlink_delay_ms', null)),
@@ -7290,7 +7295,7 @@ local provider(configuration) = {
     },
     devicefarm_project(name, block): {
       local resource = blockType.resource('aws_devicefarm_project', name),
-      _: resource._({
+      _: resource._(block, {
         default_job_timeout_minutes: build.template(std.get(block, 'default_job_timeout_minutes', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7304,7 +7309,7 @@ local provider(configuration) = {
     },
     devicefarm_test_grid_project(name, block): {
       local resource = blockType.resource('aws_devicefarm_test_grid_project', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7318,7 +7323,7 @@ local provider(configuration) = {
     },
     devicefarm_upload(name, block): {
       local resource = blockType.resource('aws_devicefarm_upload', name),
-      _: resource._({
+      _: resource._(block, {
         content_type: build.template(std.get(block, 'content_type', null)),
         name: build.template(block.name),
         project_arn: build.template(block.project_arn),
@@ -7336,19 +7341,19 @@ local provider(configuration) = {
     },
     devopsguru_event_sources_config(name, block): {
       local resource = blockType.resource('aws_devopsguru_event_sources_config', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     devopsguru_notification_channel(name, block): {
       local resource = blockType.resource('aws_devopsguru_notification_channel', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     devopsguru_resource_collection(name, block): {
       local resource = blockType.resource('aws_devopsguru_resource_collection', name),
-      _: resource._({
+      _: resource._(block, {
         type: build.template(block.type),
       }),
       id: resource.field('id'),
@@ -7356,13 +7361,13 @@ local provider(configuration) = {
     },
     devopsguru_service_integration(name, block): {
       local resource = blockType.resource('aws_devopsguru_service_integration', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     directory_service_conditional_forwarder(name, block): {
       local resource = blockType.resource('aws_directory_service_conditional_forwarder', name),
-      _: resource._({
+      _: resource._(block, {
         directory_id: build.template(block.directory_id),
         dns_ips: build.template(block.dns_ips),
         remote_domain_name: build.template(block.remote_domain_name),
@@ -7374,7 +7379,7 @@ local provider(configuration) = {
     },
     directory_service_directory(name, block): {
       local resource = blockType.resource('aws_directory_service_directory', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enable_sso: build.template(std.get(block, 'enable_sso', null)),
         name: build.template(block.name),
@@ -7401,7 +7406,7 @@ local provider(configuration) = {
     },
     directory_service_log_subscription(name, block): {
       local resource = blockType.resource('aws_directory_service_log_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         directory_id: build.template(block.directory_id),
         log_group_name: build.template(block.log_group_name),
       }),
@@ -7411,7 +7416,7 @@ local provider(configuration) = {
     },
     directory_service_radius_settings(name, block): {
       local resource = blockType.resource('aws_directory_service_radius_settings', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_protocol: build.template(block.authentication_protocol),
         directory_id: build.template(block.directory_id),
         display_label: build.template(block.display_label),
@@ -7435,7 +7440,7 @@ local provider(configuration) = {
     },
     directory_service_region(name, block): {
       local resource = blockType.resource('aws_directory_service_region', name),
-      _: resource._({
+      _: resource._(block, {
         directory_id: build.template(block.directory_id),
         region_name: build.template(block.region_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7449,7 +7454,7 @@ local provider(configuration) = {
     },
     directory_service_shared_directory(name, block): {
       local resource = blockType.resource('aws_directory_service_shared_directory', name),
-      _: resource._({
+      _: resource._(block, {
         directory_id: build.template(block.directory_id),
         method: build.template(std.get(block, 'method', null)),
         notes: build.template(std.get(block, 'notes', null)),
@@ -7462,7 +7467,7 @@ local provider(configuration) = {
     },
     directory_service_shared_directory_accepter(name, block): {
       local resource = blockType.resource('aws_directory_service_shared_directory_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         shared_directory_id: build.template(block.shared_directory_id),
       }),
       id: resource.field('id'),
@@ -7474,7 +7479,7 @@ local provider(configuration) = {
     },
     directory_service_trust(name, block): {
       local resource = blockType.resource('aws_directory_service_trust', name),
-      _: resource._({
+      _: resource._(block, {
         conditional_forwarder_ip_addrs: build.template(std.get(block, 'conditional_forwarder_ip_addrs', null)),
         directory_id: build.template(block.directory_id),
         remote_domain_name: build.template(block.remote_domain_name),
@@ -7498,7 +7503,7 @@ local provider(configuration) = {
     },
     dlm_lifecycle_policy(name, block): {
       local resource = blockType.resource('aws_dlm_lifecycle_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         execution_role_arn: build.template(block.execution_role_arn),
         state: build.template(std.get(block, 'state', null)),
@@ -7514,7 +7519,7 @@ local provider(configuration) = {
     },
     dms_certificate(name, block): {
       local resource = blockType.resource('aws_dms_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_id: build.template(block.certificate_id),
         certificate_pem: build.template(std.get(block, 'certificate_pem', null)),
         certificate_wallet: build.template(std.get(block, 'certificate_wallet', null)),
@@ -7530,7 +7535,7 @@ local provider(configuration) = {
     },
     dms_endpoint(name, block): {
       local resource = blockType.resource('aws_dms_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(std.get(block, 'database_name', null)),
         endpoint_id: build.template(block.endpoint_id),
         endpoint_type: build.template(block.endpoint_type),
@@ -7568,7 +7573,7 @@ local provider(configuration) = {
     },
     dms_event_subscription(name, block): {
       local resource = blockType.resource('aws_dms_event_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         event_categories: build.template(block.event_categories),
         name: build.template(block.name),
@@ -7590,7 +7595,7 @@ local provider(configuration) = {
     },
     dms_replication_config(name, block): {
       local resource = blockType.resource('aws_dms_replication_config', name),
-      _: resource._({
+      _: resource._(block, {
         replication_config_identifier: build.template(block.replication_config_identifier),
         replication_type: build.template(block.replication_type),
         source_endpoint_arn: build.template(block.source_endpoint_arn),
@@ -7616,7 +7621,7 @@ local provider(configuration) = {
     },
     dms_replication_instance(name, block): {
       local resource = blockType.resource('aws_dms_replication_instance', name),
-      _: resource._({
+      _: resource._(block, {
         allow_major_version_upgrade: build.template(std.get(block, 'allow_major_version_upgrade', null)),
         apply_immediately: build.template(std.get(block, 'apply_immediately', null)),
         replication_instance_class: build.template(block.replication_instance_class),
@@ -7647,7 +7652,7 @@ local provider(configuration) = {
     },
     dms_replication_subnet_group(name, block): {
       local resource = blockType.resource('aws_dms_replication_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         replication_subnet_group_description: build.template(block.replication_subnet_group_description),
         replication_subnet_group_id: build.template(block.replication_subnet_group_id),
         subnet_ids: build.template(block.subnet_ids),
@@ -7664,7 +7669,7 @@ local provider(configuration) = {
     },
     dms_replication_task(name, block): {
       local resource = blockType.resource('aws_dms_replication_task', name),
-      _: resource._({
+      _: resource._(block, {
         cdc_start_time: build.template(std.get(block, 'cdc_start_time', null)),
         migration_type: build.template(block.migration_type),
         replication_instance_arn: build.template(block.replication_instance_arn),
@@ -7695,7 +7700,7 @@ local provider(configuration) = {
     },
     dms_s3_endpoint(name, block): {
       local resource = blockType.resource('aws_dms_s3_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         add_column_name: build.template(std.get(block, 'add_column_name', null)),
         add_trailing_padding_character: build.template(std.get(block, 'add_trailing_padding_character', null)),
         bucket_folder: build.template(std.get(block, 'bucket_folder', null)),
@@ -7799,7 +7804,7 @@ local provider(configuration) = {
     },
     docdb_cluster(name, block): {
       local resource = blockType.resource('aws_docdb_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         allow_major_version_upgrade: build.template(std.get(block, 'allow_major_version_upgrade', null)),
         apply_immediately: build.template(std.get(block, 'apply_immediately', null)),
         backup_retention_period: build.template(std.get(block, 'backup_retention_period', null)),
@@ -7853,7 +7858,7 @@ local provider(configuration) = {
     },
     docdb_cluster_instance(name, block): {
       local resource = blockType.resource('aws_docdb_cluster_instance', name),
-      _: resource._({
+      _: resource._(block, {
         apply_immediately: build.template(std.get(block, 'apply_immediately', null)),
         auto_minor_version_upgrade: build.template(std.get(block, 'auto_minor_version_upgrade', null)),
         cluster_identifier: build.template(block.cluster_identifier),
@@ -7895,7 +7900,7 @@ local provider(configuration) = {
     },
     docdb_cluster_parameter_group(name, block): {
       local resource = blockType.resource('aws_docdb_cluster_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7911,7 +7916,7 @@ local provider(configuration) = {
     },
     docdb_cluster_snapshot(name, block): {
       local resource = blockType.resource('aws_docdb_cluster_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         db_cluster_identifier: build.template(block.db_cluster_identifier),
         db_cluster_snapshot_identifier: build.template(block.db_cluster_snapshot_identifier),
       }),
@@ -7932,7 +7937,7 @@ local provider(configuration) = {
     },
     docdb_event_subscription(name, block): {
       local resource = blockType.resource('aws_docdb_event_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         event_categories: build.template(std.get(block, 'event_categories', null)),
         sns_topic_arn: build.template(block.sns_topic_arn),
@@ -7955,7 +7960,7 @@ local provider(configuration) = {
     },
     docdb_global_cluster(name, block): {
       local resource = blockType.resource('aws_docdb_global_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(std.get(block, 'database_name', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         global_cluster_identifier: build.template(block.global_cluster_identifier),
@@ -7975,7 +7980,7 @@ local provider(configuration) = {
     },
     docdb_subnet_group(name, block): {
       local resource = blockType.resource('aws_docdb_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         subnet_ids: build.template(block.subnet_ids),
         tags: build.template(std.get(block, 'tags', null)),
@@ -7991,7 +7996,7 @@ local provider(configuration) = {
     },
     docdbelastic_cluster(name, block): {
       local resource = blockType.resource('aws_docdbelastic_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         admin_user_name: build.template(block.admin_user_name),
         admin_user_password: build.template(block.admin_user_password),
         auth_type: build.template(block.auth_type),
@@ -8020,7 +8025,7 @@ local provider(configuration) = {
     },
     drs_replication_configuration_template(name, block): {
       local resource = blockType.resource('aws_drs_replication_configuration_template', name),
-      _: resource._({
+      _: resource._(block, {
         associate_default_security_group: build.template(block.associate_default_security_group),
         bandwidth_throttling: build.template(block.bandwidth_throttling),
         create_public_ip: build.template(block.create_public_ip),
@@ -8055,7 +8060,7 @@ local provider(configuration) = {
     },
     dx_bgp_peer(name, block): {
       local resource = blockType.resource('aws_dx_bgp_peer', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         bgp_asn: build.template(block.bgp_asn),
         virtual_interface_id: build.template(block.virtual_interface_id),
@@ -8073,7 +8078,7 @@ local provider(configuration) = {
     },
     dx_connection(name, block): {
       local resource = blockType.resource('aws_dx_connection', name),
-      _: resource._({
+      _: resource._(block, {
         bandwidth: build.template(block.bandwidth),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -8103,7 +8108,7 @@ local provider(configuration) = {
     },
     dx_connection_association(name, block): {
       local resource = blockType.resource('aws_dx_connection_association', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
         lag_id: build.template(block.lag_id),
       }),
@@ -8113,7 +8118,7 @@ local provider(configuration) = {
     },
     dx_connection_confirmation(name, block): {
       local resource = blockType.resource('aws_dx_connection_confirmation', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
       }),
       connection_id: resource.field('connection_id'),
@@ -8121,7 +8126,7 @@ local provider(configuration) = {
     },
     dx_gateway(name, block): {
       local resource = blockType.resource('aws_dx_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         amazon_side_asn: build.template(block.amazon_side_asn),
         name: build.template(block.name),
       }),
@@ -8132,7 +8137,7 @@ local provider(configuration) = {
     },
     dx_gateway_association(name, block): {
       local resource = blockType.resource('aws_dx_gateway_association', name),
-      _: resource._({
+      _: resource._(block, {
         dx_gateway_id: build.template(block.dx_gateway_id),
         proposal_id: build.template(std.get(block, 'proposal_id', null)),
         vpn_gateway_id: build.template(std.get(block, 'vpn_gateway_id', null)),
@@ -8150,7 +8155,7 @@ local provider(configuration) = {
     },
     dx_gateway_association_proposal(name, block): {
       local resource = blockType.resource('aws_dx_gateway_association_proposal', name),
-      _: resource._({
+      _: resource._(block, {
         associated_gateway_id: build.template(block.associated_gateway_id),
         dx_gateway_id: build.template(block.dx_gateway_id),
         dx_gateway_owner_account_id: build.template(block.dx_gateway_owner_account_id),
@@ -8165,7 +8170,7 @@ local provider(configuration) = {
     },
     dx_hosted_connection(name, block): {
       local resource = blockType.resource('aws_dx_hosted_connection', name),
-      _: resource._({
+      _: resource._(block, {
         bandwidth: build.template(block.bandwidth),
         connection_id: build.template(block.connection_id),
         name: build.template(block.name),
@@ -8191,7 +8196,7 @@ local provider(configuration) = {
     },
     dx_hosted_private_virtual_interface(name, block): {
       local resource = blockType.resource('aws_dx_hosted_private_virtual_interface', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         bgp_asn: build.template(block.bgp_asn),
         connection_id: build.template(block.connection_id),
@@ -8218,7 +8223,7 @@ local provider(configuration) = {
     },
     dx_hosted_private_virtual_interface_accepter(name, block): {
       local resource = blockType.resource('aws_dx_hosted_private_virtual_interface_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         dx_gateway_id: build.template(std.get(block, 'dx_gateway_id', null)),
         tags: build.template(std.get(block, 'tags', null)),
         virtual_interface_id: build.template(block.virtual_interface_id),
@@ -8234,7 +8239,7 @@ local provider(configuration) = {
     },
     dx_hosted_public_virtual_interface(name, block): {
       local resource = blockType.resource('aws_dx_hosted_public_virtual_interface', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         bgp_asn: build.template(block.bgp_asn),
         connection_id: build.template(block.connection_id),
@@ -8260,7 +8265,7 @@ local provider(configuration) = {
     },
     dx_hosted_public_virtual_interface_accepter(name, block): {
       local resource = blockType.resource('aws_dx_hosted_public_virtual_interface_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         virtual_interface_id: build.template(block.virtual_interface_id),
       }),
@@ -8272,7 +8277,7 @@ local provider(configuration) = {
     },
     dx_hosted_transit_virtual_interface(name, block): {
       local resource = blockType.resource('aws_dx_hosted_transit_virtual_interface', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         bgp_asn: build.template(block.bgp_asn),
         connection_id: build.template(block.connection_id),
@@ -8299,7 +8304,7 @@ local provider(configuration) = {
     },
     dx_hosted_transit_virtual_interface_accepter(name, block): {
       local resource = blockType.resource('aws_dx_hosted_transit_virtual_interface_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         dx_gateway_id: build.template(block.dx_gateway_id),
         tags: build.template(std.get(block, 'tags', null)),
         virtual_interface_id: build.template(block.virtual_interface_id),
@@ -8313,7 +8318,7 @@ local provider(configuration) = {
     },
     dx_lag(name, block): {
       local resource = blockType.resource('aws_dx_lag', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(std.get(block, 'connection_id', null)),
         connections_bandwidth: build.template(block.connections_bandwidth),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -8337,7 +8342,7 @@ local provider(configuration) = {
     },
     dx_macsec_key_association(name, block): {
       local resource = blockType.resource('aws_dx_macsec_key_association', name),
-      _: resource._({
+      _: resource._(block, {
         cak: build.template(std.get(block, 'cak', null)),
         connection_id: build.template(block.connection_id),
       }),
@@ -8351,7 +8356,7 @@ local provider(configuration) = {
     },
     dx_private_virtual_interface(name, block): {
       local resource = blockType.resource('aws_dx_private_virtual_interface', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         bgp_asn: build.template(block.bgp_asn),
         connection_id: build.template(block.connection_id),
@@ -8385,7 +8390,7 @@ local provider(configuration) = {
     },
     dx_public_virtual_interface(name, block): {
       local resource = blockType.resource('aws_dx_public_virtual_interface', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         bgp_asn: build.template(block.bgp_asn),
         connection_id: build.template(block.connection_id),
@@ -8412,7 +8417,7 @@ local provider(configuration) = {
     },
     dx_transit_virtual_interface(name, block): {
       local resource = blockType.resource('aws_dx_transit_virtual_interface', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         bgp_asn: build.template(block.bgp_asn),
         connection_id: build.template(block.connection_id),
@@ -8444,7 +8449,7 @@ local provider(configuration) = {
     },
     dynamodb_contributor_insights(name, block): {
       local resource = blockType.resource('aws_dynamodb_contributor_insights', name),
-      _: resource._({
+      _: resource._(block, {
         index_name: build.template(std.get(block, 'index_name', null)),
         table_name: build.template(block.table_name),
       }),
@@ -8454,7 +8459,7 @@ local provider(configuration) = {
     },
     dynamodb_global_table(name, block): {
       local resource = blockType.resource('aws_dynamodb_global_table', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -8463,7 +8468,7 @@ local provider(configuration) = {
     },
     dynamodb_kinesis_streaming_destination(name, block): {
       local resource = blockType.resource('aws_dynamodb_kinesis_streaming_destination', name),
-      _: resource._({
+      _: resource._(block, {
         stream_arn: build.template(block.stream_arn),
         table_name: build.template(block.table_name),
       }),
@@ -8474,7 +8479,7 @@ local provider(configuration) = {
     },
     dynamodb_resource_policy(name, block): {
       local resource = blockType.resource('aws_dynamodb_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -8486,7 +8491,7 @@ local provider(configuration) = {
     },
     dynamodb_table(name, block): {
       local resource = blockType.resource('aws_dynamodb_table', name),
-      _: resource._({
+      _: resource._(block, {
         billing_mode: build.template(std.get(block, 'billing_mode', null)),
         deletion_protection_enabled: build.template(std.get(block, 'deletion_protection_enabled', null)),
         name: build.template(block.name),
@@ -8522,7 +8527,7 @@ local provider(configuration) = {
     },
     dynamodb_table_export(name, block): {
       local resource = blockType.resource('aws_dynamodb_table_export', name),
-      _: resource._({
+      _: resource._(block, {
         export_format: build.template(std.get(block, 'export_format', null)),
         s3_bucket: build.template(block.s3_bucket),
         s3_sse_kms_key_id: build.template(std.get(block, 's3_sse_kms_key_id', null)),
@@ -8547,7 +8552,7 @@ local provider(configuration) = {
     },
     dynamodb_table_item(name, block): {
       local resource = blockType.resource('aws_dynamodb_table_item', name),
-      _: resource._({
+      _: resource._(block, {
         hash_key: build.template(block.hash_key),
         item: build.template(block.item),
         range_key: build.template(std.get(block, 'range_key', null)),
@@ -8561,7 +8566,7 @@ local provider(configuration) = {
     },
     dynamodb_table_replica(name, block): {
       local resource = blockType.resource('aws_dynamodb_table_replica', name),
-      _: resource._({
+      _: resource._(block, {
         global_table_arn: build.template(block.global_table_arn),
         point_in_time_recovery: build.template(std.get(block, 'point_in_time_recovery', null)),
         table_class_override: build.template(std.get(block, 'table_class_override', null)),
@@ -8578,7 +8583,7 @@ local provider(configuration) = {
     },
     dynamodb_tag(name, block): {
       local resource = blockType.resource('aws_dynamodb_tag', name),
-      _: resource._({
+      _: resource._(block, {
         key: build.template(block.key),
         resource_arn: build.template(block.resource_arn),
         value: build.template(block.value),
@@ -8590,7 +8595,7 @@ local provider(configuration) = {
     },
     ebs_default_kms_key(name, block): {
       local resource = blockType.resource('aws_ebs_default_kms_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_arn: build.template(block.key_arn),
       }),
       id: resource.field('id'),
@@ -8598,7 +8603,7 @@ local provider(configuration) = {
     },
     ebs_encryption_by_default(name, block): {
       local resource = blockType.resource('aws_ebs_encryption_by_default', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
       }),
       enabled: resource.field('enabled'),
@@ -8606,7 +8611,7 @@ local provider(configuration) = {
     },
     ebs_fast_snapshot_restore(name, block): {
       local resource = blockType.resource('aws_ebs_fast_snapshot_restore', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(block.availability_zone),
         snapshot_id: build.template(block.snapshot_id),
       }),
@@ -8617,7 +8622,7 @@ local provider(configuration) = {
     },
     ebs_snapshot(name, block): {
       local resource = blockType.resource('aws_ebs_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         outpost_arn: build.template(std.get(block, 'outpost_arn', null)),
         permanent_restore: build.template(std.get(block, 'permanent_restore', null)),
@@ -8644,7 +8649,7 @@ local provider(configuration) = {
     },
     ebs_snapshot_block_public_access(name, block): {
       local resource = blockType.resource('aws_ebs_snapshot_block_public_access', name),
-      _: resource._({
+      _: resource._(block, {
         state: build.template(block.state),
       }),
       id: resource.field('id'),
@@ -8652,7 +8657,7 @@ local provider(configuration) = {
     },
     ebs_snapshot_copy(name, block): {
       local resource = blockType.resource('aws_ebs_snapshot_copy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         encrypted: build.template(std.get(block, 'encrypted', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -8683,7 +8688,7 @@ local provider(configuration) = {
     },
     ebs_snapshot_import(name, block): {
       local resource = blockType.resource('aws_ebs_snapshot_import', name),
-      _: resource._({
+      _: resource._(block, {
         encrypted: build.template(std.get(block, 'encrypted', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
         permanent_restore: build.template(std.get(block, 'permanent_restore', null)),
@@ -8711,7 +8716,7 @@ local provider(configuration) = {
     },
     ebs_volume(name, block): {
       local resource = blockType.resource('aws_ebs_volume', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(block.availability_zone),
         final_snapshot: build.template(std.get(block, 'final_snapshot', null)),
         multi_attach_enabled: build.template(std.get(block, 'multi_attach_enabled', null)),
@@ -8736,7 +8741,7 @@ local provider(configuration) = {
     },
     ec2_availability_zone_group(name, block): {
       local resource = blockType.resource('aws_ec2_availability_zone_group', name),
-      _: resource._({
+      _: resource._(block, {
         group_name: build.template(block.group_name),
         opt_in_status: build.template(block.opt_in_status),
       }),
@@ -8746,7 +8751,7 @@ local provider(configuration) = {
     },
     ec2_capacity_block_reservation(name, block): {
       local resource = blockType.resource('aws_ec2_capacity_block_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_block_offering_id: build.template(block.capacity_block_offering_id),
         instance_platform: build.template(block.instance_platform),
         tags: build.template(std.get(block, 'tags', null)),
@@ -8772,7 +8777,7 @@ local provider(configuration) = {
     },
     ec2_capacity_reservation(name, block): {
       local resource = blockType.resource('aws_ec2_capacity_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(block.availability_zone),
         ebs_optimized: build.template(std.get(block, 'ebs_optimized', null)),
         end_date: build.template(std.get(block, 'end_date', null)),
@@ -8807,7 +8812,7 @@ local provider(configuration) = {
     },
     ec2_carrier_gateway(name, block): {
       local resource = blockType.resource('aws_ec2_carrier_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -8820,7 +8825,7 @@ local provider(configuration) = {
     },
     ec2_client_vpn_authorization_rule(name, block): {
       local resource = blockType.resource('aws_ec2_client_vpn_authorization_rule', name),
-      _: resource._({
+      _: resource._(block, {
         access_group_id: build.template(std.get(block, 'access_group_id', null)),
         authorize_all_groups: build.template(std.get(block, 'authorize_all_groups', null)),
         client_vpn_endpoint_id: build.template(block.client_vpn_endpoint_id),
@@ -8836,7 +8841,7 @@ local provider(configuration) = {
     },
     ec2_client_vpn_endpoint(name, block): {
       local resource = blockType.resource('aws_ec2_client_vpn_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         client_cidr_block: build.template(block.client_cidr_block),
         description: build.template(std.get(block, 'description', null)),
         dns_servers: build.template(std.get(block, 'dns_servers', null)),
@@ -8868,7 +8873,7 @@ local provider(configuration) = {
     },
     ec2_client_vpn_network_association(name, block): {
       local resource = blockType.resource('aws_ec2_client_vpn_network_association', name),
-      _: resource._({
+      _: resource._(block, {
         client_vpn_endpoint_id: build.template(block.client_vpn_endpoint_id),
         subnet_id: build.template(block.subnet_id),
       }),
@@ -8880,7 +8885,7 @@ local provider(configuration) = {
     },
     ec2_client_vpn_route(name, block): {
       local resource = blockType.resource('aws_ec2_client_vpn_route', name),
-      _: resource._({
+      _: resource._(block, {
         client_vpn_endpoint_id: build.template(block.client_vpn_endpoint_id),
         description: build.template(std.get(block, 'description', null)),
         destination_cidr_block: build.template(block.destination_cidr_block),
@@ -8896,7 +8901,7 @@ local provider(configuration) = {
     },
     ec2_fleet(name, block): {
       local resource = blockType.resource('aws_ec2_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         context: build.template(std.get(block, 'context', null)),
         excess_capacity_termination_policy: build.template(std.get(block, 'excess_capacity_termination_policy', null)),
         replace_unhealthy_instances: build.template(std.get(block, 'replace_unhealthy_instances', null)),
@@ -8925,7 +8930,7 @@ local provider(configuration) = {
     },
     ec2_host(name, block): {
       local resource = blockType.resource('aws_ec2_host', name),
-      _: resource._({
+      _: resource._(block, {
         auto_placement: build.template(std.get(block, 'auto_placement', null)),
         availability_zone: build.template(block.availability_zone),
         host_recovery: build.template(std.get(block, 'host_recovery', null)),
@@ -8949,7 +8954,7 @@ local provider(configuration) = {
     },
     ec2_image_block_public_access(name, block): {
       local resource = blockType.resource('aws_ec2_image_block_public_access', name),
-      _: resource._({
+      _: resource._(block, {
         state: build.template(block.state),
       }),
       id: resource.field('id'),
@@ -8957,7 +8962,7 @@ local provider(configuration) = {
     },
     ec2_instance_connect_endpoint(name, block): {
       local resource = blockType.resource('aws_ec2_instance_connect_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         subnet_id: build.template(block.subnet_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -8977,7 +8982,7 @@ local provider(configuration) = {
     },
     ec2_instance_metadata_defaults(name, block): {
       local resource = blockType.resource('aws_ec2_instance_metadata_defaults', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       http_endpoint: resource.field('http_endpoint'),
       http_put_response_hop_limit: resource.field('http_put_response_hop_limit'),
@@ -8987,7 +8992,7 @@ local provider(configuration) = {
     },
     ec2_instance_state(name, block): {
       local resource = blockType.resource('aws_ec2_instance_state', name),
-      _: resource._({
+      _: resource._(block, {
         force: build.template(std.get(block, 'force', null)),
         instance_id: build.template(block.instance_id),
         state: build.template(block.state),
@@ -8999,7 +9004,7 @@ local provider(configuration) = {
     },
     ec2_local_gateway_route(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway_route', name),
-      _: resource._({
+      _: resource._(block, {
         destination_cidr_block: build.template(block.destination_cidr_block),
         local_gateway_route_table_id: build.template(block.local_gateway_route_table_id),
         local_gateway_virtual_interface_group_id: build.template(block.local_gateway_virtual_interface_group_id),
@@ -9011,7 +9016,7 @@ local provider(configuration) = {
     },
     ec2_local_gateway_route_table_vpc_association(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway_route_table_vpc_association', name),
-      _: resource._({
+      _: resource._(block, {
         local_gateway_route_table_id: build.template(block.local_gateway_route_table_id),
         tags: build.template(std.get(block, 'tags', null)),
         vpc_id: build.template(block.vpc_id),
@@ -9025,7 +9030,7 @@ local provider(configuration) = {
     },
     ec2_managed_prefix_list(name, block): {
       local resource = blockType.resource('aws_ec2_managed_prefix_list', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         max_entries: build.template(block.max_entries),
         name: build.template(block.name),
@@ -9043,7 +9048,7 @@ local provider(configuration) = {
     },
     ec2_managed_prefix_list_entry(name, block): {
       local resource = blockType.resource('aws_ec2_managed_prefix_list_entry', name),
-      _: resource._({
+      _: resource._(block, {
         cidr: build.template(block.cidr),
         description: build.template(std.get(block, 'description', null)),
         prefix_list_id: build.template(block.prefix_list_id),
@@ -9055,7 +9060,7 @@ local provider(configuration) = {
     },
     ec2_network_insights_analysis(name, block): {
       local resource = blockType.resource('aws_ec2_network_insights_analysis', name),
-      _: resource._({
+      _: resource._(block, {
         filter_in_arns: build.template(std.get(block, 'filter_in_arns', null)),
         network_insights_path_id: build.template(block.network_insights_path_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -9080,7 +9085,7 @@ local provider(configuration) = {
     },
     ec2_network_insights_path(name, block): {
       local resource = blockType.resource('aws_ec2_network_insights_path', name),
-      _: resource._({
+      _: resource._(block, {
         destination: build.template(std.get(block, 'destination', null)),
         destination_ip: build.template(std.get(block, 'destination_ip', null)),
         destination_port: build.template(std.get(block, 'destination_port', null)),
@@ -9104,7 +9109,7 @@ local provider(configuration) = {
     },
     ec2_serial_console_access(name, block): {
       local resource = blockType.resource('aws_ec2_serial_console_access', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
       }),
       enabled: resource.field('enabled'),
@@ -9112,7 +9117,7 @@ local provider(configuration) = {
     },
     ec2_subnet_cidr_reservation(name, block): {
       local resource = blockType.resource('aws_ec2_subnet_cidr_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         cidr_block: build.template(block.cidr_block),
         description: build.template(std.get(block, 'description', null)),
         reservation_type: build.template(block.reservation_type),
@@ -9127,7 +9132,7 @@ local provider(configuration) = {
     },
     ec2_tag(name, block): {
       local resource = blockType.resource('aws_ec2_tag', name),
-      _: resource._({
+      _: resource._(block, {
         key: build.template(block.key),
         resource_id: build.template(block.resource_id),
         value: build.template(block.value),
@@ -9139,7 +9144,7 @@ local provider(configuration) = {
     },
     ec2_traffic_mirror_filter(name, block): {
       local resource = blockType.resource('aws_ec2_traffic_mirror_filter', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         network_services: build.template(std.get(block, 'network_services', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -9153,7 +9158,7 @@ local provider(configuration) = {
     },
     ec2_traffic_mirror_filter_rule(name, block): {
       local resource = blockType.resource('aws_ec2_traffic_mirror_filter_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         destination_cidr_block: build.template(block.destination_cidr_block),
         protocol: build.template(std.get(block, 'protocol', null)),
@@ -9176,7 +9181,7 @@ local provider(configuration) = {
     },
     ec2_traffic_mirror_session(name, block): {
       local resource = blockType.resource('aws_ec2_traffic_mirror_session', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         network_interface_id: build.template(block.network_interface_id),
         session_number: build.template(block.session_number),
@@ -9199,7 +9204,7 @@ local provider(configuration) = {
     },
     ec2_traffic_mirror_target(name, block): {
       local resource = blockType.resource('aws_ec2_traffic_mirror_target', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         gateway_load_balancer_endpoint_id: build.template(std.get(block, 'gateway_load_balancer_endpoint_id', null)),
         network_interface_id: build.template(std.get(block, 'network_interface_id', null)),
@@ -9218,7 +9223,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         amazon_side_asn: build.template(std.get(block, 'amazon_side_asn', null)),
         auto_accept_shared_attachments: build.template(std.get(block, 'auto_accept_shared_attachments', null)),
         default_route_table_association: build.template(std.get(block, 'default_route_table_association', null)),
@@ -9251,7 +9256,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_connect(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_connect', name),
-      _: resource._({
+      _: resource._(block, {
         protocol: build.template(std.get(block, 'protocol', null)),
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_default_route_table_association: build.template(std.get(block, 'transit_gateway_default_route_table_association', null)),
@@ -9270,7 +9275,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_connect_peer(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_connect_peer', name),
-      _: resource._({
+      _: resource._(block, {
         inside_cidr_blocks: build.template(block.inside_cidr_blocks),
         peer_address: build.template(block.peer_address),
         tags: build.template(std.get(block, 'tags', null)),
@@ -9290,7 +9295,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_default_route_table_association(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_default_route_table_association', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_id: build.template(block.transit_gateway_id),
         transit_gateway_route_table_id: build.template(block.transit_gateway_route_table_id),
       }),
@@ -9301,7 +9306,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_default_route_table_propagation(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_default_route_table_propagation', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_id: build.template(block.transit_gateway_id),
         transit_gateway_route_table_id: build.template(block.transit_gateway_route_table_id),
       }),
@@ -9312,7 +9317,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_multicast_domain(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_multicast_domain', name),
-      _: resource._({
+      _: resource._(block, {
         auto_accept_shared_associations: build.template(std.get(block, 'auto_accept_shared_associations', null)),
         igmpv2_support: build.template(std.get(block, 'igmpv2_support', null)),
         static_sources_support: build.template(std.get(block, 'static_sources_support', null)),
@@ -9331,7 +9336,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_multicast_domain_association(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_multicast_domain_association', name),
-      _: resource._({
+      _: resource._(block, {
         subnet_id: build.template(block.subnet_id),
         transit_gateway_attachment_id: build.template(block.transit_gateway_attachment_id),
         transit_gateway_multicast_domain_id: build.template(block.transit_gateway_multicast_domain_id),
@@ -9343,7 +9348,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_multicast_group_member(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_multicast_group_member', name),
-      _: resource._({
+      _: resource._(block, {
         group_ip_address: build.template(block.group_ip_address),
         network_interface_id: build.template(block.network_interface_id),
         transit_gateway_multicast_domain_id: build.template(block.transit_gateway_multicast_domain_id),
@@ -9355,7 +9360,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_multicast_group_source(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_multicast_group_source', name),
-      _: resource._({
+      _: resource._(block, {
         group_ip_address: build.template(block.group_ip_address),
         network_interface_id: build.template(block.network_interface_id),
         transit_gateway_multicast_domain_id: build.template(block.transit_gateway_multicast_domain_id),
@@ -9367,7 +9372,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_peering_attachment(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_peering_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         peer_region: build.template(block.peer_region),
         peer_transit_gateway_id: build.template(block.peer_transit_gateway_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -9384,7 +9389,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_peering_attachment_accepter(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_peering_attachment_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_attachment_id: build.template(block.transit_gateway_attachment_id),
       }),
@@ -9399,7 +9404,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_policy_table(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_policy_table', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_id: build.template(block.transit_gateway_id),
       }),
@@ -9412,7 +9417,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_policy_table_association(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_policy_table_association', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_attachment_id: build.template(block.transit_gateway_attachment_id),
         transit_gateway_policy_table_id: build.template(block.transit_gateway_policy_table_id),
       }),
@@ -9424,7 +9429,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_prefix_list_reference(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_prefix_list_reference', name),
-      _: resource._({
+      _: resource._(block, {
         blackhole: build.template(std.get(block, 'blackhole', null)),
         prefix_list_id: build.template(block.prefix_list_id),
         transit_gateway_attachment_id: build.template(std.get(block, 'transit_gateway_attachment_id', null)),
@@ -9439,7 +9444,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route', name),
-      _: resource._({
+      _: resource._(block, {
         blackhole: build.template(std.get(block, 'blackhole', null)),
         destination_cidr_block: build.template(block.destination_cidr_block),
         transit_gateway_attachment_id: build.template(std.get(block, 'transit_gateway_attachment_id', null)),
@@ -9453,7 +9458,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route_table(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_table', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_id: build.template(block.transit_gateway_id),
       }),
@@ -9467,7 +9472,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route_table_association(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_table_association', name),
-      _: resource._({
+      _: resource._(block, {
         replace_existing_association: build.template(std.get(block, 'replace_existing_association', null)),
         transit_gateway_attachment_id: build.template(block.transit_gateway_attachment_id),
         transit_gateway_route_table_id: build.template(block.transit_gateway_route_table_id),
@@ -9481,7 +9486,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route_table_propagation(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_table_propagation', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_attachment_id: build.template(block.transit_gateway_attachment_id),
         transit_gateway_route_table_id: build.template(block.transit_gateway_route_table_id),
       }),
@@ -9493,7 +9498,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_vpc_attachment(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_vpc_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         appliance_mode_support: build.template(std.get(block, 'appliance_mode_support', null)),
         dns_support: build.template(std.get(block, 'dns_support', null)),
         ipv6_support: build.template(std.get(block, 'ipv6_support', null)),
@@ -9518,7 +9523,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_vpc_attachment_accepter(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_vpc_attachment_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_attachment_id: build.template(block.transit_gateway_attachment_id),
         transit_gateway_default_route_table_association: build.template(std.get(block, 'transit_gateway_default_route_table_association', null)),
@@ -9541,7 +9546,7 @@ local provider(configuration) = {
     },
     ecr_lifecycle_policy(name, block): {
       local resource = blockType.resource('aws_ecr_lifecycle_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         repository: build.template(block.repository),
       }),
@@ -9552,7 +9557,7 @@ local provider(configuration) = {
     },
     ecr_pull_through_cache_rule(name, block): {
       local resource = blockType.resource('aws_ecr_pull_through_cache_rule', name),
-      _: resource._({
+      _: resource._(block, {
         credential_arn: build.template(std.get(block, 'credential_arn', null)),
         ecr_repository_prefix: build.template(block.ecr_repository_prefix),
         upstream_registry_url: build.template(block.upstream_registry_url),
@@ -9565,7 +9570,7 @@ local provider(configuration) = {
     },
     ecr_registry_policy(name, block): {
       local resource = blockType.resource('aws_ecr_registry_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
       }),
       id: resource.field('id'),
@@ -9574,7 +9579,7 @@ local provider(configuration) = {
     },
     ecr_registry_scanning_configuration(name, block): {
       local resource = blockType.resource('aws_ecr_registry_scanning_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         scan_type: build.template(block.scan_type),
       }),
       id: resource.field('id'),
@@ -9583,14 +9588,14 @@ local provider(configuration) = {
     },
     ecr_replication_configuration(name, block): {
       local resource = blockType.resource('aws_ecr_replication_configuration', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       registry_id: resource.field('registry_id'),
     },
     ecr_repository(name, block): {
       local resource = blockType.resource('aws_ecr_repository', name),
-      _: resource._({
+      _: resource._(block, {
         force_delete: build.template(std.get(block, 'force_delete', null)),
         image_tag_mutability: build.template(std.get(block, 'image_tag_mutability', null)),
         name: build.template(block.name),
@@ -9608,7 +9613,7 @@ local provider(configuration) = {
     },
     ecr_repository_creation_template(name, block): {
       local resource = blockType.resource('aws_ecr_repository_creation_template', name),
-      _: resource._({
+      _: resource._(block, {
         applied_for: build.template(block.applied_for),
         custom_role_arn: build.template(std.get(block, 'custom_role_arn', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -9631,7 +9636,7 @@ local provider(configuration) = {
     },
     ecr_repository_policy(name, block): {
       local resource = blockType.resource('aws_ecr_repository_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         repository: build.template(block.repository),
       }),
@@ -9642,7 +9647,7 @@ local provider(configuration) = {
     },
     ecrpublic_repository(name, block): {
       local resource = blockType.resource('aws_ecrpublic_repository', name),
-      _: resource._({
+      _: resource._(block, {
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         repository_name: build.template(block.repository_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -9658,7 +9663,7 @@ local provider(configuration) = {
     },
     ecrpublic_repository_policy(name, block): {
       local resource = blockType.resource('aws_ecrpublic_repository_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         repository_name: build.template(block.repository_name),
       }),
@@ -9669,7 +9674,7 @@ local provider(configuration) = {
     },
     ecs_account_setting_default(name, block): {
       local resource = blockType.resource('aws_ecs_account_setting_default', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         value: build.template(block.value),
       }),
@@ -9680,7 +9685,7 @@ local provider(configuration) = {
     },
     ecs_capacity_provider(name, block): {
       local resource = blockType.resource('aws_ecs_capacity_provider', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -9692,7 +9697,7 @@ local provider(configuration) = {
     },
     ecs_cluster(name, block): {
       local resource = blockType.resource('aws_ecs_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -9704,7 +9709,7 @@ local provider(configuration) = {
     },
     ecs_cluster_capacity_providers(name, block): {
       local resource = blockType.resource('aws_ecs_cluster_capacity_providers', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_providers: build.template(std.get(block, 'capacity_providers', null)),
         cluster_name: build.template(block.cluster_name),
       }),
@@ -9714,7 +9719,7 @@ local provider(configuration) = {
     },
     ecs_service(name, block): {
       local resource = blockType.resource('aws_ecs_service', name),
-      _: resource._({
+      _: resource._(block, {
         deployment_maximum_percent: build.template(std.get(block, 'deployment_maximum_percent', null)),
         deployment_minimum_healthy_percent: build.template(std.get(block, 'deployment_minimum_healthy_percent', null)),
         desired_count: build.template(std.get(block, 'desired_count', null)),
@@ -9754,7 +9759,7 @@ local provider(configuration) = {
     },
     ecs_tag(name, block): {
       local resource = blockType.resource('aws_ecs_tag', name),
-      _: resource._({
+      _: resource._(block, {
         key: build.template(block.key),
         resource_arn: build.template(block.resource_arn),
         value: build.template(block.value),
@@ -9766,7 +9771,7 @@ local provider(configuration) = {
     },
     ecs_task_definition(name, block): {
       local resource = blockType.resource('aws_ecs_task_definition', name),
-      _: resource._({
+      _: resource._(block, {
         container_definitions: build.template(block.container_definitions),
         cpu: build.template(std.get(block, 'cpu', null)),
         execution_role_arn: build.template(std.get(block, 'execution_role_arn', null)),
@@ -9801,7 +9806,7 @@ local provider(configuration) = {
     },
     ecs_task_set(name, block): {
       local resource = blockType.resource('aws_ecs_task_set', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         force_delete: build.template(std.get(block, 'force_delete', null)),
         service: build.template(block.service),
@@ -9829,7 +9834,7 @@ local provider(configuration) = {
     },
     efs_access_point(name, block): {
       local resource = blockType.resource('aws_efs_access_point', name),
-      _: resource._({
+      _: resource._(block, {
         file_system_id: build.template(block.file_system_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -9843,7 +9848,7 @@ local provider(configuration) = {
     },
     efs_backup_policy(name, block): {
       local resource = blockType.resource('aws_efs_backup_policy', name),
-      _: resource._({
+      _: resource._(block, {
         file_system_id: build.template(block.file_system_id),
       }),
       file_system_id: resource.field('file_system_id'),
@@ -9851,7 +9856,7 @@ local provider(configuration) = {
     },
     efs_file_system(name, block): {
       local resource = blockType.resource('aws_efs_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         provisioned_throughput_in_mibps: build.template(std.get(block, 'provisioned_throughput_in_mibps', null)),
         tags: build.template(std.get(block, 'tags', null)),
         throughput_mode: build.template(std.get(block, 'throughput_mode', null)),
@@ -9876,7 +9881,7 @@ local provider(configuration) = {
     },
     efs_file_system_policy(name, block): {
       local resource = blockType.resource('aws_efs_file_system_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bypass_policy_lockout_safety_check: build.template(std.get(block, 'bypass_policy_lockout_safety_check', null)),
         file_system_id: build.template(block.file_system_id),
         policy: build.template(block.policy),
@@ -9888,7 +9893,7 @@ local provider(configuration) = {
     },
     efs_mount_target(name, block): {
       local resource = blockType.resource('aws_efs_mount_target', name),
-      _: resource._({
+      _: resource._(block, {
         file_system_id: build.template(block.file_system_id),
         subnet_id: build.template(block.subnet_id),
       }),
@@ -9907,7 +9912,7 @@ local provider(configuration) = {
     },
     efs_replication_configuration(name, block): {
       local resource = blockType.resource('aws_efs_replication_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         source_file_system_id: build.template(block.source_file_system_id),
       }),
       creation_time: resource.field('creation_time'),
@@ -9919,7 +9924,7 @@ local provider(configuration) = {
     },
     egress_only_internet_gateway(name, block): {
       local resource = blockType.resource('aws_egress_only_internet_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -9930,7 +9935,7 @@ local provider(configuration) = {
     },
     eip(name, block): {
       local resource = blockType.resource('aws_eip', name),
-      _: resource._({
+      _: resource._(block, {
         address: build.template(std.get(block, 'address', null)),
         associate_with_private_ip: build.template(std.get(block, 'associate_with_private_ip', null)),
         customer_owned_ipv4_pool: build.template(std.get(block, 'customer_owned_ipv4_pool', null)),
@@ -9962,7 +9967,7 @@ local provider(configuration) = {
     },
     eip_association(name, block): {
       local resource = blockType.resource('aws_eip_association', name),
-      _: resource._({
+      _: resource._(block, {
         allow_reassociation: build.template(std.get(block, 'allow_reassociation', null)),
       }),
       allocation_id: resource.field('allocation_id'),
@@ -9975,7 +9980,7 @@ local provider(configuration) = {
     },
     eip_domain_name(name, block): {
       local resource = blockType.resource('aws_eip_domain_name', name),
-      _: resource._({
+      _: resource._(block, {
         allocation_id: build.template(block.allocation_id),
         domain_name: build.template(block.domain_name),
       }),
@@ -9986,7 +9991,7 @@ local provider(configuration) = {
     },
     eks_access_entry(name, block): {
       local resource = blockType.resource('aws_eks_access_entry', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         principal_arn: build.template(block.principal_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -10006,7 +10011,7 @@ local provider(configuration) = {
     },
     eks_access_policy_association(name, block): {
       local resource = blockType.resource('aws_eks_access_policy_association', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         policy_arn: build.template(block.policy_arn),
         principal_arn: build.template(block.principal_arn),
@@ -10020,7 +10025,7 @@ local provider(configuration) = {
     },
     eks_addon(name, block): {
       local resource = blockType.resource('aws_eks_addon', name),
-      _: resource._({
+      _: resource._(block, {
         addon_name: build.template(block.addon_name),
         cluster_name: build.template(block.cluster_name),
         preserve: build.template(std.get(block, 'preserve', null)),
@@ -10048,7 +10053,7 @@ local provider(configuration) = {
     },
     eks_cluster(name, block): {
       local resource = blockType.resource('aws_eks_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         bootstrap_self_managed_addons: build.template(std.get(block, 'bootstrap_self_managed_addons', null)),
         enabled_cluster_log_types: build.template(std.get(block, 'enabled_cluster_log_types', null)),
         name: build.template(block.name),
@@ -10074,7 +10079,7 @@ local provider(configuration) = {
     },
     eks_fargate_profile(name, block): {
       local resource = blockType.resource('aws_eks_fargate_profile', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         fargate_profile_name: build.template(block.fargate_profile_name),
         pod_execution_role_arn: build.template(block.pod_execution_role_arn),
@@ -10093,7 +10098,7 @@ local provider(configuration) = {
     },
     eks_identity_provider_config(name, block): {
       local resource = blockType.resource('aws_eks_identity_provider_config', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -10106,7 +10111,7 @@ local provider(configuration) = {
     },
     eks_node_group(name, block): {
       local resource = blockType.resource('aws_eks_node_group', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         force_update_version: build.template(std.get(block, 'force_update_version', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -10136,7 +10141,7 @@ local provider(configuration) = {
     },
     eks_pod_identity_association(name, block): {
       local resource = blockType.resource('aws_eks_pod_identity_association', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         namespace: build.template(block.namespace),
         role_arn: build.template(block.role_arn),
@@ -10155,7 +10160,7 @@ local provider(configuration) = {
     },
     elastic_beanstalk_application(name, block): {
       local resource = blockType.resource('aws_elastic_beanstalk_application', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -10169,7 +10174,7 @@ local provider(configuration) = {
     },
     elastic_beanstalk_application_version(name, block): {
       local resource = blockType.resource('aws_elastic_beanstalk_application_version', name),
-      _: resource._({
+      _: resource._(block, {
         application: build.template(block.application),
         bucket: build.template(block.bucket),
         description: build.template(std.get(block, 'description', null)),
@@ -10193,7 +10198,7 @@ local provider(configuration) = {
     },
     elastic_beanstalk_configuration_template(name, block): {
       local resource = blockType.resource('aws_elastic_beanstalk_configuration_template', name),
-      _: resource._({
+      _: resource._(block, {
         application: build.template(block.application),
         description: build.template(std.get(block, 'description', null)),
         environment_id: build.template(std.get(block, 'environment_id', null)),
@@ -10209,7 +10214,7 @@ local provider(configuration) = {
     },
     elastic_beanstalk_environment(name, block): {
       local resource = blockType.resource('aws_elastic_beanstalk_environment', name),
-      _: resource._({
+      _: resource._(block, {
         application: build.template(block.application),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -10246,7 +10251,7 @@ local provider(configuration) = {
     },
     elasticache_cluster(name, block): {
       local resource = blockType.resource('aws_elasticache_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         auto_minor_version_upgrade: build.template(std.get(block, 'auto_minor_version_upgrade', null)),
         cluster_id: build.template(block.cluster_id),
         final_snapshot_identifier: build.template(std.get(block, 'final_snapshot_identifier', null)),
@@ -10296,7 +10301,7 @@ local provider(configuration) = {
     },
     elasticache_global_replication_group(name, block): {
       local resource = blockType.resource('aws_elasticache_global_replication_group', name),
-      _: resource._({
+      _: resource._(block, {
         global_replication_group_description: build.template(std.get(block, 'global_replication_group_description', null)),
         global_replication_group_id_suffix: build.template(block.global_replication_group_id_suffix),
         parameter_group_name: build.template(std.get(block, 'parameter_group_name', null)),
@@ -10323,7 +10328,7 @@ local provider(configuration) = {
     },
     elasticache_parameter_group(name, block): {
       local resource = blockType.resource('aws_elasticache_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         name: build.template(block.name),
@@ -10339,7 +10344,7 @@ local provider(configuration) = {
     },
     elasticache_replication_group(name, block): {
       local resource = blockType.resource('aws_elasticache_replication_group', name),
-      _: resource._({
+      _: resource._(block, {
         auth_token: build.template(std.get(block, 'auth_token', null)),
         auth_token_update_strategy: build.template(std.get(block, 'auth_token_update_strategy', null)),
         automatic_failover_enabled: build.template(std.get(block, 'automatic_failover_enabled', null)),
@@ -10408,7 +10413,7 @@ local provider(configuration) = {
     },
     elasticache_reserved_cache_node(name, block): {
       local resource = blockType.resource('aws_elasticache_reserved_cache_node', name),
-      _: resource._({
+      _: resource._(block, {
         reserved_cache_nodes_offering_id: build.template(block.reserved_cache_nodes_offering_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -10430,7 +10435,7 @@ local provider(configuration) = {
     },
     elasticache_serverless_cache(name, block): {
       local resource = blockType.resource('aws_elasticache_serverless_cache', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(block.engine),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
         name: build.template(block.name),
@@ -10461,7 +10466,7 @@ local provider(configuration) = {
     },
     elasticache_subnet_group(name, block): {
       local resource = blockType.resource('aws_elasticache_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         subnet_ids: build.template(block.subnet_ids),
@@ -10478,7 +10483,7 @@ local provider(configuration) = {
     },
     elasticache_user(name, block): {
       local resource = blockType.resource('aws_elasticache_user', name),
-      _: resource._({
+      _: resource._(block, {
         access_string: build.template(block.access_string),
         engine: build.template(block.engine),
         no_password_required: build.template(std.get(block, 'no_password_required', null)),
@@ -10500,7 +10505,7 @@ local provider(configuration) = {
     },
     elasticache_user_group(name, block): {
       local resource = blockType.resource('aws_elasticache_user_group', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(block.engine),
         tags: build.template(std.get(block, 'tags', null)),
         user_group_id: build.template(block.user_group_id),
@@ -10516,7 +10521,7 @@ local provider(configuration) = {
     },
     elasticache_user_group_association(name, block): {
       local resource = blockType.resource('aws_elasticache_user_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         user_group_id: build.template(block.user_group_id),
         user_id: build.template(block.user_id),
       }),
@@ -10526,7 +10531,7 @@ local provider(configuration) = {
     },
     elasticsearch_domain(name, block): {
       local resource = blockType.resource('aws_elasticsearch_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         elasticsearch_version: build.template(std.get(block, 'elasticsearch_version', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -10545,7 +10550,7 @@ local provider(configuration) = {
     },
     elasticsearch_domain_policy(name, block): {
       local resource = blockType.resource('aws_elasticsearch_domain_policy', name),
-      _: resource._({
+      _: resource._(block, {
         access_policies: build.template(block.access_policies),
         domain_name: build.template(block.domain_name),
       }),
@@ -10555,7 +10560,7 @@ local provider(configuration) = {
     },
     elasticsearch_domain_saml_options(name, block): {
       local resource = blockType.resource('aws_elasticsearch_domain_saml_options', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
       }),
       domain_name: resource.field('domain_name'),
@@ -10563,7 +10568,7 @@ local provider(configuration) = {
     },
     elasticsearch_vpc_endpoint(name, block): {
       local resource = blockType.resource('aws_elasticsearch_vpc_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         domain_arn: build.template(block.domain_arn),
       }),
       domain_arn: resource.field('domain_arn'),
@@ -10572,7 +10577,7 @@ local provider(configuration) = {
     },
     elastictranscoder_pipeline(name, block): {
       local resource = blockType.resource('aws_elastictranscoder_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         aws_kms_key_arn: build.template(std.get(block, 'aws_kms_key_arn', null)),
         input_bucket: build.template(block.input_bucket),
         role: build.template(block.role),
@@ -10587,7 +10592,7 @@ local provider(configuration) = {
     },
     elastictranscoder_preset(name, block): {
       local resource = blockType.resource('aws_elastictranscoder_preset', name),
-      _: resource._({
+      _: resource._(block, {
         container: build.template(block.container),
         description: build.template(std.get(block, 'description', null)),
         video_codec_options: build.template(std.get(block, 'video_codec_options', null)),
@@ -10602,7 +10607,7 @@ local provider(configuration) = {
     },
     elb(name, block): {
       local resource = blockType.resource('aws_elb', name),
-      _: resource._({
+      _: resource._(block, {
         connection_draining: build.template(std.get(block, 'connection_draining', null)),
         connection_draining_timeout: build.template(std.get(block, 'connection_draining_timeout', null)),
         cross_zone_load_balancing: build.template(std.get(block, 'cross_zone_load_balancing', null)),
@@ -10633,7 +10638,7 @@ local provider(configuration) = {
     },
     elb_attachment(name, block): {
       local resource = blockType.resource('aws_elb_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         elb: build.template(block.elb),
         instance: build.template(block.instance),
       }),
@@ -10643,7 +10648,7 @@ local provider(configuration) = {
     },
     emr_block_public_access_configuration(name, block): {
       local resource = blockType.resource('aws_emr_block_public_access_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         block_public_security_group_rules: build.template(block.block_public_security_group_rules),
       }),
       block_public_security_group_rules: resource.field('block_public_security_group_rules'),
@@ -10651,7 +10656,7 @@ local provider(configuration) = {
     },
     emr_cluster(name, block): {
       local resource = blockType.resource('aws_emr_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         additional_info: build.template(std.get(block, 'additional_info', null)),
         applications: build.template(std.get(block, 'applications', null)),
         autoscaling_role: build.template(std.get(block, 'autoscaling_role', null)),
@@ -10703,7 +10708,7 @@ local provider(configuration) = {
     },
     emr_instance_fleet(name, block): {
       local resource = blockType.resource('aws_emr_instance_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         name: build.template(std.get(block, 'name', null)),
         target_on_demand_capacity: build.template(std.get(block, 'target_on_demand_capacity', null)),
@@ -10719,7 +10724,7 @@ local provider(configuration) = {
     },
     emr_instance_group(name, block): {
       local resource = blockType.resource('aws_emr_instance_group', name),
-      _: resource._({
+      _: resource._(block, {
         autoscaling_policy: build.template(std.get(block, 'autoscaling_policy', null)),
         bid_price: build.template(std.get(block, 'bid_price', null)),
         cluster_id: build.template(block.cluster_id),
@@ -10742,7 +10747,7 @@ local provider(configuration) = {
     },
     emr_managed_scaling_policy(name, block): {
       local resource = blockType.resource('aws_emr_managed_scaling_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
       }),
       cluster_id: resource.field('cluster_id'),
@@ -10750,7 +10755,7 @@ local provider(configuration) = {
     },
     emr_security_configuration(name, block): {
       local resource = blockType.resource('aws_emr_security_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         configuration: build.template(block.configuration),
       }),
       configuration: resource.field('configuration'),
@@ -10761,7 +10766,7 @@ local provider(configuration) = {
     },
     emr_studio(name, block): {
       local resource = blockType.resource('aws_emr_studio', name),
-      _: resource._({
+      _: resource._(block, {
         auth_mode: build.template(block.auth_mode),
         default_s3_location: build.template(block.default_s3_location),
         description: build.template(std.get(block, 'description', null)),
@@ -10796,7 +10801,7 @@ local provider(configuration) = {
     },
     emr_studio_session_mapping(name, block): {
       local resource = blockType.resource('aws_emr_studio_session_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         identity_type: build.template(block.identity_type),
         session_policy_arn: build.template(block.session_policy_arn),
         studio_id: build.template(block.studio_id),
@@ -10810,7 +10815,7 @@ local provider(configuration) = {
     },
     emrcontainers_job_template(name, block): {
       local resource = blockType.resource('aws_emrcontainers_job_template', name),
-      _: resource._({
+      _: resource._(block, {
         kms_key_arn: build.template(std.get(block, 'kms_key_arn', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -10824,7 +10829,7 @@ local provider(configuration) = {
     },
     emrcontainers_virtual_cluster(name, block): {
       local resource = blockType.resource('aws_emrcontainers_virtual_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -10836,7 +10841,7 @@ local provider(configuration) = {
     },
     emrserverless_application(name, block): {
       local resource = blockType.resource('aws_emrserverless_application', name),
-      _: resource._({
+      _: resource._(block, {
         architecture: build.template(std.get(block, 'architecture', null)),
         name: build.template(block.name),
         release_label: build.template(block.release_label),
@@ -10854,7 +10859,7 @@ local provider(configuration) = {
     },
     evidently_feature(name, block): {
       local resource = blockType.resource('aws_evidently_feature', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         entity_overrides: build.template(std.get(block, 'entity_overrides', null)),
         name: build.template(block.name),
@@ -10879,7 +10884,7 @@ local provider(configuration) = {
     },
     evidently_launch(name, block): {
       local resource = blockType.resource('aws_evidently_launch', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         project: build.template(block.project),
@@ -10903,7 +10908,7 @@ local provider(configuration) = {
     },
     evidently_project(name, block): {
       local resource = blockType.resource('aws_evidently_project', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -10925,7 +10930,7 @@ local provider(configuration) = {
     },
     evidently_segment(name, block): {
       local resource = blockType.resource('aws_evidently_segment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         pattern: build.template(block.pattern),
@@ -10945,7 +10950,7 @@ local provider(configuration) = {
     },
     finspace_kx_cluster(name, block): {
       local resource = blockType.resource('aws_finspace_kx_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone_id: build.template(std.get(block, 'availability_zone_id', null)),
         az_mode: build.template(block.az_mode),
         command_line_arguments: build.template(std.get(block, 'command_line_arguments', null)),
@@ -10979,7 +10984,7 @@ local provider(configuration) = {
     },
     finspace_kx_database(name, block): {
       local resource = blockType.resource('aws_finspace_kx_database', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         environment_id: build.template(block.environment_id),
         name: build.template(block.name),
@@ -10997,7 +11002,7 @@ local provider(configuration) = {
     },
     finspace_kx_dataview(name, block): {
       local resource = blockType.resource('aws_finspace_kx_dataview', name),
-      _: resource._({
+      _: resource._(block, {
         auto_update: build.template(block.auto_update),
         availability_zone_id: build.template(std.get(block, 'availability_zone_id', null)),
         az_mode: build.template(block.az_mode),
@@ -11028,7 +11033,7 @@ local provider(configuration) = {
     },
     finspace_kx_environment(name, block): {
       local resource = blockType.resource('aws_finspace_kx_environment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         kms_key_id: build.template(block.kms_key_id),
         name: build.template(block.name),
@@ -11049,7 +11054,7 @@ local provider(configuration) = {
     },
     finspace_kx_scaling_group(name, block): {
       local resource = blockType.resource('aws_finspace_kx_scaling_group', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone_id: build.template(block.availability_zone_id),
         environment_id: build.template(block.environment_id),
         host_type: build.template(block.host_type),
@@ -11072,7 +11077,7 @@ local provider(configuration) = {
     },
     finspace_kx_user(name, block): {
       local resource = blockType.resource('aws_finspace_kx_user', name),
-      _: resource._({
+      _: resource._(block, {
         environment_id: build.template(block.environment_id),
         iam_role: build.template(block.iam_role),
         name: build.template(block.name),
@@ -11088,7 +11093,7 @@ local provider(configuration) = {
     },
     finspace_kx_volume(name, block): {
       local resource = blockType.resource('aws_finspace_kx_volume', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zones: build.template(block.availability_zones),
         az_mode: build.template(block.az_mode),
         description: build.template(std.get(block, 'description', null)),
@@ -11115,7 +11120,7 @@ local provider(configuration) = {
     },
     fis_experiment_template(name, block): {
       local resource = blockType.resource('aws_fis_experiment_template', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         role_arn: build.template(block.role_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -11128,7 +11133,7 @@ local provider(configuration) = {
     },
     flow_log(name, block): {
       local resource = blockType.resource('aws_flow_log', name),
-      _: resource._({
+      _: resource._(block, {
         deliver_cross_account_role: build.template(std.get(block, 'deliver_cross_account_role', null)),
         eni_id: build.template(std.get(block, 'eni_id', null)),
         iam_role_arn: build.template(std.get(block, 'iam_role_arn', null)),
@@ -11161,14 +11166,14 @@ local provider(configuration) = {
     },
     fms_admin_account(name, block): {
       local resource = blockType.resource('aws_fms_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       account_id: resource.field('account_id'),
       id: resource.field('id'),
     },
     fms_policy(name, block): {
       local resource = blockType.resource('aws_fms_policy', name),
-      _: resource._({
+      _: resource._(block, {
         delete_all_policy_resources: build.template(std.get(block, 'delete_all_policy_resources', null)),
         delete_unused_fm_managed_resources: build.template(std.get(block, 'delete_unused_fm_managed_resources', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -11196,7 +11201,7 @@ local provider(configuration) = {
     },
     fms_resource_set(name, block): {
       local resource = blockType.resource('aws_fms_resource_set', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -11206,7 +11211,7 @@ local provider(configuration) = {
     },
     fsx_backup(name, block): {
       local resource = blockType.resource('aws_fsx_backup', name),
-      _: resource._({
+      _: resource._(block, {
         file_system_id: build.template(std.get(block, 'file_system_id', null)),
         tags: build.template(std.get(block, 'tags', null)),
         volume_id: build.template(std.get(block, 'volume_id', null)),
@@ -11223,7 +11228,7 @@ local provider(configuration) = {
     },
     fsx_data_repository_association(name, block): {
       local resource = blockType.resource('aws_fsx_data_repository_association', name),
-      _: resource._({
+      _: resource._(block, {
         batch_import_meta_data_on_create: build.template(std.get(block, 'batch_import_meta_data_on_create', null)),
         data_repository_path: build.template(block.data_repository_path),
         delete_data_in_filesystem: build.template(std.get(block, 'delete_data_in_filesystem', null)),
@@ -11245,7 +11250,7 @@ local provider(configuration) = {
     },
     fsx_file_cache(name, block): {
       local resource = blockType.resource('aws_fsx_file_cache', name),
-      _: resource._({
+      _: resource._(block, {
         copy_tags_to_data_repository_associations: build.template(std.get(block, 'copy_tags_to_data_repository_associations', null)),
         file_cache_type: build.template(block.file_cache_type),
         file_cache_type_version: build.template(block.file_cache_type_version),
@@ -11274,7 +11279,7 @@ local provider(configuration) = {
     },
     fsx_lustre_file_system(name, block): {
       local resource = blockType.resource('aws_fsx_lustre_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         backup_id: build.template(std.get(block, 'backup_id', null)),
         copy_tags_to_backups: build.template(std.get(block, 'copy_tags_to_backups', null)),
         data_compression_type: build.template(std.get(block, 'data_compression_type', null)),
@@ -11323,7 +11328,7 @@ local provider(configuration) = {
     },
     fsx_ontap_file_system(name, block): {
       local resource = blockType.resource('aws_fsx_ontap_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_backup_retention_days: build.template(std.get(block, 'automatic_backup_retention_days', null)),
         deployment_type: build.template(block.deployment_type),
         fsx_admin_password: build.template(std.get(block, 'fsx_admin_password', null)),
@@ -11362,7 +11367,7 @@ local provider(configuration) = {
     },
     fsx_ontap_storage_virtual_machine(name, block): {
       local resource = blockType.resource('aws_fsx_ontap_storage_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
         file_system_id: build.template(block.file_system_id),
         name: build.template(block.name),
         root_volume_security_style: build.template(std.get(block, 'root_volume_security_style', null)),
@@ -11383,7 +11388,7 @@ local provider(configuration) = {
     },
     fsx_ontap_volume(name, block): {
       local resource = blockType.resource('aws_fsx_ontap_volume', name),
-      _: resource._({
+      _: resource._(block, {
         bypass_snaplock_enterprise_retention: build.template(std.get(block, 'bypass_snaplock_enterprise_retention', null)),
         copy_tags_to_backups: build.template(std.get(block, 'copy_tags_to_backups', null)),
         final_backup_tags: build.template(std.get(block, 'final_backup_tags', null)),
@@ -11420,7 +11425,7 @@ local provider(configuration) = {
     },
     fsx_openzfs_file_system(name, block): {
       local resource = blockType.resource('aws_fsx_openzfs_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         automatic_backup_retention_days: build.template(std.get(block, 'automatic_backup_retention_days', null)),
         backup_id: build.template(std.get(block, 'backup_id', null)),
         copy_tags_to_backups: build.template(std.get(block, 'copy_tags_to_backups', null)),
@@ -11469,7 +11474,7 @@ local provider(configuration) = {
     },
     fsx_openzfs_snapshot(name, block): {
       local resource = blockType.resource('aws_fsx_openzfs_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
         volume_id: build.template(block.volume_id),
@@ -11484,7 +11489,7 @@ local provider(configuration) = {
     },
     fsx_openzfs_volume(name, block): {
       local resource = blockType.resource('aws_fsx_openzfs_volume', name),
-      _: resource._({
+      _: resource._(block, {
         copy_tags_to_snapshots: build.template(std.get(block, 'copy_tags_to_snapshots', null)),
         data_compression_type: build.template(std.get(block, 'data_compression_type', null)),
         delete_volume_options: build.template(std.get(block, 'delete_volume_options', null)),
@@ -11511,7 +11516,7 @@ local provider(configuration) = {
     },
     fsx_windows_file_system(name, block): {
       local resource = blockType.resource('aws_fsx_windows_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         active_directory_id: build.template(std.get(block, 'active_directory_id', null)),
         aliases: build.template(std.get(block, 'aliases', null)),
         automatic_backup_retention_days: build.template(std.get(block, 'automatic_backup_retention_days', null)),
@@ -11556,7 +11561,7 @@ local provider(configuration) = {
     },
     gamelift_alias(name, block): {
       local resource = blockType.resource('aws_gamelift_alias', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -11570,7 +11575,7 @@ local provider(configuration) = {
     },
     gamelift_build(name, block): {
       local resource = blockType.resource('aws_gamelift_build', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         operating_system: build.template(block.operating_system),
         tags: build.template(std.get(block, 'tags', null)),
@@ -11586,7 +11591,7 @@ local provider(configuration) = {
     },
     gamelift_fleet(name, block): {
       local resource = blockType.resource('aws_gamelift_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         build_id: build.template(std.get(block, 'build_id', null)),
         description: build.template(std.get(block, 'description', null)),
         ec2_instance_type: build.template(block.ec2_instance_type),
@@ -11617,7 +11622,7 @@ local provider(configuration) = {
     },
     gamelift_game_server_group(name, block): {
       local resource = blockType.resource('aws_gamelift_game_server_group', name),
-      _: resource._({
+      _: resource._(block, {
         game_server_group_name: build.template(block.game_server_group_name),
         max_size: build.template(block.max_size),
         min_size: build.template(block.min_size),
@@ -11640,7 +11645,7 @@ local provider(configuration) = {
     },
     gamelift_game_session_queue(name, block): {
       local resource = blockType.resource('aws_gamelift_game_session_queue', name),
-      _: resource._({
+      _: resource._(block, {
         custom_event_data: build.template(std.get(block, 'custom_event_data', null)),
         destinations: build.template(std.get(block, 'destinations', null)),
         name: build.template(block.name),
@@ -11660,7 +11665,7 @@ local provider(configuration) = {
     },
     gamelift_script(name, block): {
       local resource = blockType.resource('aws_gamelift_script', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
         version: build.template(std.get(block, 'version', null)),
@@ -11676,7 +11681,7 @@ local provider(configuration) = {
     },
     glacier_vault(name, block): {
       local resource = blockType.resource('aws_glacier_vault', name),
-      _: resource._({
+      _: resource._(block, {
         access_policy: build.template(std.get(block, 'access_policy', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -11691,7 +11696,7 @@ local provider(configuration) = {
     },
     glacier_vault_lock(name, block): {
       local resource = blockType.resource('aws_glacier_vault_lock', name),
-      _: resource._({
+      _: resource._(block, {
         complete_lock: build.template(block.complete_lock),
         ignore_deletion_error: build.template(std.get(block, 'ignore_deletion_error', null)),
         policy: build.template(block.policy),
@@ -11705,7 +11710,7 @@ local provider(configuration) = {
     },
     globalaccelerator_accelerator(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_accelerator', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         ip_address_type: build.template(std.get(block, 'ip_address_type', null)),
         ip_addresses: build.template(std.get(block, 'ip_addresses', null)),
@@ -11726,7 +11731,7 @@ local provider(configuration) = {
     },
     globalaccelerator_cross_account_attachment(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_cross_account_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         principals: build.template(std.get(block, 'principals', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -11742,7 +11747,7 @@ local provider(configuration) = {
     },
     globalaccelerator_custom_routing_accelerator(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_custom_routing_accelerator', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         ip_address_type: build.template(std.get(block, 'ip_address_type', null)),
         ip_addresses: build.template(std.get(block, 'ip_addresses', null)),
@@ -11762,7 +11767,7 @@ local provider(configuration) = {
     },
     globalaccelerator_custom_routing_endpoint_group(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_custom_routing_endpoint_group', name),
-      _: resource._({
+      _: resource._(block, {
         listener_arn: build.template(block.listener_arn),
       }),
       arn: resource.field('arn'),
@@ -11772,7 +11777,7 @@ local provider(configuration) = {
     },
     globalaccelerator_custom_routing_listener(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_custom_routing_listener', name),
-      _: resource._({
+      _: resource._(block, {
         accelerator_arn: build.template(block.accelerator_arn),
       }),
       accelerator_arn: resource.field('accelerator_arn'),
@@ -11780,7 +11785,7 @@ local provider(configuration) = {
     },
     globalaccelerator_endpoint_group(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_endpoint_group', name),
-      _: resource._({
+      _: resource._(block, {
         health_check_interval_seconds: build.template(std.get(block, 'health_check_interval_seconds', null)),
         health_check_protocol: build.template(std.get(block, 'health_check_protocol', null)),
         listener_arn: build.template(block.listener_arn),
@@ -11800,7 +11805,7 @@ local provider(configuration) = {
     },
     globalaccelerator_listener(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_listener', name),
-      _: resource._({
+      _: resource._(block, {
         accelerator_arn: build.template(block.accelerator_arn),
         client_affinity: build.template(std.get(block, 'client_affinity', null)),
         protocol: build.template(block.protocol),
@@ -11812,7 +11817,7 @@ local provider(configuration) = {
     },
     glue_catalog_database(name, block): {
       local resource = blockType.resource('aws_glue_catalog_database', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         parameters: build.template(std.get(block, 'parameters', null)),
@@ -11830,7 +11835,7 @@ local provider(configuration) = {
     },
     glue_catalog_table(name, block): {
       local resource = blockType.resource('aws_glue_catalog_table', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -11856,7 +11861,7 @@ local provider(configuration) = {
     },
     glue_catalog_table_optimizer(name, block): {
       local resource = blockType.resource('aws_glue_catalog_table_optimizer', name),
-      _: resource._({
+      _: resource._(block, {
         catalog_id: build.template(block.catalog_id),
         database_name: build.template(block.database_name),
         table_name: build.template(block.table_name),
@@ -11869,7 +11874,7 @@ local provider(configuration) = {
     },
     glue_classifier(name, block): {
       local resource = blockType.resource('aws_glue_classifier', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -11877,7 +11882,7 @@ local provider(configuration) = {
     },
     glue_connection(name, block): {
       local resource = blockType.resource('aws_glue_connection', name),
-      _: resource._({
+      _: resource._(block, {
         connection_properties: build.template(std.get(block, 'connection_properties', null)),
         connection_type: build.template(std.get(block, 'connection_type', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -11898,7 +11903,7 @@ local provider(configuration) = {
     },
     glue_crawler(name, block): {
       local resource = blockType.resource('aws_glue_crawler', name),
-      _: resource._({
+      _: resource._(block, {
         classifiers: build.template(std.get(block, 'classifiers', null)),
         configuration: build.template(std.get(block, 'configuration', null)),
         database_name: build.template(block.database_name),
@@ -11926,14 +11931,14 @@ local provider(configuration) = {
     },
     glue_data_catalog_encryption_settings(name, block): {
       local resource = blockType.resource('aws_glue_data_catalog_encryption_settings', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       catalog_id: resource.field('catalog_id'),
       id: resource.field('id'),
     },
     glue_data_quality_ruleset(name, block): {
       local resource = blockType.resource('aws_glue_data_quality_ruleset', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         ruleset: build.template(block.ruleset),
@@ -11952,7 +11957,7 @@ local provider(configuration) = {
     },
     glue_dev_endpoint(name, block): {
       local resource = blockType.resource('aws_glue_dev_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         arguments: build.template(std.get(block, 'arguments', null)),
         extra_jars_s3_path: build.template(std.get(block, 'extra_jars_s3_path', null)),
         extra_python_libs_s3_path: build.template(std.get(block, 'extra_python_libs_s3_path', null)),
@@ -11998,7 +12003,7 @@ local provider(configuration) = {
     },
     glue_job(name, block): {
       local resource = blockType.resource('aws_glue_job', name),
-      _: resource._({
+      _: resource._(block, {
         connections: build.template(std.get(block, 'connections', null)),
         default_arguments: build.template(std.get(block, 'default_arguments', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -12035,7 +12040,7 @@ local provider(configuration) = {
     },
     glue_ml_transform(name, block): {
       local resource = blockType.resource('aws_glue_ml_transform', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         max_retries: build.template(std.get(block, 'max_retries', null)),
         name: build.template(block.name),
@@ -12063,7 +12068,7 @@ local provider(configuration) = {
     },
     glue_partition(name, block): {
       local resource = blockType.resource('aws_glue_partition', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         parameters: build.template(std.get(block, 'parameters', null)),
         partition_values: build.template(block.partition_values),
@@ -12081,7 +12086,7 @@ local provider(configuration) = {
     },
     glue_partition_index(name, block): {
       local resource = blockType.resource('aws_glue_partition_index', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         table_name: build.template(block.table_name),
       }),
@@ -12092,7 +12097,7 @@ local provider(configuration) = {
     },
     glue_registry(name, block): {
       local resource = blockType.resource('aws_glue_registry', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         registry_name: build.template(block.registry_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -12106,7 +12111,7 @@ local provider(configuration) = {
     },
     glue_resource_policy(name, block): {
       local resource = blockType.resource('aws_glue_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         enable_hybrid: build.template(std.get(block, 'enable_hybrid', null)),
         policy: build.template(block.policy),
       }),
@@ -12116,7 +12121,7 @@ local provider(configuration) = {
     },
     glue_schema(name, block): {
       local resource = blockType.resource('aws_glue_schema', name),
-      _: resource._({
+      _: resource._(block, {
         compatibility: build.template(block.compatibility),
         data_format: build.template(block.data_format),
         description: build.template(std.get(block, 'description', null)),
@@ -12141,7 +12146,7 @@ local provider(configuration) = {
     },
     glue_security_configuration(name, block): {
       local resource = blockType.resource('aws_glue_security_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -12149,7 +12154,7 @@ local provider(configuration) = {
     },
     glue_trigger(name, block): {
       local resource = blockType.resource('aws_glue_trigger', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -12174,7 +12179,7 @@ local provider(configuration) = {
     },
     glue_user_defined_function(name, block): {
       local resource = blockType.resource('aws_glue_user_defined_function', name),
-      _: resource._({
+      _: resource._(block, {
         catalog_id: build.template(std.get(block, 'catalog_id', null)),
         class_name: build.template(block.class_name),
         database_name: build.template(block.database_name),
@@ -12194,7 +12199,7 @@ local provider(configuration) = {
     },
     glue_workflow(name, block): {
       local resource = blockType.resource('aws_glue_workflow', name),
-      _: resource._({
+      _: resource._(block, {
         default_run_properties: build.template(std.get(block, 'default_run_properties', null)),
         description: build.template(std.get(block, 'description', null)),
         max_concurrent_runs: build.template(std.get(block, 'max_concurrent_runs', null)),
@@ -12212,7 +12217,7 @@ local provider(configuration) = {
     },
     grafana_license_association(name, block): {
       local resource = blockType.resource('aws_grafana_license_association', name),
-      _: resource._({
+      _: resource._(block, {
         grafana_token: build.template(std.get(block, 'grafana_token', null)),
         license_type: build.template(block.license_type),
         workspace_id: build.template(block.workspace_id),
@@ -12226,7 +12231,7 @@ local provider(configuration) = {
     },
     grafana_role_association(name, block): {
       local resource = blockType.resource('aws_grafana_role_association', name),
-      _: resource._({
+      _: resource._(block, {
         group_ids: build.template(std.get(block, 'group_ids', null)),
         role: build.template(block.role),
         user_ids: build.template(std.get(block, 'user_ids', null)),
@@ -12240,7 +12245,7 @@ local provider(configuration) = {
     },
     grafana_workspace(name, block): {
       local resource = blockType.resource('aws_grafana_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         account_access_type: build.template(block.account_access_type),
         authentication_providers: build.template(block.authentication_providers),
         data_sources: build.template(std.get(block, 'data_sources', null)),
@@ -12275,7 +12280,7 @@ local provider(configuration) = {
     },
     grafana_workspace_api_key(name, block): {
       local resource = blockType.resource('aws_grafana_workspace_api_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_name: build.template(block.key_name),
         key_role: build.template(block.key_role),
         seconds_to_live: build.template(block.seconds_to_live),
@@ -12290,7 +12295,7 @@ local provider(configuration) = {
     },
     grafana_workspace_saml_configuration(name, block): {
       local resource = blockType.resource('aws_grafana_workspace_saml_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         admin_role_values: build.template(std.get(block, 'admin_role_values', null)),
         allowed_organizations: build.template(std.get(block, 'allowed_organizations', null)),
         editor_role_values: build.template(block.editor_role_values),
@@ -12319,7 +12324,7 @@ local provider(configuration) = {
     },
     grafana_workspace_service_account(name, block): {
       local resource = blockType.resource('aws_grafana_workspace_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         grafana_role: build.template(block.grafana_role),
         name: build.template(block.name),
         workspace_id: build.template(block.workspace_id),
@@ -12332,7 +12337,7 @@ local provider(configuration) = {
     },
     grafana_workspace_service_account_token(name, block): {
       local resource = blockType.resource('aws_grafana_workspace_service_account_token', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         seconds_to_live: build.template(block.seconds_to_live),
         service_account_id: build.template(block.service_account_id),
@@ -12350,7 +12355,7 @@ local provider(configuration) = {
     },
     guardduty_detector(name, block): {
       local resource = blockType.resource('aws_guardduty_detector', name),
-      _: resource._({
+      _: resource._(block, {
         enable: build.template(std.get(block, 'enable', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -12364,7 +12369,7 @@ local provider(configuration) = {
     },
     guardduty_detector_feature(name, block): {
       local resource = blockType.resource('aws_guardduty_detector_feature', name),
-      _: resource._({
+      _: resource._(block, {
         detector_id: build.template(block.detector_id),
         name: build.template(block.name),
         status: build.template(block.status),
@@ -12376,7 +12381,7 @@ local provider(configuration) = {
     },
     guardduty_filter(name, block): {
       local resource = blockType.resource('aws_guardduty_filter', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         detector_id: build.template(block.detector_id),
@@ -12396,7 +12401,7 @@ local provider(configuration) = {
     },
     guardduty_invite_accepter(name, block): {
       local resource = blockType.resource('aws_guardduty_invite_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         detector_id: build.template(block.detector_id),
         master_account_id: build.template(block.master_account_id),
       }),
@@ -12406,7 +12411,7 @@ local provider(configuration) = {
     },
     guardduty_ipset(name, block): {
       local resource = blockType.resource('aws_guardduty_ipset', name),
-      _: resource._({
+      _: resource._(block, {
         activate: build.template(block.activate),
         detector_id: build.template(block.detector_id),
         format: build.template(block.format),
@@ -12426,7 +12431,7 @@ local provider(configuration) = {
     },
     guardduty_malware_protection_plan(name, block): {
       local resource = blockType.resource('aws_guardduty_malware_protection_plan', name),
-      _: resource._({
+      _: resource._(block, {
         role: build.template(block.role),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -12441,7 +12446,7 @@ local provider(configuration) = {
     },
     guardduty_member(name, block): {
       local resource = blockType.resource('aws_guardduty_member', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         detector_id: build.template(block.detector_id),
         disable_email_notification: build.template(std.get(block, 'disable_email_notification', null)),
@@ -12460,7 +12465,7 @@ local provider(configuration) = {
     },
     guardduty_organization_admin_account(name, block): {
       local resource = blockType.resource('aws_guardduty_organization_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
         admin_account_id: build.template(block.admin_account_id),
       }),
       admin_account_id: resource.field('admin_account_id'),
@@ -12468,7 +12473,7 @@ local provider(configuration) = {
     },
     guardduty_organization_configuration(name, block): {
       local resource = blockType.resource('aws_guardduty_organization_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         detector_id: build.template(block.detector_id),
       }),
       auto_enable: resource.field('auto_enable'),
@@ -12478,7 +12483,7 @@ local provider(configuration) = {
     },
     guardduty_organization_configuration_feature(name, block): {
       local resource = blockType.resource('aws_guardduty_organization_configuration_feature', name),
-      _: resource._({
+      _: resource._(block, {
         auto_enable: build.template(block.auto_enable),
         detector_id: build.template(block.detector_id),
         name: build.template(block.name),
@@ -12490,7 +12495,7 @@ local provider(configuration) = {
     },
     guardduty_publishing_destination(name, block): {
       local resource = blockType.resource('aws_guardduty_publishing_destination', name),
-      _: resource._({
+      _: resource._(block, {
         destination_arn: build.template(block.destination_arn),
         destination_type: build.template(std.get(block, 'destination_type', null)),
         detector_id: build.template(block.detector_id),
@@ -12504,7 +12509,7 @@ local provider(configuration) = {
     },
     guardduty_threatintelset(name, block): {
       local resource = blockType.resource('aws_guardduty_threatintelset', name),
-      _: resource._({
+      _: resource._(block, {
         activate: build.template(block.activate),
         detector_id: build.template(block.detector_id),
         format: build.template(block.format),
@@ -12524,7 +12529,7 @@ local provider(configuration) = {
     },
     iam_access_key(name, block): {
       local resource = blockType.resource('aws_iam_access_key', name),
-      _: resource._({
+      _: resource._(block, {
         pgp_key: build.template(std.get(block, 'pgp_key', null)),
         status: build.template(std.get(block, 'status', null)),
         user: build.template(block.user),
@@ -12542,7 +12547,7 @@ local provider(configuration) = {
     },
     iam_account_alias(name, block): {
       local resource = blockType.resource('aws_iam_account_alias', name),
-      _: resource._({
+      _: resource._(block, {
         account_alias: build.template(block.account_alias),
       }),
       account_alias: resource.field('account_alias'),
@@ -12550,7 +12555,7 @@ local provider(configuration) = {
     },
     iam_account_password_policy(name, block): {
       local resource = blockType.resource('aws_iam_account_password_policy', name),
-      _: resource._({
+      _: resource._(block, {
         allow_users_to_change_password: build.template(std.get(block, 'allow_users_to_change_password', null)),
         minimum_password_length: build.template(std.get(block, 'minimum_password_length', null)),
       }),
@@ -12568,7 +12573,7 @@ local provider(configuration) = {
     },
     iam_group(name, block): {
       local resource = blockType.resource('aws_iam_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         path: build.template(std.get(block, 'path', null)),
       }),
@@ -12580,7 +12585,7 @@ local provider(configuration) = {
     },
     iam_group_membership(name, block): {
       local resource = blockType.resource('aws_iam_group_membership', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(block.group),
         name: build.template(block.name),
         users: build.template(block.users),
@@ -12592,7 +12597,7 @@ local provider(configuration) = {
     },
     iam_group_policies_exclusive(name, block): {
       local resource = blockType.resource('aws_iam_group_policies_exclusive', name),
-      _: resource._({
+      _: resource._(block, {
         group_name: build.template(block.group_name),
         policy_names: build.template(block.policy_names),
       }),
@@ -12601,7 +12606,7 @@ local provider(configuration) = {
     },
     iam_group_policy(name, block): {
       local resource = blockType.resource('aws_iam_group_policy', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(block.group),
         policy: build.template(block.policy),
       }),
@@ -12613,7 +12618,7 @@ local provider(configuration) = {
     },
     iam_group_policy_attachment(name, block): {
       local resource = blockType.resource('aws_iam_group_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(block.group),
         policy_arn: build.template(block.policy_arn),
       }),
@@ -12623,7 +12628,7 @@ local provider(configuration) = {
     },
     iam_group_policy_attachments_exclusive(name, block): {
       local resource = blockType.resource('aws_iam_group_policy_attachments_exclusive', name),
-      _: resource._({
+      _: resource._(block, {
         group_name: build.template(block.group_name),
         policy_arns: build.template(block.policy_arns),
       }),
@@ -12632,7 +12637,7 @@ local provider(configuration) = {
     },
     iam_instance_profile(name, block): {
       local resource = blockType.resource('aws_iam_instance_profile', name),
-      _: resource._({
+      _: resource._(block, {
         path: build.template(std.get(block, 'path', null)),
         role: build.template(std.get(block, 'role', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -12650,7 +12655,7 @@ local provider(configuration) = {
     },
     iam_openid_connect_provider(name, block): {
       local resource = blockType.resource('aws_iam_openid_connect_provider', name),
-      _: resource._({
+      _: resource._(block, {
         client_id_list: build.template(block.client_id_list),
         tags: build.template(std.get(block, 'tags', null)),
         thumbprint_list: build.template(block.thumbprint_list),
@@ -12666,7 +12671,7 @@ local provider(configuration) = {
     },
     iam_policy(name, block): {
       local resource = blockType.resource('aws_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         path: build.template(std.get(block, 'path', null)),
         policy: build.template(block.policy),
@@ -12686,7 +12691,7 @@ local provider(configuration) = {
     },
     iam_policy_attachment(name, block): {
       local resource = blockType.resource('aws_iam_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         groups: build.template(std.get(block, 'groups', null)),
         name: build.template(block.name),
         policy_arn: build.template(block.policy_arn),
@@ -12702,7 +12707,7 @@ local provider(configuration) = {
     },
     iam_role(name, block): {
       local resource = blockType.resource('aws_iam_role', name),
-      _: resource._({
+      _: resource._(block, {
         assume_role_policy: build.template(block.assume_role_policy),
         description: build.template(std.get(block, 'description', null)),
         force_detach_policies: build.template(std.get(block, 'force_detach_policies', null)),
@@ -12729,7 +12734,7 @@ local provider(configuration) = {
     },
     iam_role_policies_exclusive(name, block): {
       local resource = blockType.resource('aws_iam_role_policies_exclusive', name),
-      _: resource._({
+      _: resource._(block, {
         policy_names: build.template(block.policy_names),
         role_name: build.template(block.role_name),
       }),
@@ -12738,7 +12743,7 @@ local provider(configuration) = {
     },
     iam_role_policy(name, block): {
       local resource = blockType.resource('aws_iam_role_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         role: build.template(block.role),
       }),
@@ -12750,7 +12755,7 @@ local provider(configuration) = {
     },
     iam_role_policy_attachment(name, block): {
       local resource = blockType.resource('aws_iam_role_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         policy_arn: build.template(block.policy_arn),
         role: build.template(block.role),
       }),
@@ -12760,7 +12765,7 @@ local provider(configuration) = {
     },
     iam_role_policy_attachments_exclusive(name, block): {
       local resource = blockType.resource('aws_iam_role_policy_attachments_exclusive', name),
-      _: resource._({
+      _: resource._(block, {
         policy_arns: build.template(block.policy_arns),
         role_name: build.template(block.role_name),
       }),
@@ -12769,7 +12774,7 @@ local provider(configuration) = {
     },
     iam_saml_provider(name, block): {
       local resource = blockType.resource('aws_iam_saml_provider', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         saml_metadata_document: build.template(block.saml_metadata_document),
         tags: build.template(std.get(block, 'tags', null)),
@@ -12784,7 +12789,7 @@ local provider(configuration) = {
     },
     iam_security_token_service_preferences(name, block): {
       local resource = blockType.resource('aws_iam_security_token_service_preferences', name),
-      _: resource._({
+      _: resource._(block, {
         global_endpoint_token_version: build.template(block.global_endpoint_token_version),
       }),
       global_endpoint_token_version: resource.field('global_endpoint_token_version'),
@@ -12792,7 +12797,7 @@ local provider(configuration) = {
     },
     iam_server_certificate(name, block): {
       local resource = blockType.resource('aws_iam_server_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_body: build.template(block.certificate_body),
         certificate_chain: build.template(std.get(block, 'certificate_chain', null)),
         path: build.template(std.get(block, 'path', null)),
@@ -12814,7 +12819,7 @@ local provider(configuration) = {
     },
     iam_service_linked_role(name, block): {
       local resource = blockType.resource('aws_iam_service_linked_role', name),
-      _: resource._({
+      _: resource._(block, {
         aws_service_name: build.template(block.aws_service_name),
         custom_suffix: build.template(std.get(block, 'custom_suffix', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -12834,7 +12839,7 @@ local provider(configuration) = {
     },
     iam_service_specific_credential(name, block): {
       local resource = blockType.resource('aws_iam_service_specific_credential', name),
-      _: resource._({
+      _: resource._(block, {
         service_name: build.template(block.service_name),
         status: build.template(std.get(block, 'status', null)),
         user_name: build.template(block.user_name),
@@ -12849,7 +12854,7 @@ local provider(configuration) = {
     },
     iam_signing_certificate(name, block): {
       local resource = blockType.resource('aws_iam_signing_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_body: build.template(block.certificate_body),
         status: build.template(std.get(block, 'status', null)),
         user_name: build.template(block.user_name),
@@ -12862,7 +12867,7 @@ local provider(configuration) = {
     },
     iam_user(name, block): {
       local resource = blockType.resource('aws_iam_user', name),
-      _: resource._({
+      _: resource._(block, {
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         name: build.template(block.name),
         path: build.template(std.get(block, 'path', null)),
@@ -12881,7 +12886,7 @@ local provider(configuration) = {
     },
     iam_user_group_membership(name, block): {
       local resource = blockType.resource('aws_iam_user_group_membership', name),
-      _: resource._({
+      _: resource._(block, {
         groups: build.template(block.groups),
         user: build.template(block.user),
       }),
@@ -12891,7 +12896,7 @@ local provider(configuration) = {
     },
     iam_user_login_profile(name, block): {
       local resource = blockType.resource('aws_iam_user_login_profile', name),
-      _: resource._({
+      _: resource._(block, {
         password_length: build.template(std.get(block, 'password_length', null)),
         pgp_key: build.template(std.get(block, 'pgp_key', null)),
         user: build.template(block.user),
@@ -12907,7 +12912,7 @@ local provider(configuration) = {
     },
     iam_user_policies_exclusive(name, block): {
       local resource = blockType.resource('aws_iam_user_policies_exclusive', name),
-      _: resource._({
+      _: resource._(block, {
         policy_names: build.template(block.policy_names),
         user_name: build.template(block.user_name),
       }),
@@ -12916,7 +12921,7 @@ local provider(configuration) = {
     },
     iam_user_policy(name, block): {
       local resource = blockType.resource('aws_iam_user_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         user: build.template(block.user),
       }),
@@ -12928,7 +12933,7 @@ local provider(configuration) = {
     },
     iam_user_policy_attachment(name, block): {
       local resource = blockType.resource('aws_iam_user_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         policy_arn: build.template(block.policy_arn),
         user: build.template(block.user),
       }),
@@ -12938,7 +12943,7 @@ local provider(configuration) = {
     },
     iam_user_policy_attachments_exclusive(name, block): {
       local resource = blockType.resource('aws_iam_user_policy_attachments_exclusive', name),
-      _: resource._({
+      _: resource._(block, {
         policy_arns: build.template(block.policy_arns),
         user_name: build.template(block.user_name),
       }),
@@ -12947,7 +12952,7 @@ local provider(configuration) = {
     },
     iam_user_ssh_key(name, block): {
       local resource = blockType.resource('aws_iam_user_ssh_key', name),
-      _: resource._({
+      _: resource._(block, {
         encoding: build.template(block.encoding),
         public_key: build.template(block.public_key),
         username: build.template(block.username),
@@ -12962,7 +12967,7 @@ local provider(configuration) = {
     },
     iam_virtual_mfa_device(name, block): {
       local resource = blockType.resource('aws_iam_virtual_mfa_device', name),
-      _: resource._({
+      _: resource._(block, {
         path: build.template(std.get(block, 'path', null)),
         tags: build.template(std.get(block, 'tags', null)),
         virtual_mfa_device_name: build.template(block.virtual_mfa_device_name),
@@ -12980,7 +12985,7 @@ local provider(configuration) = {
     },
     identitystore_group(name, block): {
       local resource = blockType.resource('aws_identitystore_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         identity_store_id: build.template(block.identity_store_id),
@@ -12994,7 +12999,7 @@ local provider(configuration) = {
     },
     identitystore_group_membership(name, block): {
       local resource = blockType.resource('aws_identitystore_group_membership', name),
-      _: resource._({
+      _: resource._(block, {
         group_id: build.template(block.group_id),
         identity_store_id: build.template(block.identity_store_id),
         member_id: build.template(block.member_id),
@@ -13007,7 +13012,7 @@ local provider(configuration) = {
     },
     identitystore_user(name, block): {
       local resource = blockType.resource('aws_identitystore_user', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         identity_store_id: build.template(block.identity_store_id),
         locale: build.template(std.get(block, 'locale', null)),
@@ -13035,7 +13040,7 @@ local provider(configuration) = {
     },
     imagebuilder_component(name, block): {
       local resource = blockType.resource('aws_imagebuilder_component', name),
-      _: resource._({
+      _: resource._(block, {
         change_description: build.template(std.get(block, 'change_description', null)),
         description: build.template(std.get(block, 'description', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -13068,7 +13073,7 @@ local provider(configuration) = {
     },
     imagebuilder_container_recipe(name, block): {
       local resource = blockType.resource('aws_imagebuilder_container_recipe', name),
-      _: resource._({
+      _: resource._(block, {
         container_type: build.template(block.container_type),
         description: build.template(std.get(block, 'description', null)),
         dockerfile_template_uri: build.template(std.get(block, 'dockerfile_template_uri', null)),
@@ -13101,7 +13106,7 @@ local provider(configuration) = {
     },
     imagebuilder_distribution_configuration(name, block): {
       local resource = blockType.resource('aws_imagebuilder_distribution_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -13117,7 +13122,7 @@ local provider(configuration) = {
     },
     imagebuilder_image(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image', name),
-      _: resource._({
+      _: resource._(block, {
         container_recipe_arn: build.template(std.get(block, 'container_recipe_arn', null)),
         distribution_configuration_arn: build.template(std.get(block, 'distribution_configuration_arn', null)),
         enhanced_image_metadata_enabled: build.template(std.get(block, 'enhanced_image_metadata_enabled', null)),
@@ -13144,7 +13149,7 @@ local provider(configuration) = {
     },
     imagebuilder_image_pipeline(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         container_recipe_arn: build.template(std.get(block, 'container_recipe_arn', null)),
         description: build.template(std.get(block, 'description', null)),
         distribution_configuration_arn: build.template(std.get(block, 'distribution_configuration_arn', null)),
@@ -13177,7 +13182,7 @@ local provider(configuration) = {
     },
     imagebuilder_image_recipe(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image_recipe', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         parent_image: build.template(block.parent_image),
@@ -13201,7 +13206,7 @@ local provider(configuration) = {
     },
     imagebuilder_infrastructure_configuration(name, block): {
       local resource = blockType.resource('aws_imagebuilder_infrastructure_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance_profile_name: build.template(block.instance_profile_name),
         instance_types: build.template(std.get(block, 'instance_types', null)),
@@ -13233,7 +13238,7 @@ local provider(configuration) = {
     },
     imagebuilder_lifecycle_policy(name, block): {
       local resource = blockType.resource('aws_imagebuilder_lifecycle_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         execution_role: build.template(block.execution_role),
         name: build.template(block.name),
@@ -13252,7 +13257,7 @@ local provider(configuration) = {
     },
     imagebuilder_workflow(name, block): {
       local resource = blockType.resource('aws_imagebuilder_workflow', name),
-      _: resource._({
+      _: resource._(block, {
         change_description: build.template(std.get(block, 'change_description', null)),
         description: build.template(std.get(block, 'description', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -13279,7 +13284,7 @@ local provider(configuration) = {
     },
     inspector2_delegated_admin_account(name, block): {
       local resource = blockType.resource('aws_inspector2_delegated_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
       }),
       account_id: resource.field('account_id'),
@@ -13288,7 +13293,7 @@ local provider(configuration) = {
     },
     inspector2_enabler(name, block): {
       local resource = blockType.resource('aws_inspector2_enabler', name),
-      _: resource._({
+      _: resource._(block, {
         account_ids: build.template(block.account_ids),
         resource_types: build.template(block.resource_types),
       }),
@@ -13298,7 +13303,7 @@ local provider(configuration) = {
     },
     inspector2_member_association(name, block): {
       local resource = blockType.resource('aws_inspector2_member_association', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
       }),
       account_id: resource.field('account_id'),
@@ -13309,14 +13314,14 @@ local provider(configuration) = {
     },
     inspector2_organization_configuration(name, block): {
       local resource = blockType.resource('aws_inspector2_organization_configuration', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       max_account_limit_reached: resource.field('max_account_limit_reached'),
     },
     inspector_assessment_target(name, block): {
       local resource = blockType.resource('aws_inspector_assessment_target', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_group_arn: build.template(std.get(block, 'resource_group_arn', null)),
       }),
@@ -13327,7 +13332,7 @@ local provider(configuration) = {
     },
     inspector_assessment_template(name, block): {
       local resource = blockType.resource('aws_inspector_assessment_template', name),
-      _: resource._({
+      _: resource._(block, {
         duration: build.template(block.duration),
         name: build.template(block.name),
         rules_package_arns: build.template(block.rules_package_arns),
@@ -13345,7 +13350,7 @@ local provider(configuration) = {
     },
     inspector_resource_group(name, block): {
       local resource = blockType.resource('aws_inspector_resource_group', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(block.tags),
       }),
       arn: resource.field('arn'),
@@ -13354,7 +13359,7 @@ local provider(configuration) = {
     },
     instance(name, block): {
       local resource = blockType.resource('aws_instance', name),
-      _: resource._({
+      _: resource._(block, {
         get_password_data: build.template(std.get(block, 'get_password_data', null)),
         hibernation: build.template(std.get(block, 'hibernation', null)),
         source_dest_check: build.template(std.get(block, 'source_dest_check', null)),
@@ -13410,7 +13415,7 @@ local provider(configuration) = {
     },
     internet_gateway(name, block): {
       local resource = blockType.resource('aws_internet_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -13422,7 +13427,7 @@ local provider(configuration) = {
     },
     internet_gateway_attachment(name, block): {
       local resource = blockType.resource('aws_internet_gateway_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         internet_gateway_id: build.template(block.internet_gateway_id),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -13432,7 +13437,7 @@ local provider(configuration) = {
     },
     internetmonitor_monitor(name, block): {
       local resource = blockType.resource('aws_internetmonitor_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         max_city_networks_to_monitor: build.template(std.get(block, 'max_city_networks_to_monitor', null)),
         monitor_name: build.template(block.monitor_name),
         resources: build.template(std.get(block, 'resources', null)),
@@ -13452,7 +13457,7 @@ local provider(configuration) = {
     },
     iot_authorizer(name, block): {
       local resource = blockType.resource('aws_iot_authorizer', name),
-      _: resource._({
+      _: resource._(block, {
         authorizer_function_arn: build.template(block.authorizer_function_arn),
         enable_caching_for_http: build.template(std.get(block, 'enable_caching_for_http', null)),
         name: build.template(block.name),
@@ -13476,7 +13481,7 @@ local provider(configuration) = {
     },
     iot_billing_group(name, block): {
       local resource = blockType.resource('aws_iot_billing_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -13490,7 +13495,7 @@ local provider(configuration) = {
     },
     iot_ca_certificate(name, block): {
       local resource = blockType.resource('aws_iot_ca_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         active: build.template(block.active),
         allow_auto_registration: build.template(block.allow_auto_registration),
         ca_certificate_pem: build.template(block.ca_certificate_pem),
@@ -13513,7 +13518,7 @@ local provider(configuration) = {
     },
     iot_certificate(name, block): {
       local resource = blockType.resource('aws_iot_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         active: build.template(block.active),
         ca_pem: build.template(std.get(block, 'ca_pem', null)),
         csr: build.template(std.get(block, 'csr', null)),
@@ -13530,7 +13535,7 @@ local provider(configuration) = {
     },
     iot_domain_configuration(name, block): {
       local resource = blockType.resource('aws_iot_domain_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(std.get(block, 'domain_name', null)),
         name: build.template(block.name),
         server_certificate_arns: build.template(std.get(block, 'server_certificate_arns', null)),
@@ -13553,7 +13558,7 @@ local provider(configuration) = {
     },
     iot_event_configurations(name, block): {
       local resource = blockType.resource('aws_iot_event_configurations', name),
-      _: resource._({
+      _: resource._(block, {
         event_configurations: build.template(block.event_configurations),
       }),
       event_configurations: resource.field('event_configurations'),
@@ -13561,13 +13566,13 @@ local provider(configuration) = {
     },
     iot_indexing_configuration(name, block): {
       local resource = blockType.resource('aws_iot_indexing_configuration', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     iot_logging_options(name, block): {
       local resource = blockType.resource('aws_iot_logging_options', name),
-      _: resource._({
+      _: resource._(block, {
         default_log_level: build.template(block.default_log_level),
         disable_all_logs: build.template(std.get(block, 'disable_all_logs', null)),
         role_arn: build.template(block.role_arn),
@@ -13579,7 +13584,7 @@ local provider(configuration) = {
     },
     iot_policy(name, block): {
       local resource = blockType.resource('aws_iot_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy: build.template(block.policy),
         tags: build.template(std.get(block, 'tags', null)),
@@ -13594,7 +13599,7 @@ local provider(configuration) = {
     },
     iot_policy_attachment(name, block): {
       local resource = blockType.resource('aws_iot_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         target: build.template(block.target),
       }),
@@ -13604,7 +13609,7 @@ local provider(configuration) = {
     },
     iot_provisioning_template(name, block): {
       local resource = blockType.resource('aws_iot_provisioning_template', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -13626,7 +13631,7 @@ local provider(configuration) = {
     },
     iot_role_alias(name, block): {
       local resource = blockType.resource('aws_iot_role_alias', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(block.alias),
         credential_duration: build.template(std.get(block, 'credential_duration', null)),
         role_arn: build.template(block.role_arn),
@@ -13642,7 +13647,7 @@ local provider(configuration) = {
     },
     iot_thing(name, block): {
       local resource = blockType.resource('aws_iot_thing', name),
-      _: resource._({
+      _: resource._(block, {
         attributes: build.template(std.get(block, 'attributes', null)),
         name: build.template(block.name),
         thing_type_name: build.template(std.get(block, 'thing_type_name', null)),
@@ -13657,7 +13662,7 @@ local provider(configuration) = {
     },
     iot_thing_group(name, block): {
       local resource = blockType.resource('aws_iot_thing_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent_group_name: build.template(std.get(block, 'parent_group_name', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -13673,7 +13678,7 @@ local provider(configuration) = {
     },
     iot_thing_group_membership(name, block): {
       local resource = blockType.resource('aws_iot_thing_group_membership', name),
-      _: resource._({
+      _: resource._(block, {
         override_dynamic_group: build.template(std.get(block, 'override_dynamic_group', null)),
         thing_group_name: build.template(block.thing_group_name),
         thing_name: build.template(block.thing_name),
@@ -13685,7 +13690,7 @@ local provider(configuration) = {
     },
     iot_thing_principal_attachment(name, block): {
       local resource = blockType.resource('aws_iot_thing_principal_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         principal: build.template(block.principal),
         thing: build.template(block.thing),
       }),
@@ -13695,7 +13700,7 @@ local provider(configuration) = {
     },
     iot_thing_type(name, block): {
       local resource = blockType.resource('aws_iot_thing_type', name),
-      _: resource._({
+      _: resource._(block, {
         deprecated: build.template(std.get(block, 'deprecated', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -13709,7 +13714,7 @@ local provider(configuration) = {
     },
     iot_topic_rule(name, block): {
       local resource = blockType.resource('aws_iot_topic_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(block.enabled),
         name: build.template(block.name),
@@ -13729,7 +13734,7 @@ local provider(configuration) = {
     },
     iot_topic_rule_destination(name, block): {
       local resource = blockType.resource('aws_iot_topic_rule_destination', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
       }),
       arn: resource.field('arn'),
@@ -13738,7 +13743,7 @@ local provider(configuration) = {
     },
     ivs_channel(name, block): {
       local resource = blockType.resource('aws_ivs_channel', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -13755,7 +13760,7 @@ local provider(configuration) = {
     },
     ivs_playback_key_pair(name, block): {
       local resource = blockType.resource('aws_ivs_playback_key_pair', name),
-      _: resource._({
+      _: resource._(block, {
         public_key: build.template(block.public_key),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -13769,7 +13774,7 @@ local provider(configuration) = {
     },
     ivs_recording_configuration(name, block): {
       local resource = blockType.resource('aws_ivs_recording_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -13782,7 +13787,7 @@ local provider(configuration) = {
     },
     ivschat_logging_configuration(name, block): {
       local resource = blockType.resource('aws_ivschat_logging_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -13795,7 +13800,7 @@ local provider(configuration) = {
     },
     ivschat_room(name, block): {
       local resource = blockType.resource('aws_ivschat_room', name),
-      _: resource._({
+      _: resource._(block, {
         logging_configuration_identifiers: build.template(std.get(block, 'logging_configuration_identifiers', null)),
         name: build.template(std.get(block, 'name', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -13811,7 +13816,7 @@ local provider(configuration) = {
     },
     kendra_data_source(name, block): {
       local resource = blockType.resource('aws_kendra_data_source', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         index_id: build.template(block.index_id),
         name: build.template(block.name),
@@ -13839,7 +13844,7 @@ local provider(configuration) = {
     },
     kendra_experience(name, block): {
       local resource = blockType.resource('aws_kendra_experience', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         index_id: build.template(block.index_id),
         name: build.template(block.name),
@@ -13857,7 +13862,7 @@ local provider(configuration) = {
     },
     kendra_faq(name, block): {
       local resource = blockType.resource('aws_kendra_faq', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         file_format: build.template(std.get(block, 'file_format', null)),
         index_id: build.template(block.index_id),
@@ -13883,7 +13888,7 @@ local provider(configuration) = {
     },
     kendra_index(name, block): {
       local resource = blockType.resource('aws_kendra_index', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         edition: build.template(std.get(block, 'edition', null)),
         name: build.template(block.name),
@@ -13908,7 +13913,7 @@ local provider(configuration) = {
     },
     kendra_query_suggestions_block_list(name, block): {
       local resource = blockType.resource('aws_kendra_query_suggestions_block_list', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         index_id: build.template(block.index_id),
         name: build.template(block.name),
@@ -13928,7 +13933,7 @@ local provider(configuration) = {
     },
     kendra_thesaurus(name, block): {
       local resource = blockType.resource('aws_kendra_thesaurus', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         index_id: build.template(block.index_id),
         name: build.template(block.name),
@@ -13948,7 +13953,7 @@ local provider(configuration) = {
     },
     key_pair(name, block): {
       local resource = blockType.resource('aws_key_pair', name),
-      _: resource._({
+      _: resource._(block, {
         public_key: build.template(block.public_key),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -13965,7 +13970,7 @@ local provider(configuration) = {
     },
     keyspaces_keyspace(name, block): {
       local resource = blockType.resource('aws_keyspaces_keyspace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -13977,7 +13982,7 @@ local provider(configuration) = {
     },
     keyspaces_table(name, block): {
       local resource = blockType.resource('aws_keyspaces_table', name),
-      _: resource._({
+      _: resource._(block, {
         default_time_to_live: build.template(std.get(block, 'default_time_to_live', null)),
         keyspace_name: build.template(block.keyspace_name),
         table_name: build.template(block.table_name),
@@ -13993,7 +13998,7 @@ local provider(configuration) = {
     },
     kinesis_analytics_application(name, block): {
       local resource = blockType.resource('aws_kinesis_analytics_application', name),
-      _: resource._({
+      _: resource._(block, {
         code: build.template(std.get(block, 'code', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -14015,7 +14020,7 @@ local provider(configuration) = {
     },
     kinesis_firehose_delivery_stream(name, block): {
       local resource = blockType.resource('aws_kinesis_firehose_delivery_stream', name),
-      _: resource._({
+      _: resource._(block, {
         destination: build.template(block.destination),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -14031,7 +14036,7 @@ local provider(configuration) = {
     },
     kinesis_resource_policy(name, block): {
       local resource = blockType.resource('aws_kinesis_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -14041,7 +14046,7 @@ local provider(configuration) = {
     },
     kinesis_stream(name, block): {
       local resource = blockType.resource('aws_kinesis_stream', name),
-      _: resource._({
+      _: resource._(block, {
         encryption_type: build.template(std.get(block, 'encryption_type', null)),
         enforce_consumer_deletion: build.template(std.get(block, 'enforce_consumer_deletion', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -14065,7 +14070,7 @@ local provider(configuration) = {
     },
     kinesis_stream_consumer(name, block): {
       local resource = blockType.resource('aws_kinesis_stream_consumer', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         stream_arn: build.template(block.stream_arn),
       }),
@@ -14077,7 +14082,7 @@ local provider(configuration) = {
     },
     kinesis_video_stream(name, block): {
       local resource = blockType.resource('aws_kinesis_video_stream', name),
-      _: resource._({
+      _: resource._(block, {
         data_retention_in_hours: build.template(std.get(block, 'data_retention_in_hours', null)),
         device_name: build.template(std.get(block, 'device_name', null)),
         media_type: build.template(std.get(block, 'media_type', null)),
@@ -14098,7 +14103,7 @@ local provider(configuration) = {
     },
     kinesisanalyticsv2_application(name, block): {
       local resource = blockType.resource('aws_kinesisanalyticsv2_application', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         force_stop: build.template(std.get(block, 'force_stop', null)),
         name: build.template(block.name),
@@ -14125,7 +14130,7 @@ local provider(configuration) = {
     },
     kinesisanalyticsv2_application_snapshot(name, block): {
       local resource = blockType.resource('aws_kinesisanalyticsv2_application_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         application_name: build.template(block.application_name),
         snapshot_name: build.template(block.snapshot_name),
       }),
@@ -14137,7 +14142,7 @@ local provider(configuration) = {
     },
     kms_alias(name, block): {
       local resource = blockType.resource('aws_kms_alias', name),
-      _: resource._({
+      _: resource._(block, {
         target_key_id: build.template(block.target_key_id),
       }),
       arn: resource.field('arn'),
@@ -14149,7 +14154,7 @@ local provider(configuration) = {
     },
     kms_ciphertext(name, block): {
       local resource = blockType.resource('aws_kms_ciphertext', name),
-      _: resource._({
+      _: resource._(block, {
         context: build.template(std.get(block, 'context', null)),
         key_id: build.template(block.key_id),
         plaintext: build.template(block.plaintext),
@@ -14162,7 +14167,7 @@ local provider(configuration) = {
     },
     kms_custom_key_store(name, block): {
       local resource = blockType.resource('aws_kms_custom_key_store', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_hsm_cluster_id: build.template(block.cloud_hsm_cluster_id),
         custom_key_store_name: build.template(block.custom_key_store_name),
         key_store_password: build.template(block.key_store_password),
@@ -14176,7 +14181,7 @@ local provider(configuration) = {
     },
     kms_external_key(name, block): {
       local resource = blockType.resource('aws_kms_external_key', name),
-      _: resource._({
+      _: resource._(block, {
         bypass_policy_lockout_safety_check: build.template(std.get(block, 'bypass_policy_lockout_safety_check', null)),
         deletion_window_in_days: build.template(std.get(block, 'deletion_window_in_days', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14202,7 +14207,7 @@ local provider(configuration) = {
     },
     kms_grant(name, block): {
       local resource = blockType.resource('aws_kms_grant', name),
-      _: resource._({
+      _: resource._(block, {
         grant_creation_tokens: build.template(std.get(block, 'grant_creation_tokens', null)),
         grantee_principal: build.template(block.grantee_principal),
         key_id: build.template(block.key_id),
@@ -14224,7 +14229,7 @@ local provider(configuration) = {
     },
     kms_key(name, block): {
       local resource = blockType.resource('aws_kms_key', name),
-      _: resource._({
+      _: resource._(block, {
         bypass_policy_lockout_safety_check: build.template(std.get(block, 'bypass_policy_lockout_safety_check', null)),
         custom_key_store_id: build.template(std.get(block, 'custom_key_store_id', null)),
         customer_master_key_spec: build.template(std.get(block, 'customer_master_key_spec', null)),
@@ -14255,7 +14260,7 @@ local provider(configuration) = {
     },
     kms_key_policy(name, block): {
       local resource = blockType.resource('aws_kms_key_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bypass_policy_lockout_safety_check: build.template(std.get(block, 'bypass_policy_lockout_safety_check', null)),
         key_id: build.template(block.key_id),
         policy: build.template(block.policy),
@@ -14267,7 +14272,7 @@ local provider(configuration) = {
     },
     kms_replica_external_key(name, block): {
       local resource = blockType.resource('aws_kms_replica_external_key', name),
-      _: resource._({
+      _: resource._(block, {
         bypass_policy_lockout_safety_check: build.template(std.get(block, 'bypass_policy_lockout_safety_check', null)),
         deletion_window_in_days: build.template(std.get(block, 'deletion_window_in_days', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14295,7 +14300,7 @@ local provider(configuration) = {
     },
     kms_replica_key(name, block): {
       local resource = blockType.resource('aws_kms_replica_key', name),
-      _: resource._({
+      _: resource._(block, {
         bypass_policy_lockout_safety_check: build.template(std.get(block, 'bypass_policy_lockout_safety_check', null)),
         deletion_window_in_days: build.template(std.get(block, 'deletion_window_in_days', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14320,13 +14325,13 @@ local provider(configuration) = {
     },
     lakeformation_data_cells_filter(name, block): {
       local resource = blockType.resource('aws_lakeformation_data_cells_filter', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     lakeformation_data_lake_settings(name, block): {
       local resource = blockType.resource('aws_lakeformation_data_lake_settings', name),
-      _: resource._({
+      _: resource._(block, {
         allow_external_data_filtering: build.template(std.get(block, 'allow_external_data_filtering', null)),
         allow_full_table_external_data_access: build.template(std.get(block, 'allow_full_table_external_data_access', null)),
         catalog_id: build.template(std.get(block, 'catalog_id', null)),
@@ -14344,7 +14349,7 @@ local provider(configuration) = {
     },
     lakeformation_lf_tag(name, block): {
       local resource = blockType.resource('aws_lakeformation_lf_tag', name),
-      _: resource._({
+      _: resource._(block, {
         key: build.template(block.key),
         values: build.template(block.values),
       }),
@@ -14355,7 +14360,7 @@ local provider(configuration) = {
     },
     lakeformation_permissions(name, block): {
       local resource = blockType.resource('aws_lakeformation_permissions', name),
-      _: resource._({
+      _: resource._(block, {
         catalog_id: build.template(std.get(block, 'catalog_id', null)),
         catalog_resource: build.template(std.get(block, 'catalog_resource', null)),
         permissions: build.template(block.permissions),
@@ -14370,7 +14375,7 @@ local provider(configuration) = {
     },
     lakeformation_resource(name, block): {
       local resource = blockType.resource('aws_lakeformation_resource', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         use_service_linked_role: build.template(std.get(block, 'use_service_linked_role', null)),
       }),
@@ -14384,7 +14389,7 @@ local provider(configuration) = {
     },
     lakeformation_resource_lf_tag(name, block): {
       local resource = blockType.resource('aws_lakeformation_resource_lf_tag', name),
-      _: resource._({
+      _: resource._(block, {
         catalog_id: build.template(std.get(block, 'catalog_id', null)),
       }),
       catalog_id: resource.field('catalog_id'),
@@ -14392,14 +14397,14 @@ local provider(configuration) = {
     },
     lakeformation_resource_lf_tags(name, block): {
       local resource = blockType.resource('aws_lakeformation_resource_lf_tags', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       catalog_id: resource.field('catalog_id'),
       id: resource.field('id'),
     },
     lambda_alias(name, block): {
       local resource = blockType.resource('aws_lambda_alias', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         function_name: build.template(block.function_name),
         function_version: build.template(block.function_version),
@@ -14415,7 +14420,7 @@ local provider(configuration) = {
     },
     lambda_code_signing_config(name, block): {
       local resource = blockType.resource('aws_lambda_code_signing_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -14429,7 +14434,7 @@ local provider(configuration) = {
     },
     lambda_event_source_mapping(name, block): {
       local resource = blockType.resource('aws_lambda_event_source_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         batch_size: build.template(std.get(block, 'batch_size', null)),
         bisect_batch_on_function_error: build.template(std.get(block, 'bisect_batch_on_function_error', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -14474,7 +14479,7 @@ local provider(configuration) = {
     },
     lambda_function(name, block): {
       local resource = blockType.resource('aws_lambda_function', name),
-      _: resource._({
+      _: resource._(block, {
         code_signing_config_arn: build.template(std.get(block, 'code_signing_config_arn', null)),
         description: build.template(std.get(block, 'description', null)),
         filename: build.template(std.get(block, 'filename', null)),
@@ -14537,7 +14542,7 @@ local provider(configuration) = {
     },
     lambda_function_event_invoke_config(name, block): {
       local resource = blockType.resource('aws_lambda_function_event_invoke_config', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         maximum_event_age_in_seconds: build.template(std.get(block, 'maximum_event_age_in_seconds', null)),
         maximum_retry_attempts: build.template(std.get(block, 'maximum_retry_attempts', null)),
@@ -14551,7 +14556,7 @@ local provider(configuration) = {
     },
     lambda_function_recursion_config(name, block): {
       local resource = blockType.resource('aws_lambda_function_recursion_config', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         recursive_loop: build.template(block.recursive_loop),
       }),
@@ -14560,7 +14565,7 @@ local provider(configuration) = {
     },
     lambda_function_url(name, block): {
       local resource = blockType.resource('aws_lambda_function_url', name),
-      _: resource._({
+      _: resource._(block, {
         authorization_type: build.template(block.authorization_type),
         function_name: build.template(block.function_name),
         invoke_mode: build.template(std.get(block, 'invoke_mode', null)),
@@ -14577,7 +14582,7 @@ local provider(configuration) = {
     },
     lambda_invocation(name, block): {
       local resource = blockType.resource('aws_lambda_invocation', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         input: build.template(block.input),
         lifecycle_scope: build.template(std.get(block, 'lifecycle_scope', null)),
@@ -14596,7 +14601,7 @@ local provider(configuration) = {
     },
     lambda_layer_version(name, block): {
       local resource = blockType.resource('aws_lambda_layer_version', name),
-      _: resource._({
+      _: resource._(block, {
         compatible_architectures: build.template(std.get(block, 'compatible_architectures', null)),
         compatible_runtimes: build.template(std.get(block, 'compatible_runtimes', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14631,7 +14636,7 @@ local provider(configuration) = {
     },
     lambda_layer_version_permission(name, block): {
       local resource = blockType.resource('aws_lambda_layer_version_permission', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         layer_name: build.template(block.layer_name),
         organization_id: build.template(std.get(block, 'organization_id', null)),
@@ -14653,7 +14658,7 @@ local provider(configuration) = {
     },
     lambda_permission(name, block): {
       local resource = blockType.resource('aws_lambda_permission', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         event_source_token: build.template(std.get(block, 'event_source_token', null)),
         function_name: build.template(block.function_name),
@@ -14679,7 +14684,7 @@ local provider(configuration) = {
     },
     lambda_provisioned_concurrency_config(name, block): {
       local resource = blockType.resource('aws_lambda_provisioned_concurrency_config', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         provisioned_concurrent_executions: build.template(block.provisioned_concurrent_executions),
         qualifier: build.template(block.qualifier),
@@ -14693,7 +14698,7 @@ local provider(configuration) = {
     },
     lambda_runtime_management_config(name, block): {
       local resource = blockType.resource('aws_lambda_runtime_management_config', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         qualifier: build.template(std.get(block, 'qualifier', null)),
         runtime_version_arn: build.template(std.get(block, 'runtime_version_arn', null)),
@@ -14707,7 +14712,7 @@ local provider(configuration) = {
     },
     launch_configuration(name, block): {
       local resource = blockType.resource('aws_launch_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         enable_monitoring: build.template(std.get(block, 'enable_monitoring', null)),
         iam_instance_profile: build.template(std.get(block, 'iam_instance_profile', null)),
         image_id: build.template(block.image_id),
@@ -14737,7 +14742,7 @@ local provider(configuration) = {
     },
     launch_template(name, block): {
       local resource = blockType.resource('aws_launch_template', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disable_api_stop: build.template(std.get(block, 'disable_api_stop', null)),
         disable_api_termination: build.template(std.get(block, 'disable_api_termination', null)),
@@ -14779,7 +14784,7 @@ local provider(configuration) = {
     },
     lb(name, block): {
       local resource = blockType.resource('aws_lb', name),
-      _: resource._({
+      _: resource._(block, {
         client_keep_alive: build.template(std.get(block, 'client_keep_alive', null)),
         customer_owned_ipv4_pool: build.template(std.get(block, 'customer_owned_ipv4_pool', null)),
         desync_mitigation_mode: build.template(std.get(block, 'desync_mitigation_mode', null)),
@@ -14832,7 +14837,7 @@ local provider(configuration) = {
     },
     lb_cookie_stickiness_policy(name, block): {
       local resource = blockType.resource('aws_lb_cookie_stickiness_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cookie_expiration_period: build.template(std.get(block, 'cookie_expiration_period', null)),
         lb_port: build.template(block.lb_port),
         load_balancer: build.template(block.load_balancer),
@@ -14846,7 +14851,7 @@ local provider(configuration) = {
     },
     lb_listener(name, block): {
       local resource = blockType.resource('aws_lb_listener', name),
-      _: resource._({
+      _: resource._(block, {
         alpn_policy: build.template(std.get(block, 'alpn_policy', null)),
         certificate_arn: build.template(std.get(block, 'certificate_arn', null)),
         load_balancer_arn: build.template(block.load_balancer_arn),
@@ -14867,7 +14872,7 @@ local provider(configuration) = {
     },
     lb_listener_certificate(name, block): {
       local resource = blockType.resource('aws_lb_listener_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_arn: build.template(block.certificate_arn),
         listener_arn: build.template(block.listener_arn),
       }),
@@ -14877,7 +14882,7 @@ local provider(configuration) = {
     },
     lb_listener_rule(name, block): {
       local resource = blockType.resource('aws_lb_listener_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listener_arn: build.template(block.listener_arn),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -14890,7 +14895,7 @@ local provider(configuration) = {
     },
     lb_ssl_negotiation_policy(name, block): {
       local resource = blockType.resource('aws_lb_ssl_negotiation_policy', name),
-      _: resource._({
+      _: resource._(block, {
         lb_port: build.template(block.lb_port),
         load_balancer: build.template(block.load_balancer),
         name: build.template(block.name),
@@ -14904,7 +14909,7 @@ local provider(configuration) = {
     },
     lb_target_group(name, block): {
       local resource = blockType.resource('aws_lb_target_group', name),
-      _: resource._({
+      _: resource._(block, {
         deregistration_delay: build.template(std.get(block, 'deregistration_delay', null)),
         lambda_multi_value_headers_enabled: build.template(std.get(block, 'lambda_multi_value_headers_enabled', null)),
         port: build.template(std.get(block, 'port', null)),
@@ -14941,7 +14946,7 @@ local provider(configuration) = {
     },
     lb_target_group_attachment(name, block): {
       local resource = blockType.resource('aws_lb_target_group_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(std.get(block, 'availability_zone', null)),
         port: build.template(std.get(block, 'port', null)),
         target_group_arn: build.template(block.target_group_arn),
@@ -14955,7 +14960,7 @@ local provider(configuration) = {
     },
     lb_trust_store(name, block): {
       local resource = blockType.resource('aws_lb_trust_store', name),
-      _: resource._({
+      _: resource._(block, {
         ca_certificates_bundle_s3_bucket: build.template(block.ca_certificates_bundle_s3_bucket),
         ca_certificates_bundle_s3_key: build.template(block.ca_certificates_bundle_s3_key),
         ca_certificates_bundle_s3_object_version: build.template(std.get(block, 'ca_certificates_bundle_s3_object_version', null)),
@@ -14974,7 +14979,7 @@ local provider(configuration) = {
     },
     lb_trust_store_revocation(name, block): {
       local resource = blockType.resource('aws_lb_trust_store_revocation', name),
-      _: resource._({
+      _: resource._(block, {
         revocations_s3_bucket: build.template(block.revocations_s3_bucket),
         revocations_s3_key: build.template(block.revocations_s3_key),
         revocations_s3_object_version: build.template(std.get(block, 'revocations_s3_object_version', null)),
@@ -14989,7 +14994,7 @@ local provider(configuration) = {
     },
     lex_bot(name, block): {
       local resource = blockType.resource('aws_lex_bot', name),
-      _: resource._({
+      _: resource._(block, {
         child_directed: build.template(block.child_directed),
         create_version: build.template(std.get(block, 'create_version', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -15023,7 +15028,7 @@ local provider(configuration) = {
     },
     lex_bot_alias(name, block): {
       local resource = blockType.resource('aws_lex_bot_alias', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         bot_version: build.template(block.bot_version),
         description: build.template(std.get(block, 'description', null)),
@@ -15041,7 +15046,7 @@ local provider(configuration) = {
     },
     lex_intent(name, block): {
       local resource = blockType.resource('aws_lex_intent', name),
-      _: resource._({
+      _: resource._(block, {
         create_version: build.template(std.get(block, 'create_version', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -15062,7 +15067,7 @@ local provider(configuration) = {
     },
     lex_slot_type(name, block): {
       local resource = blockType.resource('aws_lex_slot_type', name),
-      _: resource._({
+      _: resource._(block, {
         create_version: build.template(std.get(block, 'create_version', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -15080,7 +15085,7 @@ local provider(configuration) = {
     },
     lexv2models_bot(name, block): {
       local resource = blockType.resource('aws_lexv2models_bot', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         idle_session_ttl_in_seconds: build.template(block.idle_session_ttl_in_seconds),
         name: build.template(block.name),
@@ -15101,7 +15106,7 @@ local provider(configuration) = {
     },
     lexv2models_bot_locale(name, block): {
       local resource = blockType.resource('aws_lexv2models_bot_locale', name),
-      _: resource._({
+      _: resource._(block, {
         bot_id: build.template(block.bot_id),
         bot_version: build.template(block.bot_version),
         description: build.template(std.get(block, 'description', null)),
@@ -15118,7 +15123,7 @@ local provider(configuration) = {
     },
     lexv2models_bot_version(name, block): {
       local resource = blockType.resource('aws_lexv2models_bot_version', name),
-      _: resource._({
+      _: resource._(block, {
         bot_id: build.template(block.bot_id),
         description: build.template(std.get(block, 'description', null)),
         locale_specification: build.template(block.locale_specification),
@@ -15131,7 +15136,7 @@ local provider(configuration) = {
     },
     lexv2models_intent(name, block): {
       local resource = blockType.resource('aws_lexv2models_intent', name),
-      _: resource._({
+      _: resource._(block, {
         bot_id: build.template(block.bot_id),
         bot_version: build.template(block.bot_version),
         description: build.template(std.get(block, 'description', null)),
@@ -15152,7 +15157,7 @@ local provider(configuration) = {
     },
     lexv2models_slot(name, block): {
       local resource = blockType.resource('aws_lexv2models_slot', name),
-      _: resource._({
+      _: resource._(block, {
         bot_id: build.template(block.bot_id),
         bot_version: build.template(block.bot_version),
         description: build.template(std.get(block, 'description', null)),
@@ -15172,7 +15177,7 @@ local provider(configuration) = {
     },
     lexv2models_slot_type(name, block): {
       local resource = blockType.resource('aws_lexv2models_slot_type', name),
-      _: resource._({
+      _: resource._(block, {
         bot_id: build.template(block.bot_id),
         bot_version: build.template(block.bot_version),
         description: build.template(std.get(block, 'description', null)),
@@ -15191,7 +15196,7 @@ local provider(configuration) = {
     },
     licensemanager_association(name, block): {
       local resource = blockType.resource('aws_licensemanager_association', name),
-      _: resource._({
+      _: resource._(block, {
         license_configuration_arn: build.template(block.license_configuration_arn),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -15201,7 +15206,7 @@ local provider(configuration) = {
     },
     licensemanager_grant(name, block): {
       local resource = blockType.resource('aws_licensemanager_grant', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_operations: build.template(block.allowed_operations),
         license_arn: build.template(block.license_arn),
         name: build.template(block.name),
@@ -15220,7 +15225,7 @@ local provider(configuration) = {
     },
     licensemanager_grant_accepter(name, block): {
       local resource = blockType.resource('aws_licensemanager_grant_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         grant_arn: build.template(block.grant_arn),
       }),
       allowed_operations: resource.field('allowed_operations'),
@@ -15236,7 +15241,7 @@ local provider(configuration) = {
     },
     licensemanager_license_configuration(name, block): {
       local resource = blockType.resource('aws_licensemanager_license_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         license_count: build.template(std.get(block, 'license_count', null)),
         license_count_hard_limit: build.template(std.get(block, 'license_count_hard_limit', null)),
@@ -15259,7 +15264,7 @@ local provider(configuration) = {
     },
     lightsail_bucket(name, block): {
       local resource = blockType.resource('aws_lightsail_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         bundle_id: build.template(block.bundle_id),
         force_delete: build.template(std.get(block, 'force_delete', null)),
         name: build.template(block.name),
@@ -15280,7 +15285,7 @@ local provider(configuration) = {
     },
     lightsail_bucket_access_key(name, block): {
       local resource = blockType.resource('aws_lightsail_bucket_access_key', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_name: build.template(block.bucket_name),
       }),
       access_key_id: resource.field('access_key_id'),
@@ -15292,7 +15297,7 @@ local provider(configuration) = {
     },
     lightsail_bucket_resource_access(name, block): {
       local resource = blockType.resource('aws_lightsail_bucket_resource_access', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_name: build.template(block.bucket_name),
         resource_name: build.template(block.resource_name),
       }),
@@ -15302,7 +15307,7 @@ local provider(configuration) = {
     },
     lightsail_certificate(name, block): {
       local resource = blockType.resource('aws_lightsail_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -15318,7 +15323,7 @@ local provider(configuration) = {
     },
     lightsail_container_service(name, block): {
       local resource = blockType.resource('aws_lightsail_container_service', name),
-      _: resource._({
+      _: resource._(block, {
         is_disabled: build.template(std.get(block, 'is_disabled', null)),
         name: build.template(block.name),
         power: build.template(block.power),
@@ -15344,7 +15349,7 @@ local provider(configuration) = {
     },
     lightsail_container_service_deployment_version(name, block): {
       local resource = blockType.resource('aws_lightsail_container_service_deployment_version', name),
-      _: resource._({
+      _: resource._(block, {
         service_name: build.template(block.service_name),
       }),
       created_at: resource.field('created_at'),
@@ -15355,7 +15360,7 @@ local provider(configuration) = {
     },
     lightsail_database(name, block): {
       local resource = blockType.resource('aws_lightsail_database', name),
-      _: resource._({
+      _: resource._(block, {
         backup_retention_enabled: build.template(std.get(block, 'backup_retention_enabled', null)),
         blueprint_id: build.template(block.blueprint_id),
         bundle_id: build.template(block.bundle_id),
@@ -15400,7 +15405,7 @@ local provider(configuration) = {
     },
     lightsail_disk(name, block): {
       local resource = blockType.resource('aws_lightsail_disk', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(block.availability_zone),
         name: build.template(block.name),
         size_in_gb: build.template(block.size_in_gb),
@@ -15418,7 +15423,7 @@ local provider(configuration) = {
     },
     lightsail_disk_attachment(name, block): {
       local resource = blockType.resource('aws_lightsail_disk_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         disk_name: build.template(block.disk_name),
         disk_path: build.template(block.disk_path),
         instance_name: build.template(block.instance_name),
@@ -15430,7 +15435,7 @@ local provider(configuration) = {
     },
     lightsail_distribution(name, block): {
       local resource = blockType.resource('aws_lightsail_distribution', name),
-      _: resource._({
+      _: resource._(block, {
         bundle_id: build.template(block.bundle_id),
         certificate_name: build.template(std.get(block, 'certificate_name', null)),
         ip_address_type: build.template(std.get(block, 'ip_address_type', null)),
@@ -15458,7 +15463,7 @@ local provider(configuration) = {
     },
     lightsail_domain(name, block): {
       local resource = blockType.resource('aws_lightsail_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
       }),
       arn: resource.field('arn'),
@@ -15467,7 +15472,7 @@ local provider(configuration) = {
     },
     lightsail_domain_entry(name, block): {
       local resource = blockType.resource('aws_lightsail_domain_entry', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         is_alias: build.template(std.get(block, 'is_alias', null)),
         name: build.template(block.name),
@@ -15483,7 +15488,7 @@ local provider(configuration) = {
     },
     lightsail_instance(name, block): {
       local resource = blockType.resource('aws_lightsail_instance', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(block.availability_zone),
         blueprint_id: build.template(block.blueprint_id),
         bundle_id: build.template(block.bundle_id),
@@ -15515,7 +15520,7 @@ local provider(configuration) = {
     },
     lightsail_instance_public_ports(name, block): {
       local resource = blockType.resource('aws_lightsail_instance_public_ports', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
       }),
       id: resource.field('id'),
@@ -15523,7 +15528,7 @@ local provider(configuration) = {
     },
     lightsail_key_pair(name, block): {
       local resource = blockType.resource('aws_lightsail_key_pair', name),
-      _: resource._({
+      _: resource._(block, {
         pgp_key: build.template(std.get(block, 'pgp_key', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -15542,7 +15547,7 @@ local provider(configuration) = {
     },
     lightsail_lb(name, block): {
       local resource = blockType.resource('aws_lightsail_lb', name),
-      _: resource._({
+      _: resource._(block, {
         health_check_path: build.template(std.get(block, 'health_check_path', null)),
         instance_port: build.template(block.instance_port),
         ip_address_type: build.template(std.get(block, 'ip_address_type', null)),
@@ -15565,7 +15570,7 @@ local provider(configuration) = {
     },
     lightsail_lb_attachment(name, block): {
       local resource = blockType.resource('aws_lightsail_lb_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         lb_name: build.template(block.lb_name),
       }),
@@ -15575,7 +15580,7 @@ local provider(configuration) = {
     },
     lightsail_lb_certificate(name, block): {
       local resource = blockType.resource('aws_lightsail_lb_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         lb_name: build.template(block.lb_name),
         name: build.template(block.name),
       }),
@@ -15591,7 +15596,7 @@ local provider(configuration) = {
     },
     lightsail_lb_certificate_attachment(name, block): {
       local resource = blockType.resource('aws_lightsail_lb_certificate_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_name: build.template(block.certificate_name),
         lb_name: build.template(block.lb_name),
       }),
@@ -15601,7 +15606,7 @@ local provider(configuration) = {
     },
     lightsail_lb_https_redirection_policy(name, block): {
       local resource = blockType.resource('aws_lightsail_lb_https_redirection_policy', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
         lb_name: build.template(block.lb_name),
       }),
@@ -15611,7 +15616,7 @@ local provider(configuration) = {
     },
     lightsail_lb_stickiness_policy(name, block): {
       local resource = blockType.resource('aws_lightsail_lb_stickiness_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cookie_duration: build.template(block.cookie_duration),
         enabled: build.template(block.enabled),
         lb_name: build.template(block.lb_name),
@@ -15623,7 +15628,7 @@ local provider(configuration) = {
     },
     lightsail_static_ip(name, block): {
       local resource = blockType.resource('aws_lightsail_static_ip', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -15634,7 +15639,7 @@ local provider(configuration) = {
     },
     lightsail_static_ip_attachment(name, block): {
       local resource = blockType.resource('aws_lightsail_static_ip_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         static_ip_name: build.template(block.static_ip_name),
       }),
@@ -15645,7 +15650,7 @@ local provider(configuration) = {
     },
     load_balancer_backend_server_policy(name, block): {
       local resource = blockType.resource('aws_load_balancer_backend_server_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_port: build.template(block.instance_port),
         load_balancer_name: build.template(block.load_balancer_name),
         policy_names: build.template(std.get(block, 'policy_names', null)),
@@ -15657,7 +15662,7 @@ local provider(configuration) = {
     },
     load_balancer_listener_policy(name, block): {
       local resource = blockType.resource('aws_load_balancer_listener_policy', name),
-      _: resource._({
+      _: resource._(block, {
         load_balancer_name: build.template(block.load_balancer_name),
         load_balancer_port: build.template(block.load_balancer_port),
         policy_names: build.template(std.get(block, 'policy_names', null)),
@@ -15671,7 +15676,7 @@ local provider(configuration) = {
     },
     load_balancer_policy(name, block): {
       local resource = blockType.resource('aws_load_balancer_policy', name),
-      _: resource._({
+      _: resource._(block, {
         load_balancer_name: build.template(block.load_balancer_name),
         policy_name: build.template(block.policy_name),
         policy_type_name: build.template(block.policy_type_name),
@@ -15683,7 +15688,7 @@ local provider(configuration) = {
     },
     location_geofence_collection(name, block): {
       local resource = blockType.resource('aws_location_geofence_collection', name),
-      _: resource._({
+      _: resource._(block, {
         collection_name: build.template(block.collection_name),
         description: build.template(std.get(block, 'description', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -15701,7 +15706,7 @@ local provider(configuration) = {
     },
     location_map(name, block): {
       local resource = blockType.resource('aws_location_map', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         map_name: build.template(block.map_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -15717,7 +15722,7 @@ local provider(configuration) = {
     },
     location_place_index(name, block): {
       local resource = blockType.resource('aws_location_place_index', name),
-      _: resource._({
+      _: resource._(block, {
         data_source: build.template(block.data_source),
         description: build.template(std.get(block, 'description', null)),
         index_name: build.template(block.index_name),
@@ -15735,7 +15740,7 @@ local provider(configuration) = {
     },
     location_route_calculator(name, block): {
       local resource = blockType.resource('aws_location_route_calculator', name),
-      _: resource._({
+      _: resource._(block, {
         calculator_name: build.template(block.calculator_name),
         data_source: build.template(block.data_source),
         description: build.template(std.get(block, 'description', null)),
@@ -15753,7 +15758,7 @@ local provider(configuration) = {
     },
     location_tracker(name, block): {
       local resource = blockType.resource('aws_location_tracker', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
         position_filtering: build.template(std.get(block, 'position_filtering', null)),
@@ -15773,7 +15778,7 @@ local provider(configuration) = {
     },
     location_tracker_association(name, block): {
       local resource = blockType.resource('aws_location_tracker_association', name),
-      _: resource._({
+      _: resource._(block, {
         consumer_arn: build.template(block.consumer_arn),
         tracker_name: build.template(block.tracker_name),
       }),
@@ -15783,7 +15788,7 @@ local provider(configuration) = {
     },
     m2_application(name, block): {
       local resource = blockType.resource('aws_m2_application', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         engine_type: build.template(block.engine_type),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -15805,7 +15810,7 @@ local provider(configuration) = {
     },
     m2_deployment(name, block): {
       local resource = blockType.resource('aws_m2_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         application_version: build.template(block.application_version),
         environment_id: build.template(block.environment_id),
@@ -15822,7 +15827,7 @@ local provider(configuration) = {
     },
     m2_environment(name, block): {
       local resource = blockType.resource('aws_m2_environment', name),
-      _: resource._({
+      _: resource._(block, {
         apply_changes_during_maintenance_window: build.template(std.get(block, 'apply_changes_during_maintenance_window', null)),
         description: build.template(std.get(block, 'description', null)),
         engine_type: build.template(block.engine_type),
@@ -15853,7 +15858,7 @@ local provider(configuration) = {
     },
     macie2_account(name, block): {
       local resource = blockType.resource('aws_macie2_account', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       created_at: resource.field('created_at'),
       finding_publishing_frequency: resource.field('finding_publishing_frequency'),
@@ -15864,13 +15869,13 @@ local provider(configuration) = {
     },
     macie2_classification_export_configuration(name, block): {
       local resource = blockType.resource('aws_macie2_classification_export_configuration', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     macie2_classification_job(name, block): {
       local resource = blockType.resource('aws_macie2_classification_job', name),
-      _: resource._({
+      _: resource._(block, {
         initial_run: build.template(std.get(block, 'initial_run', null)),
         job_type: build.template(block.job_type),
         tags: build.template(std.get(block, 'tags', null)),
@@ -15893,7 +15898,7 @@ local provider(configuration) = {
     },
     macie2_custom_data_identifier(name, block): {
       local resource = blockType.resource('aws_macie2_custom_data_identifier', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ignore_words: build.template(std.get(block, 'ignore_words', null)),
         keywords: build.template(std.get(block, 'keywords', null)),
@@ -15915,7 +15920,7 @@ local provider(configuration) = {
     },
     macie2_findings_filter(name, block): {
       local resource = blockType.resource('aws_macie2_findings_filter', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -15932,7 +15937,7 @@ local provider(configuration) = {
     },
     macie2_invitation_accepter(name, block): {
       local resource = blockType.resource('aws_macie2_invitation_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         administrator_account_id: build.template(block.administrator_account_id),
       }),
       administrator_account_id: resource.field('administrator_account_id'),
@@ -15941,7 +15946,7 @@ local provider(configuration) = {
     },
     macie2_member(name, block): {
       local resource = blockType.resource('aws_macie2_member', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         email: build.template(block.email),
         invitation_disable_email_notification: build.template(std.get(block, 'invitation_disable_email_notification', null)),
@@ -15966,7 +15971,7 @@ local provider(configuration) = {
     },
     macie2_organization_admin_account(name, block): {
       local resource = blockType.resource('aws_macie2_organization_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
         admin_account_id: build.template(block.admin_account_id),
       }),
       admin_account_id: resource.field('admin_account_id'),
@@ -15974,7 +15979,7 @@ local provider(configuration) = {
     },
     main_route_table_association(name, block): {
       local resource = blockType.resource('aws_main_route_table_association', name),
-      _: resource._({
+      _: resource._(block, {
         route_table_id: build.template(block.route_table_id),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -15985,7 +15990,7 @@ local provider(configuration) = {
     },
     media_convert_queue(name, block): {
       local resource = blockType.resource('aws_media_convert_queue', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         pricing_plan: build.template(std.get(block, 'pricing_plan', null)),
@@ -16003,7 +16008,7 @@ local provider(configuration) = {
     },
     media_package_channel(name, block): {
       local resource = blockType.resource('aws_media_package_channel', name),
-      _: resource._({
+      _: resource._(block, {
         channel_id: build.template(block.channel_id),
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16018,7 +16023,7 @@ local provider(configuration) = {
     },
     media_store_container(name, block): {
       local resource = blockType.resource('aws_media_store_container', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -16031,7 +16036,7 @@ local provider(configuration) = {
     },
     media_store_container_policy(name, block): {
       local resource = blockType.resource('aws_media_store_container_policy', name),
-      _: resource._({
+      _: resource._(block, {
         container_name: build.template(block.container_name),
         policy: build.template(block.policy),
       }),
@@ -16041,7 +16046,7 @@ local provider(configuration) = {
     },
     medialive_channel(name, block): {
       local resource = blockType.resource('aws_medialive_channel', name),
-      _: resource._({
+      _: resource._(block, {
         channel_class: build.template(block.channel_class),
         name: build.template(block.name),
         role_arn: build.template(std.get(block, 'role_arn', null)),
@@ -16061,7 +16066,7 @@ local provider(configuration) = {
     },
     medialive_input(name, block): {
       local resource = blockType.resource('aws_medialive_input', name),
-      _: resource._({
+      _: resource._(block, {
         input_security_groups: build.template(std.get(block, 'input_security_groups', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16082,7 +16087,7 @@ local provider(configuration) = {
     },
     medialive_input_security_group(name, block): {
       local resource = blockType.resource('aws_medialive_input_security_group', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -16093,7 +16098,7 @@ local provider(configuration) = {
     },
     medialive_multiplex(name, block): {
       local resource = blockType.resource('aws_medialive_multiplex', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zones: build.template(block.availability_zones),
         name: build.template(block.name),
         start_multiplex: build.template(std.get(block, 'start_multiplex', null)),
@@ -16109,7 +16114,7 @@ local provider(configuration) = {
     },
     medialive_multiplex_program(name, block): {
       local resource = blockType.resource('aws_medialive_multiplex_program', name),
-      _: resource._({
+      _: resource._(block, {
         multiplex_id: build.template(block.multiplex_id),
         program_name: build.template(block.program_name),
       }),
@@ -16119,7 +16124,7 @@ local provider(configuration) = {
     },
     memorydb_acl(name, block): {
       local resource = blockType.resource('aws_memorydb_acl', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         user_names: build.template(std.get(block, 'user_names', null)),
       }),
@@ -16134,7 +16139,7 @@ local provider(configuration) = {
     },
     memorydb_cluster(name, block): {
       local resource = blockType.resource('aws_memorydb_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         acl_name: build.template(block.acl_name),
         auto_minor_version_upgrade: build.template(std.get(block, 'auto_minor_version_upgrade', null)),
         data_tiering: build.template(std.get(block, 'data_tiering', null)),
@@ -16184,7 +16189,7 @@ local provider(configuration) = {
     },
     memorydb_parameter_group(name, block): {
       local resource = blockType.resource('aws_memorydb_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16200,7 +16205,7 @@ local provider(configuration) = {
     },
     memorydb_snapshot(name, block): {
       local resource = blockType.resource('aws_memorydb_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         kms_key_arn: build.template(std.get(block, 'kms_key_arn', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16218,7 +16223,7 @@ local provider(configuration) = {
     },
     memorydb_subnet_group(name, block): {
       local resource = blockType.resource('aws_memorydb_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         subnet_ids: build.template(block.subnet_ids),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16235,7 +16240,7 @@ local provider(configuration) = {
     },
     memorydb_user(name, block): {
       local resource = blockType.resource('aws_memorydb_user', name),
-      _: resource._({
+      _: resource._(block, {
         access_string: build.template(block.access_string),
         tags: build.template(std.get(block, 'tags', null)),
         user_name: build.template(block.user_name),
@@ -16250,7 +16255,7 @@ local provider(configuration) = {
     },
     mq_broker(name, block): {
       local resource = blockType.resource('aws_mq_broker', name),
-      _: resource._({
+      _: resource._(block, {
         apply_immediately: build.template(std.get(block, 'apply_immediately', null)),
         auto_minor_version_upgrade: build.template(std.get(block, 'auto_minor_version_upgrade', null)),
         broker_name: build.template(block.broker_name),
@@ -16286,7 +16291,7 @@ local provider(configuration) = {
     },
     mq_configuration(name, block): {
       local resource = blockType.resource('aws_mq_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         data: build.template(block.data),
         description: build.template(std.get(block, 'description', null)),
         engine_type: build.template(block.engine_type),
@@ -16308,7 +16313,7 @@ local provider(configuration) = {
     },
     msk_cluster(name, block): {
       local resource = blockType.resource('aws_msk_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         enhanced_monitoring: build.template(std.get(block, 'enhanced_monitoring', null)),
         kafka_version: build.template(block.kafka_version),
@@ -16341,7 +16346,7 @@ local provider(configuration) = {
     },
     msk_cluster_policy(name, block): {
       local resource = blockType.resource('aws_msk_cluster_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_arn: build.template(block.cluster_arn),
         policy: build.template(block.policy),
       }),
@@ -16352,7 +16357,7 @@ local provider(configuration) = {
     },
     msk_configuration(name, block): {
       local resource = blockType.resource('aws_msk_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         kafka_versions: build.template(std.get(block, 'kafka_versions', null)),
         name: build.template(block.name),
@@ -16368,7 +16373,7 @@ local provider(configuration) = {
     },
     msk_replicator(name, block): {
       local resource = blockType.resource('aws_msk_replicator', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         replicator_name: build.template(block.replicator_name),
         service_execution_role_arn: build.template(block.service_execution_role_arn),
@@ -16385,7 +16390,7 @@ local provider(configuration) = {
     },
     msk_scram_secret_association(name, block): {
       local resource = blockType.resource('aws_msk_scram_secret_association', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_arn: build.template(block.cluster_arn),
         secret_arn_list: build.template(block.secret_arn_list),
       }),
@@ -16395,7 +16400,7 @@ local provider(configuration) = {
     },
     msk_serverless_cluster(name, block): {
       local resource = blockType.resource('aws_msk_serverless_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -16408,7 +16413,7 @@ local provider(configuration) = {
     },
     msk_vpc_connection(name, block): {
       local resource = blockType.resource('aws_msk_vpc_connection', name),
-      _: resource._({
+      _: resource._(block, {
         authentication: build.template(block.authentication),
         client_subnets: build.template(block.client_subnets),
         security_groups: build.template(block.security_groups),
@@ -16428,7 +16433,7 @@ local provider(configuration) = {
     },
     mskconnect_connector(name, block): {
       local resource = blockType.resource('aws_mskconnect_connector', name),
-      _: resource._({
+      _: resource._(block, {
         connector_configuration: build.template(block.connector_configuration),
         description: build.template(std.get(block, 'description', null)),
         kafkaconnect_version: build.template(block.kafkaconnect_version),
@@ -16449,7 +16454,7 @@ local provider(configuration) = {
     },
     mskconnect_custom_plugin(name, block): {
       local resource = blockType.resource('aws_mskconnect_custom_plugin', name),
-      _: resource._({
+      _: resource._(block, {
         content_type: build.template(block.content_type),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -16467,7 +16472,7 @@ local provider(configuration) = {
     },
     mskconnect_worker_configuration(name, block): {
       local resource = blockType.resource('aws_mskconnect_worker_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         properties_file_content: build.template(block.properties_file_content),
@@ -16484,7 +16489,7 @@ local provider(configuration) = {
     },
     mwaa_environment(name, block): {
       local resource = blockType.resource('aws_mwaa_environment', name),
-      _: resource._({
+      _: resource._(block, {
         airflow_configuration_options: build.template(std.get(block, 'airflow_configuration_options', null)),
         dag_s3_path: build.template(block.dag_s3_path),
         execution_role_arn: build.template(block.execution_role_arn),
@@ -16532,7 +16537,7 @@ local provider(configuration) = {
     },
     nat_gateway(name, block): {
       local resource = blockType.resource('aws_nat_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         allocation_id: build.template(std.get(block, 'allocation_id', null)),
         connectivity_type: build.template(std.get(block, 'connectivity_type', null)),
         secondary_allocation_ids: build.template(std.get(block, 'secondary_allocation_ids', null)),
@@ -16555,7 +16560,7 @@ local provider(configuration) = {
     },
     neptune_cluster(name, block): {
       local resource = blockType.resource('aws_neptune_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         backup_retention_period: build.template(std.get(block, 'backup_retention_period', null)),
         copy_tags_to_snapshot: build.template(std.get(block, 'copy_tags_to_snapshot', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
@@ -16613,7 +16618,7 @@ local provider(configuration) = {
     },
     neptune_cluster_endpoint(name, block): {
       local resource = blockType.resource('aws_neptune_cluster_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_endpoint_identifier: build.template(block.cluster_endpoint_identifier),
         cluster_identifier: build.template(block.cluster_identifier),
         endpoint_type: build.template(block.endpoint_type),
@@ -16634,7 +16639,7 @@ local provider(configuration) = {
     },
     neptune_cluster_instance(name, block): {
       local resource = blockType.resource('aws_neptune_cluster_instance', name),
-      _: resource._({
+      _: resource._(block, {
         auto_minor_version_upgrade: build.template(std.get(block, 'auto_minor_version_upgrade', null)),
         cluster_identifier: build.template(block.cluster_identifier),
         engine: build.template(std.get(block, 'engine', null)),
@@ -16676,7 +16681,7 @@ local provider(configuration) = {
     },
     neptune_cluster_parameter_group(name, block): {
       local resource = blockType.resource('aws_neptune_cluster_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16692,7 +16697,7 @@ local provider(configuration) = {
     },
     neptune_cluster_snapshot(name, block): {
       local resource = blockType.resource('aws_neptune_cluster_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         db_cluster_identifier: build.template(block.db_cluster_identifier),
         db_cluster_snapshot_identifier: build.template(block.db_cluster_snapshot_identifier),
       }),
@@ -16715,7 +16720,7 @@ local provider(configuration) = {
     },
     neptune_event_subscription(name, block): {
       local resource = blockType.resource('aws_neptune_event_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         event_categories: build.template(std.get(block, 'event_categories', null)),
         sns_topic_arn: build.template(block.sns_topic_arn),
@@ -16738,7 +16743,7 @@ local provider(configuration) = {
     },
     neptune_global_cluster(name, block): {
       local resource = blockType.resource('aws_neptune_global_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         global_cluster_identifier: build.template(block.global_cluster_identifier),
       }),
@@ -16756,7 +16761,7 @@ local provider(configuration) = {
     },
     neptune_parameter_group(name, block): {
       local resource = blockType.resource('aws_neptune_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16772,7 +16777,7 @@ local provider(configuration) = {
     },
     neptune_subnet_group(name, block): {
       local resource = blockType.resource('aws_neptune_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         subnet_ids: build.template(block.subnet_ids),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16788,7 +16793,7 @@ local provider(configuration) = {
     },
     network_acl(name, block): {
       local resource = blockType.resource('aws_network_acl', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -16804,7 +16809,7 @@ local provider(configuration) = {
     },
     network_acl_association(name, block): {
       local resource = blockType.resource('aws_network_acl_association', name),
-      _: resource._({
+      _: resource._(block, {
         network_acl_id: build.template(block.network_acl_id),
         subnet_id: build.template(block.subnet_id),
       }),
@@ -16814,7 +16819,7 @@ local provider(configuration) = {
     },
     network_acl_rule(name, block): {
       local resource = blockType.resource('aws_network_acl_rule', name),
-      _: resource._({
+      _: resource._(block, {
         cidr_block: build.template(std.get(block, 'cidr_block', null)),
         egress: build.template(std.get(block, 'egress', null)),
         from_port: build.template(std.get(block, 'from_port', null)),
@@ -16842,7 +16847,7 @@ local provider(configuration) = {
     },
     network_interface(name, block): {
       local resource = blockType.resource('aws_network_interface', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ipv6_address_list_enabled: build.template(std.get(block, 'ipv6_address_list_enabled', null)),
         private_ip_list_enabled: build.template(std.get(block, 'private_ip_list_enabled', null)),
@@ -16879,7 +16884,7 @@ local provider(configuration) = {
     },
     network_interface_attachment(name, block): {
       local resource = blockType.resource('aws_network_interface_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         device_index: build.template(block.device_index),
         instance_id: build.template(block.instance_id),
         network_interface_id: build.template(block.network_interface_id),
@@ -16893,7 +16898,7 @@ local provider(configuration) = {
     },
     network_interface_sg_attachment(name, block): {
       local resource = blockType.resource('aws_network_interface_sg_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         network_interface_id: build.template(block.network_interface_id),
         security_group_id: build.template(block.security_group_id),
       }),
@@ -16903,7 +16908,7 @@ local provider(configuration) = {
     },
     networkfirewall_firewall(name, block): {
       local resource = blockType.resource('aws_networkfirewall_firewall', name),
-      _: resource._({
+      _: resource._(block, {
         delete_protection: build.template(std.get(block, 'delete_protection', null)),
         description: build.template(std.get(block, 'description', null)),
         firewall_policy_arn: build.template(block.firewall_policy_arn),
@@ -16929,7 +16934,7 @@ local provider(configuration) = {
     },
     networkfirewall_firewall_policy(name, block): {
       local resource = blockType.resource('aws_networkfirewall_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -16944,7 +16949,7 @@ local provider(configuration) = {
     },
     networkfirewall_logging_configuration(name, block): {
       local resource = blockType.resource('aws_networkfirewall_logging_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         firewall_arn: build.template(block.firewall_arn),
       }),
       firewall_arn: resource.field('firewall_arn'),
@@ -16952,7 +16957,7 @@ local provider(configuration) = {
     },
     networkfirewall_resource_policy(name, block): {
       local resource = blockType.resource('aws_networkfirewall_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -16962,7 +16967,7 @@ local provider(configuration) = {
     },
     networkfirewall_rule_group(name, block): {
       local resource = blockType.resource('aws_networkfirewall_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         capacity: build.template(block.capacity),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -16983,7 +16988,7 @@ local provider(configuration) = {
     },
     networkfirewall_tls_inspection_configuration(name, block): {
       local resource = blockType.resource('aws_networkfirewall_tls_inspection_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -17003,7 +17008,7 @@ local provider(configuration) = {
     },
     networkmanager_attachment_accepter(name, block): {
       local resource = blockType.resource('aws_networkmanager_attachment_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         attachment_id: build.template(block.attachment_id),
         attachment_type: build.template(block.attachment_type),
       }),
@@ -17021,7 +17026,7 @@ local provider(configuration) = {
     },
     networkmanager_connect_attachment(name, block): {
       local resource = blockType.resource('aws_networkmanager_connect_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         core_network_id: build.template(block.core_network_id),
         edge_location: build.template(block.edge_location),
         tags: build.template(std.get(block, 'tags', null)),
@@ -17045,7 +17050,7 @@ local provider(configuration) = {
     },
     networkmanager_connect_peer(name, block): {
       local resource = blockType.resource('aws_networkmanager_connect_peer', name),
-      _: resource._({
+      _: resource._(block, {
         connect_attachment_id: build.template(block.connect_attachment_id),
         core_network_address: build.template(std.get(block, 'core_network_address', null)),
         inside_cidr_blocks: build.template(std.get(block, 'inside_cidr_blocks', null)),
@@ -17071,7 +17076,7 @@ local provider(configuration) = {
     },
     networkmanager_connection(name, block): {
       local resource = blockType.resource('aws_networkmanager_connection', name),
-      _: resource._({
+      _: resource._(block, {
         connected_device_id: build.template(block.connected_device_id),
         connected_link_id: build.template(std.get(block, 'connected_link_id', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -17093,7 +17098,7 @@ local provider(configuration) = {
     },
     networkmanager_core_network(name, block): {
       local resource = blockType.resource('aws_networkmanager_core_network', name),
-      _: resource._({
+      _: resource._(block, {
         base_policy_document: build.template(std.get(block, 'base_policy_document', null)),
         base_policy_region: build.template(std.get(block, 'base_policy_region', null)),
         base_policy_regions: build.template(std.get(block, 'base_policy_regions', null)),
@@ -17119,7 +17124,7 @@ local provider(configuration) = {
     },
     networkmanager_core_network_policy_attachment(name, block): {
       local resource = blockType.resource('aws_networkmanager_core_network_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         core_network_id: build.template(block.core_network_id),
         policy_document: build.template(block.policy_document),
       }),
@@ -17130,7 +17135,7 @@ local provider(configuration) = {
     },
     networkmanager_customer_gateway_association(name, block): {
       local resource = blockType.resource('aws_networkmanager_customer_gateway_association', name),
-      _: resource._({
+      _: resource._(block, {
         customer_gateway_arn: build.template(block.customer_gateway_arn),
         device_id: build.template(block.device_id),
         global_network_id: build.template(block.global_network_id),
@@ -17144,7 +17149,7 @@ local provider(configuration) = {
     },
     networkmanager_device(name, block): {
       local resource = blockType.resource('aws_networkmanager_device', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         global_network_id: build.template(block.global_network_id),
         model: build.template(std.get(block, 'model', null)),
@@ -17168,7 +17173,7 @@ local provider(configuration) = {
     },
     networkmanager_global_network(name, block): {
       local resource = blockType.resource('aws_networkmanager_global_network', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -17180,7 +17185,7 @@ local provider(configuration) = {
     },
     networkmanager_link(name, block): {
       local resource = blockType.resource('aws_networkmanager_link', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         global_network_id: build.template(block.global_network_id),
         provider_name: build.template(std.get(block, 'provider_name', null)),
@@ -17200,7 +17205,7 @@ local provider(configuration) = {
     },
     networkmanager_link_association(name, block): {
       local resource = blockType.resource('aws_networkmanager_link_association', name),
-      _: resource._({
+      _: resource._(block, {
         device_id: build.template(block.device_id),
         global_network_id: build.template(block.global_network_id),
         link_id: build.template(block.link_id),
@@ -17212,7 +17217,7 @@ local provider(configuration) = {
     },
     networkmanager_site(name, block): {
       local resource = blockType.resource('aws_networkmanager_site', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         global_network_id: build.template(block.global_network_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -17226,7 +17231,7 @@ local provider(configuration) = {
     },
     networkmanager_site_to_site_vpn_attachment(name, block): {
       local resource = blockType.resource('aws_networkmanager_site_to_site_vpn_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         core_network_id: build.template(block.core_network_id),
         tags: build.template(std.get(block, 'tags', null)),
         vpn_connection_arn: build.template(block.vpn_connection_arn),
@@ -17248,7 +17253,7 @@ local provider(configuration) = {
     },
     networkmanager_transit_gateway_connect_peer_association(name, block): {
       local resource = blockType.resource('aws_networkmanager_transit_gateway_connect_peer_association', name),
-      _: resource._({
+      _: resource._(block, {
         device_id: build.template(block.device_id),
         global_network_id: build.template(block.global_network_id),
         link_id: build.template(std.get(block, 'link_id', null)),
@@ -17262,7 +17267,7 @@ local provider(configuration) = {
     },
     networkmanager_transit_gateway_peering(name, block): {
       local resource = blockType.resource('aws_networkmanager_transit_gateway_peering', name),
-      _: resource._({
+      _: resource._(block, {
         core_network_id: build.template(block.core_network_id),
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_arn: build.template(block.transit_gateway_arn),
@@ -17282,7 +17287,7 @@ local provider(configuration) = {
     },
     networkmanager_transit_gateway_registration(name, block): {
       local resource = blockType.resource('aws_networkmanager_transit_gateway_registration', name),
-      _: resource._({
+      _: resource._(block, {
         global_network_id: build.template(block.global_network_id),
         transit_gateway_arn: build.template(block.transit_gateway_arn),
       }),
@@ -17292,7 +17297,7 @@ local provider(configuration) = {
     },
     networkmanager_transit_gateway_route_table_attachment(name, block): {
       local resource = blockType.resource('aws_networkmanager_transit_gateway_route_table_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         peering_id: build.template(block.peering_id),
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_route_table_arn: build.template(block.transit_gateway_route_table_arn),
@@ -17315,7 +17320,7 @@ local provider(configuration) = {
     },
     networkmanager_vpc_attachment(name, block): {
       local resource = blockType.resource('aws_networkmanager_vpc_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         core_network_id: build.template(block.core_network_id),
         subnet_arns: build.template(block.subnet_arns),
         tags: build.template(std.get(block, 'tags', null)),
@@ -17339,7 +17344,7 @@ local provider(configuration) = {
     },
     networkmonitor_monitor(name, block): {
       local resource = blockType.resource('aws_networkmonitor_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         monitor_name: build.template(block.monitor_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -17352,7 +17357,7 @@ local provider(configuration) = {
     },
     networkmonitor_probe(name, block): {
       local resource = blockType.resource('aws_networkmonitor_probe', name),
-      _: resource._({
+      _: resource._(block, {
         destination: build.template(block.destination),
         destination_port: build.template(std.get(block, 'destination_port', null)),
         monitor_name: build.template(block.monitor_name),
@@ -17376,7 +17381,7 @@ local provider(configuration) = {
     },
     oam_link(name, block): {
       local resource = blockType.resource('aws_oam_link', name),
-      _: resource._({
+      _: resource._(block, {
         label_template: build.template(block.label_template),
         resource_types: build.template(block.resource_types),
         sink_identifier: build.template(block.sink_identifier),
@@ -17395,7 +17400,7 @@ local provider(configuration) = {
     },
     oam_sink(name, block): {
       local resource = blockType.resource('aws_oam_sink', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -17408,7 +17413,7 @@ local provider(configuration) = {
     },
     oam_sink_policy(name, block): {
       local resource = blockType.resource('aws_oam_sink_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         sink_identifier: build.template(block.sink_identifier),
       }),
@@ -17420,7 +17425,7 @@ local provider(configuration) = {
     },
     opensearch_authorize_vpc_endpoint_access(name, block): {
       local resource = blockType.resource('aws_opensearch_authorize_vpc_endpoint_access', name),
-      _: resource._({
+      _: resource._(block, {
         account: build.template(block.account),
         domain_name: build.template(block.domain_name),
       }),
@@ -17430,7 +17435,7 @@ local provider(configuration) = {
     },
     opensearch_domain(name, block): {
       local resource = blockType.resource('aws_opensearch_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -17453,7 +17458,7 @@ local provider(configuration) = {
     },
     opensearch_domain_policy(name, block): {
       local resource = blockType.resource('aws_opensearch_domain_policy', name),
-      _: resource._({
+      _: resource._(block, {
         access_policies: build.template(block.access_policies),
         domain_name: build.template(block.domain_name),
       }),
@@ -17463,7 +17468,7 @@ local provider(configuration) = {
     },
     opensearch_domain_saml_options(name, block): {
       local resource = blockType.resource('aws_opensearch_domain_saml_options', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
       }),
       domain_name: resource.field('domain_name'),
@@ -17471,7 +17476,7 @@ local provider(configuration) = {
     },
     opensearch_inbound_connection_accepter(name, block): {
       local resource = blockType.resource('aws_opensearch_inbound_connection_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
       }),
       connection_id: resource.field('connection_id'),
@@ -17480,7 +17485,7 @@ local provider(configuration) = {
     },
     opensearch_outbound_connection(name, block): {
       local resource = blockType.resource('aws_opensearch_outbound_connection', name),
-      _: resource._({
+      _: resource._(block, {
         accept_connection: build.template(std.get(block, 'accept_connection', null)),
         connection_alias: build.template(block.connection_alias),
       }),
@@ -17492,7 +17497,7 @@ local provider(configuration) = {
     },
     opensearch_package(name, block): {
       local resource = blockType.resource('aws_opensearch_package', name),
-      _: resource._({
+      _: resource._(block, {
         package_description: build.template(std.get(block, 'package_description', null)),
         package_name: build.template(block.package_name),
         package_type: build.template(block.package_type),
@@ -17506,7 +17511,7 @@ local provider(configuration) = {
     },
     opensearch_package_association(name, block): {
       local resource = blockType.resource('aws_opensearch_package_association', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         package_id: build.template(block.package_id),
       }),
@@ -17517,7 +17522,7 @@ local provider(configuration) = {
     },
     opensearch_vpc_endpoint(name, block): {
       local resource = blockType.resource('aws_opensearch_vpc_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         domain_arn: build.template(block.domain_arn),
       }),
       domain_arn: resource.field('domain_arn'),
@@ -17526,7 +17531,7 @@ local provider(configuration) = {
     },
     opensearchserverless_access_policy(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         policy: build.template(block.policy),
@@ -17541,7 +17546,7 @@ local provider(configuration) = {
     },
     opensearchserverless_collection(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_collection', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -17560,7 +17565,7 @@ local provider(configuration) = {
     },
     opensearchserverless_lifecycle_policy(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_lifecycle_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         policy: build.template(block.policy),
@@ -17575,7 +17580,7 @@ local provider(configuration) = {
     },
     opensearchserverless_security_config(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_security_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         type: build.template(block.type),
@@ -17588,7 +17593,7 @@ local provider(configuration) = {
     },
     opensearchserverless_security_policy(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_security_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         policy: build.template(block.policy),
@@ -17603,7 +17608,7 @@ local provider(configuration) = {
     },
     opensearchserverless_vpc_endpoint(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_vpc_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         subnet_ids: build.template(block.subnet_ids),
         vpc_id: build.template(block.vpc_id),
@@ -17616,7 +17621,7 @@ local provider(configuration) = {
     },
     opsworks_application(name, block): {
       local resource = blockType.resource('aws_opsworks_application', name),
-      _: resource._({
+      _: resource._(block, {
         auto_bundle_on_deploy: build.template(std.get(block, 'auto_bundle_on_deploy', null)),
         aws_flow_ruby_settings: build.template(std.get(block, 'aws_flow_ruby_settings', null)),
         data_source_arn: build.template(std.get(block, 'data_source_arn', null)),
@@ -17649,7 +17654,7 @@ local provider(configuration) = {
     },
     opsworks_custom_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_custom_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -17699,7 +17704,7 @@ local provider(configuration) = {
     },
     opsworks_ecs_cluster_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_ecs_cluster_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -17749,7 +17754,7 @@ local provider(configuration) = {
     },
     opsworks_ganglia_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_ganglia_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -17803,7 +17808,7 @@ local provider(configuration) = {
     },
     opsworks_haproxy_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_haproxy_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -17863,7 +17868,7 @@ local provider(configuration) = {
     },
     opsworks_instance(name, block): {
       local resource = blockType.resource('aws_opsworks_instance', name),
-      _: resource._({
+      _: resource._(block, {
         agent_version: build.template(std.get(block, 'agent_version', null)),
         architecture: build.template(std.get(block, 'architecture', null)),
         auto_scaling_type: build.template(std.get(block, 'auto_scaling_type', null)),
@@ -17922,7 +17927,7 @@ local provider(configuration) = {
     },
     opsworks_java_app_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_java_app_layer', name),
-      _: resource._({
+      _: resource._(block, {
         app_server: build.template(std.get(block, 'app_server', null)),
         app_server_version: build.template(std.get(block, 'app_server_version', null)),
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
@@ -17980,7 +17985,7 @@ local provider(configuration) = {
     },
     opsworks_memcached_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_memcached_layer', name),
-      _: resource._({
+      _: resource._(block, {
         allocated_memory: build.template(std.get(block, 'allocated_memory', null)),
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
@@ -18030,7 +18035,7 @@ local provider(configuration) = {
     },
     opsworks_mysql_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_mysql_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -18082,7 +18087,7 @@ local provider(configuration) = {
     },
     opsworks_nodejs_app_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_nodejs_app_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -18132,7 +18137,7 @@ local provider(configuration) = {
     },
     opsworks_permission(name, block): {
       local resource = blockType.resource('aws_opsworks_permission', name),
-      _: resource._({
+      _: resource._(block, {
         stack_id: build.template(block.stack_id),
         user_arn: build.template(block.user_arn),
       }),
@@ -18145,7 +18150,7 @@ local provider(configuration) = {
     },
     opsworks_php_app_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_php_app_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -18193,7 +18198,7 @@ local provider(configuration) = {
     },
     opsworks_rails_app_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_rails_app_layer', name),
-      _: resource._({
+      _: resource._(block, {
         app_server: build.template(std.get(block, 'app_server', null)),
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
@@ -18253,7 +18258,7 @@ local provider(configuration) = {
     },
     opsworks_rds_db_instance(name, block): {
       local resource = blockType.resource('aws_opsworks_rds_db_instance', name),
-      _: resource._({
+      _: resource._(block, {
         db_password: build.template(block.db_password),
         db_user: build.template(block.db_user),
         rds_db_instance_arn: build.template(block.rds_db_instance_arn),
@@ -18267,7 +18272,7 @@ local provider(configuration) = {
     },
     opsworks_stack(name, block): {
       local resource = blockType.resource('aws_opsworks_stack', name),
-      _: resource._({
+      _: resource._(block, {
         berkshelf_version: build.template(std.get(block, 'berkshelf_version', null)),
         color: build.template(std.get(block, 'color', null)),
         configuration_manager_name: build.template(std.get(block, 'configuration_manager_name', null)),
@@ -18314,7 +18319,7 @@ local provider(configuration) = {
     },
     opsworks_static_web_layer(name, block): {
       local resource = blockType.resource('aws_opsworks_static_web_layer', name),
-      _: resource._({
+      _: resource._(block, {
         auto_assign_elastic_ips: build.template(std.get(block, 'auto_assign_elastic_ips', null)),
         auto_assign_public_ips: build.template(std.get(block, 'auto_assign_public_ips', null)),
         auto_healing: build.template(std.get(block, 'auto_healing', null)),
@@ -18362,7 +18367,7 @@ local provider(configuration) = {
     },
     opsworks_user_profile(name, block): {
       local resource = blockType.resource('aws_opsworks_user_profile', name),
-      _: resource._({
+      _: resource._(block, {
         allow_self_management: build.template(std.get(block, 'allow_self_management', null)),
         ssh_public_key: build.template(std.get(block, 'ssh_public_key', null)),
         ssh_username: build.template(block.ssh_username),
@@ -18376,7 +18381,7 @@ local provider(configuration) = {
     },
     organizations_account(name, block): {
       local resource = blockType.resource('aws_organizations_account', name),
-      _: resource._({
+      _: resource._(block, {
         close_on_deletion: build.template(std.get(block, 'close_on_deletion', null)),
         create_govcloud: build.template(std.get(block, 'create_govcloud', null)),
         email: build.template(block.email),
@@ -18403,7 +18408,7 @@ local provider(configuration) = {
     },
     organizations_delegated_administrator(name, block): {
       local resource = blockType.resource('aws_organizations_delegated_administrator', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         service_principal: build.template(block.service_principal),
       }),
@@ -18420,7 +18425,7 @@ local provider(configuration) = {
     },
     organizations_organization(name, block): {
       local resource = blockType.resource('aws_organizations_organization', name),
-      _: resource._({
+      _: resource._(block, {
         aws_service_access_principals: build.template(std.get(block, 'aws_service_access_principals', null)),
         enabled_policy_types: build.template(std.get(block, 'enabled_policy_types', null)),
         feature_set: build.template(std.get(block, 'feature_set', null)),
@@ -18440,7 +18445,7 @@ local provider(configuration) = {
     },
     organizations_organizational_unit(name, block): {
       local resource = blockType.resource('aws_organizations_organizational_unit', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent_id: build.template(block.parent_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -18455,7 +18460,7 @@ local provider(configuration) = {
     },
     organizations_policy(name, block): {
       local resource = blockType.resource('aws_organizations_policy', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -18475,7 +18480,7 @@ local provider(configuration) = {
     },
     organizations_policy_attachment(name, block): {
       local resource = blockType.resource('aws_organizations_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         policy_id: build.template(block.policy_id),
         skip_destroy: build.template(std.get(block, 'skip_destroy', null)),
         target_id: build.template(block.target_id),
@@ -18487,7 +18492,7 @@ local provider(configuration) = {
     },
     organizations_resource_policy(name, block): {
       local resource = blockType.resource('aws_organizations_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -18499,7 +18504,7 @@ local provider(configuration) = {
     },
     osis_pipeline(name, block): {
       local resource = blockType.resource('aws_osis_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         max_units: build.template(block.max_units),
         min_units: build.template(block.min_units),
         pipeline_configuration_body: build.template(block.pipeline_configuration_body),
@@ -18518,7 +18523,7 @@ local provider(configuration) = {
     },
     paymentcryptography_key(name, block): {
       local resource = blockType.resource('aws_paymentcryptography_key', name),
-      _: resource._({
+      _: resource._(block, {
         exportable: build.template(block.exportable),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -18536,7 +18541,7 @@ local provider(configuration) = {
     },
     paymentcryptography_key_alias(name, block): {
       local resource = blockType.resource('aws_paymentcryptography_key_alias', name),
-      _: resource._({
+      _: resource._(block, {
         alias_name: build.template(block.alias_name),
         key_arn: build.template(std.get(block, 'key_arn', null)),
       }),
@@ -18546,7 +18551,7 @@ local provider(configuration) = {
     },
     pinpoint_adm_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_adm_channel', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
@@ -18560,7 +18565,7 @@ local provider(configuration) = {
     },
     pinpoint_apns_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_apns_channel', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         bundle_id: build.template(std.get(block, 'bundle_id', null)),
         certificate: build.template(std.get(block, 'certificate', null)),
@@ -18584,7 +18589,7 @@ local provider(configuration) = {
     },
     pinpoint_apns_sandbox_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_apns_sandbox_channel', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         bundle_id: build.template(std.get(block, 'bundle_id', null)),
         certificate: build.template(std.get(block, 'certificate', null)),
@@ -18608,7 +18613,7 @@ local provider(configuration) = {
     },
     pinpoint_apns_voip_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_apns_voip_channel', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         bundle_id: build.template(std.get(block, 'bundle_id', null)),
         certificate: build.template(std.get(block, 'certificate', null)),
@@ -18632,7 +18637,7 @@ local provider(configuration) = {
     },
     pinpoint_apns_voip_sandbox_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_apns_voip_sandbox_channel', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         bundle_id: build.template(std.get(block, 'bundle_id', null)),
         certificate: build.template(std.get(block, 'certificate', null)),
@@ -18656,7 +18661,7 @@ local provider(configuration) = {
     },
     pinpoint_app(name, block): {
       local resource = blockType.resource('aws_pinpoint_app', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       application_id: resource.field('application_id'),
@@ -18669,7 +18674,7 @@ local provider(configuration) = {
     },
     pinpoint_baidu_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_baidu_channel', name),
-      _: resource._({
+      _: resource._(block, {
         api_key: build.template(block.api_key),
         application_id: build.template(block.application_id),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -18683,7 +18688,7 @@ local provider(configuration) = {
     },
     pinpoint_email_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_email_channel', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         configuration_set: build.template(std.get(block, 'configuration_set', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -18702,7 +18707,7 @@ local provider(configuration) = {
     },
     pinpoint_email_template(name, block): {
       local resource = blockType.resource('aws_pinpoint_email_template', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         template_name: build.template(block.template_name),
       }),
@@ -18713,7 +18718,7 @@ local provider(configuration) = {
     },
     pinpoint_event_stream(name, block): {
       local resource = blockType.resource('aws_pinpoint_event_stream', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         destination_stream_arn: build.template(block.destination_stream_arn),
         role_arn: build.template(block.role_arn),
@@ -18725,7 +18730,7 @@ local provider(configuration) = {
     },
     pinpoint_gcm_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_gcm_channel', name),
-      _: resource._({
+      _: resource._(block, {
         api_key: build.template(std.get(block, 'api_key', null)),
         application_id: build.template(block.application_id),
         default_authentication_method: build.template(std.get(block, 'default_authentication_method', null)),
@@ -18741,7 +18746,7 @@ local provider(configuration) = {
     },
     pinpoint_sms_channel(name, block): {
       local resource = blockType.resource('aws_pinpoint_sms_channel', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         enabled: build.template(std.get(block, 'enabled', null)),
         sender_id: build.template(std.get(block, 'sender_id', null)),
@@ -18757,7 +18762,7 @@ local provider(configuration) = {
     },
     pinpointsmsvoicev2_configuration_set(name, block): {
       local resource = blockType.resource('aws_pinpointsmsvoicev2_configuration_set', name),
-      _: resource._({
+      _: resource._(block, {
         default_message_type: build.template(std.get(block, 'default_message_type', null)),
         default_sender_id: build.template(std.get(block, 'default_sender_id', null)),
         name: build.template(block.name),
@@ -18773,7 +18778,7 @@ local provider(configuration) = {
     },
     pinpointsmsvoicev2_opt_out_list(name, block): {
       local resource = blockType.resource('aws_pinpointsmsvoicev2_opt_out_list', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -18785,7 +18790,7 @@ local provider(configuration) = {
     },
     pinpointsmsvoicev2_phone_number(name, block): {
       local resource = blockType.resource('aws_pinpointsmsvoicev2_phone_number', name),
-      _: resource._({
+      _: resource._(block, {
         iso_country_code: build.template(block.iso_country_code),
         message_type: build.template(block.message_type),
         number_capabilities: build.template(block.number_capabilities),
@@ -18813,7 +18818,7 @@ local provider(configuration) = {
     },
     pipes_pipe(name, block): {
       local resource = blockType.resource('aws_pipes_pipe', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         desired_state: build.template(std.get(block, 'desired_state', null)),
         enrichment: build.template(std.get(block, 'enrichment', null)),
@@ -18837,7 +18842,7 @@ local provider(configuration) = {
     },
     placement_group(name, block): {
       local resource = blockType.resource('aws_placement_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         strategy: build.template(block.strategy),
         tags: build.template(std.get(block, 'tags', null)),
@@ -18854,7 +18859,7 @@ local provider(configuration) = {
     },
     prometheus_alert_manager_definition(name, block): {
       local resource = blockType.resource('aws_prometheus_alert_manager_definition', name),
-      _: resource._({
+      _: resource._(block, {
         definition: build.template(block.definition),
         workspace_id: build.template(block.workspace_id),
       }),
@@ -18864,7 +18869,7 @@ local provider(configuration) = {
     },
     prometheus_rule_group_namespace(name, block): {
       local resource = blockType.resource('aws_prometheus_rule_group_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         data: build.template(block.data),
         name: build.template(block.name),
         workspace_id: build.template(block.workspace_id),
@@ -18876,7 +18881,7 @@ local provider(configuration) = {
     },
     prometheus_scraper(name, block): {
       local resource = blockType.resource('aws_prometheus_scraper', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(std.get(block, 'alias', null)),
         scrape_configuration: build.template(block.scrape_configuration),
         tags: build.template(std.get(block, 'tags', null)),
@@ -18891,7 +18896,7 @@ local provider(configuration) = {
     },
     prometheus_workspace(name, block): {
       local resource = blockType.resource('aws_prometheus_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(std.get(block, 'alias', null)),
         kms_key_arn: build.template(std.get(block, 'kms_key_arn', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -18906,7 +18911,7 @@ local provider(configuration) = {
     },
     proxy_protocol_policy(name, block): {
       local resource = blockType.resource('aws_proxy_protocol_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_ports: build.template(block.instance_ports),
         load_balancer: build.template(block.load_balancer),
       }),
@@ -18916,7 +18921,7 @@ local provider(configuration) = {
     },
     qldb_ledger(name, block): {
       local resource = blockType.resource('aws_qldb_ledger', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         permissions_mode: build.template(block.permissions_mode),
         tags: build.template(std.get(block, 'tags', null)),
@@ -18932,7 +18937,7 @@ local provider(configuration) = {
     },
     qldb_stream(name, block): {
       local resource = blockType.resource('aws_qldb_stream', name),
-      _: resource._({
+      _: resource._(block, {
         exclusive_end_time: build.template(std.get(block, 'exclusive_end_time', null)),
         inclusive_start_time: build.template(block.inclusive_start_time),
         ledger_name: build.template(block.ledger_name),
@@ -18952,7 +18957,7 @@ local provider(configuration) = {
     },
     quicksight_account_subscription(name, block): {
       local resource = blockType.resource('aws_quicksight_account_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         account_name: build.template(block.account_name),
         active_directory_name: build.template(std.get(block, 'active_directory_name', null)),
         admin_group: build.template(std.get(block, 'admin_group', null)),
@@ -18990,7 +18995,7 @@ local provider(configuration) = {
     },
     quicksight_analysis(name, block): {
       local resource = blockType.resource('aws_quicksight_analysis', name),
-      _: resource._({
+      _: resource._(block, {
         analysis_id: build.template(block.analysis_id),
         name: build.template(block.name),
         recovery_window_in_days: build.template(std.get(block, 'recovery_window_in_days', null)),
@@ -19013,7 +19018,7 @@ local provider(configuration) = {
     },
     quicksight_dashboard(name, block): {
       local resource = blockType.resource('aws_quicksight_dashboard', name),
-      _: resource._({
+      _: resource._(block, {
         dashboard_id: build.template(block.dashboard_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -19038,7 +19043,7 @@ local provider(configuration) = {
     },
     quicksight_data_set(name, block): {
       local resource = blockType.resource('aws_quicksight_data_set', name),
-      _: resource._({
+      _: resource._(block, {
         data_set_id: build.template(block.data_set_id),
         import_mode: build.template(block.import_mode),
         name: build.template(block.name),
@@ -19056,7 +19061,7 @@ local provider(configuration) = {
     },
     quicksight_data_source(name, block): {
       local resource = blockType.resource('aws_quicksight_data_source', name),
-      _: resource._({
+      _: resource._(block, {
         data_source_id: build.template(block.data_source_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -19073,7 +19078,7 @@ local provider(configuration) = {
     },
     quicksight_folder(name, block): {
       local resource = blockType.resource('aws_quicksight_folder', name),
-      _: resource._({
+      _: resource._(block, {
         folder_id: build.template(block.folder_id),
         folder_type: build.template(std.get(block, 'folder_type', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -19095,7 +19100,7 @@ local provider(configuration) = {
     },
     quicksight_folder_membership(name, block): {
       local resource = blockType.resource('aws_quicksight_folder_membership', name),
-      _: resource._({
+      _: resource._(block, {
         folder_id: build.template(block.folder_id),
         member_id: build.template(block.member_id),
         member_type: build.template(block.member_type),
@@ -19108,7 +19113,7 @@ local provider(configuration) = {
     },
     quicksight_group(name, block): {
       local resource = blockType.resource('aws_quicksight_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         group_name: build.template(block.group_name),
         namespace: build.template(std.get(block, 'namespace', null)),
@@ -19122,7 +19127,7 @@ local provider(configuration) = {
     },
     quicksight_group_membership(name, block): {
       local resource = blockType.resource('aws_quicksight_group_membership', name),
-      _: resource._({
+      _: resource._(block, {
         group_name: build.template(block.group_name),
         member_name: build.template(block.member_name),
         namespace: build.template(std.get(block, 'namespace', null)),
@@ -19136,7 +19141,7 @@ local provider(configuration) = {
     },
     quicksight_iam_policy_assignment(name, block): {
       local resource = blockType.resource('aws_quicksight_iam_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         assignment_name: build.template(block.assignment_name),
         assignment_status: build.template(block.assignment_status),
         policy_arn: build.template(std.get(block, 'policy_arn', null)),
@@ -19151,7 +19156,7 @@ local provider(configuration) = {
     },
     quicksight_ingestion(name, block): {
       local resource = blockType.resource('aws_quicksight_ingestion', name),
-      _: resource._({
+      _: resource._(block, {
         data_set_id: build.template(block.data_set_id),
         ingestion_id: build.template(block.ingestion_id),
         ingestion_type: build.template(block.ingestion_type),
@@ -19166,7 +19171,7 @@ local provider(configuration) = {
     },
     quicksight_namespace(name, block): {
       local resource = blockType.resource('aws_quicksight_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         namespace: build.template(block.namespace),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -19182,7 +19187,7 @@ local provider(configuration) = {
     },
     quicksight_refresh_schedule(name, block): {
       local resource = blockType.resource('aws_quicksight_refresh_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         data_set_id: build.template(block.data_set_id),
         schedule_id: build.template(block.schedule_id),
       }),
@@ -19194,7 +19199,7 @@ local provider(configuration) = {
     },
     quicksight_template(name, block): {
       local resource = blockType.resource('aws_quicksight_template', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
         template_id: build.template(block.template_id),
@@ -19216,7 +19221,7 @@ local provider(configuration) = {
     },
     quicksight_template_alias(name, block): {
       local resource = blockType.resource('aws_quicksight_template_alias', name),
-      _: resource._({
+      _: resource._(block, {
         alias_name: build.template(block.alias_name),
         template_id: build.template(block.template_id),
         template_version_number: build.template(block.template_version_number),
@@ -19230,7 +19235,7 @@ local provider(configuration) = {
     },
     quicksight_theme(name, block): {
       local resource = blockType.resource('aws_quicksight_theme', name),
-      _: resource._({
+      _: resource._(block, {
         base_theme_id: build.template(block.base_theme_id),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -19253,7 +19258,7 @@ local provider(configuration) = {
     },
     quicksight_user(name, block): {
       local resource = blockType.resource('aws_quicksight_user', name),
-      _: resource._({
+      _: resource._(block, {
         email: build.template(block.email),
         iam_arn: build.template(std.get(block, 'iam_arn', null)),
         identity_type: build.template(block.identity_type),
@@ -19275,7 +19280,7 @@ local provider(configuration) = {
     },
     quicksight_vpc_connection(name, block): {
       local resource = blockType.resource('aws_quicksight_vpc_connection', name),
-      _: resource._({
+      _: resource._(block, {
         dns_resolvers: build.template(std.get(block, 'dns_resolvers', null)),
         name: build.template(block.name),
         role_arn: build.template(block.role_arn),
@@ -19299,7 +19304,7 @@ local provider(configuration) = {
     },
     ram_principal_association(name, block): {
       local resource = blockType.resource('aws_ram_principal_association', name),
-      _: resource._({
+      _: resource._(block, {
         principal: build.template(block.principal),
         resource_share_arn: build.template(block.resource_share_arn),
       }),
@@ -19309,7 +19314,7 @@ local provider(configuration) = {
     },
     ram_resource_association(name, block): {
       local resource = blockType.resource('aws_ram_resource_association', name),
-      _: resource._({
+      _: resource._(block, {
         resource_arn: build.template(block.resource_arn),
         resource_share_arn: build.template(block.resource_share_arn),
       }),
@@ -19319,7 +19324,7 @@ local provider(configuration) = {
     },
     ram_resource_share(name, block): {
       local resource = blockType.resource('aws_ram_resource_share', name),
-      _: resource._({
+      _: resource._(block, {
         allow_external_principals: build.template(std.get(block, 'allow_external_principals', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -19334,7 +19339,7 @@ local provider(configuration) = {
     },
     ram_resource_share_accepter(name, block): {
       local resource = blockType.resource('aws_ram_resource_share_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         share_arn: build.template(block.share_arn),
       }),
       id: resource.field('id'),
@@ -19349,13 +19354,13 @@ local provider(configuration) = {
     },
     ram_sharing_with_organization(name, block): {
       local resource = blockType.resource('aws_ram_sharing_with_organization', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     rbin_rule(name, block): {
       local resource = blockType.resource('aws_rbin_rule', name),
-      _: resource._({
+      _: resource._(block, {
         resource_type: build.template(block.resource_type),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -19371,7 +19376,7 @@ local provider(configuration) = {
     },
     rds_certificate(name, block): {
       local resource = blockType.resource('aws_rds_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_identifier: build.template(block.certificate_identifier),
       }),
       certificate_identifier: resource.field('certificate_identifier'),
@@ -19379,7 +19384,7 @@ local provider(configuration) = {
     },
     rds_cluster(name, block): {
       local resource = blockType.resource('aws_rds_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         allow_major_version_upgrade: build.template(std.get(block, 'allow_major_version_upgrade', null)),
         backtrack_window: build.template(std.get(block, 'backtrack_window', null)),
         copy_tags_to_snapshot: build.template(std.get(block, 'copy_tags_to_snapshot', null)),
@@ -19475,7 +19480,7 @@ local provider(configuration) = {
     },
     rds_cluster_activity_stream(name, block): {
       local resource = blockType.resource('aws_rds_cluster_activity_stream', name),
-      _: resource._({
+      _: resource._(block, {
         engine_native_audit_fields_included: build.template(std.get(block, 'engine_native_audit_fields_included', null)),
         kms_key_id: build.template(block.kms_key_id),
         mode: build.template(block.mode),
@@ -19490,7 +19495,7 @@ local provider(configuration) = {
     },
     rds_cluster_endpoint(name, block): {
       local resource = blockType.resource('aws_rds_cluster_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_endpoint_identifier: build.template(block.cluster_endpoint_identifier),
         cluster_identifier: build.template(block.cluster_identifier),
         custom_endpoint_type: build.template(block.custom_endpoint_type),
@@ -19511,7 +19516,7 @@ local provider(configuration) = {
     },
     rds_cluster_instance(name, block): {
       local resource = blockType.resource('aws_rds_cluster_instance', name),
-      _: resource._({
+      _: resource._(block, {
         auto_minor_version_upgrade: build.template(std.get(block, 'auto_minor_version_upgrade', null)),
         cluster_identifier: build.template(block.cluster_identifier),
         copy_tags_to_snapshot: build.template(std.get(block, 'copy_tags_to_snapshot', null)),
@@ -19560,7 +19565,7 @@ local provider(configuration) = {
     },
     rds_cluster_parameter_group(name, block): {
       local resource = blockType.resource('aws_rds_cluster_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         tags: build.template(std.get(block, 'tags', null)),
@@ -19576,7 +19581,7 @@ local provider(configuration) = {
     },
     rds_cluster_role_association(name, block): {
       local resource = blockType.resource('aws_rds_cluster_role_association', name),
-      _: resource._({
+      _: resource._(block, {
         db_cluster_identifier: build.template(block.db_cluster_identifier),
         feature_name: build.template(block.feature_name),
         role_arn: build.template(block.role_arn),
@@ -19588,7 +19593,7 @@ local provider(configuration) = {
     },
     rds_custom_db_engine_version(name, block): {
       local resource = blockType.resource('aws_rds_custom_db_engine_version', name),
-      _: resource._({
+      _: resource._(block, {
         database_installation_files_s3_bucket_name: build.template(std.get(block, 'database_installation_files_s3_bucket_name', null)),
         database_installation_files_s3_prefix: build.template(std.get(block, 'database_installation_files_s3_prefix', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -19623,7 +19628,7 @@ local provider(configuration) = {
     },
     rds_export_task(name, block): {
       local resource = blockType.resource('aws_rds_export_task', name),
-      _: resource._({
+      _: resource._(block, {
         export_only: build.template(std.get(block, 'export_only', null)),
         export_task_identifier: build.template(block.export_task_identifier),
         iam_role_arn: build.template(block.iam_role_arn),
@@ -19650,7 +19655,7 @@ local provider(configuration) = {
     },
     rds_global_cluster(name, block): {
       local resource = blockType.resource('aws_rds_global_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(std.get(block, 'database_name', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -19673,7 +19678,7 @@ local provider(configuration) = {
     },
     rds_integration(name, block): {
       local resource = blockType.resource('aws_rds_integration', name),
-      _: resource._({
+      _: resource._(block, {
         additional_encryption_context: build.template(std.get(block, 'additional_encryption_context', null)),
         integration_name: build.template(block.integration_name),
         source_arn: build.template(block.source_arn),
@@ -19692,7 +19697,7 @@ local provider(configuration) = {
     },
     rds_reserved_instance(name, block): {
       local resource = blockType.resource('aws_rds_reserved_instance', name),
-      _: resource._({
+      _: resource._(block, {
         instance_count: build.template(std.get(block, 'instance_count', null)),
         offering_id: build.template(block.offering_id),
         reservation_id: build.template(std.get(block, 'reservation_id', null)),
@@ -19720,7 +19725,7 @@ local provider(configuration) = {
     },
     redshift_authentication_profile(name, block): {
       local resource = blockType.resource('aws_redshift_authentication_profile', name),
-      _: resource._({
+      _: resource._(block, {
         authentication_profile_content: build.template(block.authentication_profile_content),
         authentication_profile_name: build.template(block.authentication_profile_name),
       }),
@@ -19730,7 +19735,7 @@ local provider(configuration) = {
     },
     redshift_cluster(name, block): {
       local resource = blockType.resource('aws_redshift_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         allow_version_upgrade: build.template(std.get(block, 'allow_version_upgrade', null)),
         apply_immediately: build.template(std.get(block, 'apply_immediately', null)),
         automated_snapshot_retention_period: build.template(std.get(block, 'automated_snapshot_retention_period', null)),
@@ -19808,7 +19813,7 @@ local provider(configuration) = {
     },
     redshift_cluster_iam_roles(name, block): {
       local resource = blockType.resource('aws_redshift_cluster_iam_roles', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(block.cluster_identifier),
       }),
       cluster_identifier: resource.field('cluster_identifier'),
@@ -19818,7 +19823,7 @@ local provider(configuration) = {
     },
     redshift_cluster_snapshot(name, block): {
       local resource = blockType.resource('aws_redshift_cluster_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(block.cluster_identifier),
         manual_snapshot_retention_period: build.template(std.get(block, 'manual_snapshot_retention_period', null)),
         snapshot_identifier: build.template(block.snapshot_identifier),
@@ -19836,7 +19841,7 @@ local provider(configuration) = {
     },
     redshift_data_share_authorization(name, block): {
       local resource = blockType.resource('aws_redshift_data_share_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         allow_writes: build.template(std.get(block, 'allow_writes', null)),
         consumer_identifier: build.template(block.consumer_identifier),
         data_share_arn: build.template(block.data_share_arn),
@@ -19850,7 +19855,7 @@ local provider(configuration) = {
     },
     redshift_data_share_consumer_association(name, block): {
       local resource = blockType.resource('aws_redshift_data_share_consumer_association', name),
-      _: resource._({
+      _: resource._(block, {
         allow_writes: build.template(std.get(block, 'allow_writes', null)),
         associate_entire_account: build.template(std.get(block, 'associate_entire_account', null)),
         consumer_arn: build.template(std.get(block, 'consumer_arn', null)),
@@ -19868,7 +19873,7 @@ local provider(configuration) = {
     },
     redshift_endpoint_access(name, block): {
       local resource = blockType.resource('aws_redshift_endpoint_access', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(block.cluster_identifier),
         endpoint_name: build.template(block.endpoint_name),
         subnet_group_name: build.template(block.subnet_group_name),
@@ -19885,7 +19890,7 @@ local provider(configuration) = {
     },
     redshift_endpoint_authorization(name, block): {
       local resource = blockType.resource('aws_redshift_endpoint_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         account: build.template(block.account),
         cluster_identifier: build.template(block.cluster_identifier),
         force_delete: build.template(std.get(block, 'force_delete', null)),
@@ -19903,7 +19908,7 @@ local provider(configuration) = {
     },
     redshift_event_subscription(name, block): {
       local resource = blockType.resource('aws_redshift_event_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         event_categories: build.template(std.get(block, 'event_categories', null)),
         name: build.template(block.name),
@@ -19929,7 +19934,7 @@ local provider(configuration) = {
     },
     redshift_hsm_client_certificate(name, block): {
       local resource = blockType.resource('aws_redshift_hsm_client_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         hsm_client_certificate_identifier: build.template(block.hsm_client_certificate_identifier),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -19942,7 +19947,7 @@ local provider(configuration) = {
     },
     redshift_hsm_configuration(name, block): {
       local resource = blockType.resource('aws_redshift_hsm_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         hsm_configuration_identifier: build.template(block.hsm_configuration_identifier),
         hsm_ip_address: build.template(block.hsm_ip_address),
@@ -19964,7 +19969,7 @@ local provider(configuration) = {
     },
     redshift_logging(name, block): {
       local resource = blockType.resource('aws_redshift_logging', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_name: build.template(std.get(block, 'bucket_name', null)),
         cluster_identifier: build.template(block.cluster_identifier),
         log_destination_type: build.template(std.get(block, 'log_destination_type', null)),
@@ -19980,7 +19985,7 @@ local provider(configuration) = {
     },
     redshift_parameter_group(name, block): {
       local resource = blockType.resource('aws_redshift_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(block.family),
         name: build.template(block.name),
@@ -19996,7 +20001,7 @@ local provider(configuration) = {
     },
     redshift_partner(name, block): {
       local resource = blockType.resource('aws_redshift_partner', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         cluster_identifier: build.template(block.cluster_identifier),
         database_name: build.template(block.database_name),
@@ -20012,7 +20017,7 @@ local provider(configuration) = {
     },
     redshift_resource_policy(name, block): {
       local resource = blockType.resource('aws_redshift_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -20022,7 +20027,7 @@ local provider(configuration) = {
     },
     redshift_scheduled_action(name, block): {
       local resource = blockType.resource('aws_redshift_scheduled_action', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enable: build.template(std.get(block, 'enable', null)),
         end_time: build.template(std.get(block, 'end_time', null)),
@@ -20042,7 +20047,7 @@ local provider(configuration) = {
     },
     redshift_snapshot_copy(name, block): {
       local resource = blockType.resource('aws_redshift_snapshot_copy', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(block.cluster_identifier),
         destination_region: build.template(block.destination_region),
         snapshot_copy_grant_name: build.template(std.get(block, 'snapshot_copy_grant_name', null)),
@@ -20056,7 +20061,7 @@ local provider(configuration) = {
     },
     redshift_snapshot_copy_grant(name, block): {
       local resource = blockType.resource('aws_redshift_snapshot_copy_grant', name),
-      _: resource._({
+      _: resource._(block, {
         snapshot_copy_grant_name: build.template(block.snapshot_copy_grant_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -20069,7 +20074,7 @@ local provider(configuration) = {
     },
     redshift_snapshot_schedule(name, block): {
       local resource = blockType.resource('aws_redshift_snapshot_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         definitions: build.template(block.definitions),
         description: build.template(std.get(block, 'description', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -20087,7 +20092,7 @@ local provider(configuration) = {
     },
     redshift_snapshot_schedule_association(name, block): {
       local resource = blockType.resource('aws_redshift_snapshot_schedule_association', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(block.cluster_identifier),
         schedule_identifier: build.template(block.schedule_identifier),
       }),
@@ -20097,7 +20102,7 @@ local provider(configuration) = {
     },
     redshift_subnet_group(name, block): {
       local resource = blockType.resource('aws_redshift_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         subnet_ids: build.template(block.subnet_ids),
@@ -20113,7 +20118,7 @@ local provider(configuration) = {
     },
     redshift_usage_limit(name, block): {
       local resource = blockType.resource('aws_redshift_usage_limit', name),
-      _: resource._({
+      _: resource._(block, {
         amount: build.template(block.amount),
         breach_action: build.template(std.get(block, 'breach_action', null)),
         cluster_identifier: build.template(block.cluster_identifier),
@@ -20135,7 +20140,7 @@ local provider(configuration) = {
     },
     redshiftdata_statement(name, block): {
       local resource = blockType.resource('aws_redshiftdata_statement', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(std.get(block, 'cluster_identifier', null)),
         database: build.template(block.database),
         db_user: build.template(std.get(block, 'db_user', null)),
@@ -20157,7 +20162,7 @@ local provider(configuration) = {
     },
     redshiftserverless_custom_domain_association(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_custom_domain_association', name),
-      _: resource._({
+      _: resource._(block, {
         custom_domain_certificate_arn: build.template(block.custom_domain_certificate_arn),
         custom_domain_name: build.template(block.custom_domain_name),
         workgroup_name: build.template(block.workgroup_name),
@@ -20170,7 +20175,7 @@ local provider(configuration) = {
     },
     redshiftserverless_endpoint_access(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_endpoint_access', name),
-      _: resource._({
+      _: resource._(block, {
         endpoint_name: build.template(block.endpoint_name),
         owner_account: build.template(std.get(block, 'owner_account', null)),
         subnet_ids: build.template(block.subnet_ids),
@@ -20189,7 +20194,7 @@ local provider(configuration) = {
     },
     redshiftserverless_namespace(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         admin_user_password: build.template(std.get(block, 'admin_user_password', null)),
         default_iam_role_arn: build.template(std.get(block, 'default_iam_role_arn', null)),
         log_exports: build.template(std.get(block, 'log_exports', null)),
@@ -20216,7 +20221,7 @@ local provider(configuration) = {
     },
     redshiftserverless_resource_policy(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -20226,7 +20231,7 @@ local provider(configuration) = {
     },
     redshiftserverless_snapshot(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         namespace_name: build.template(block.namespace_name),
         retention_period: build.template(std.get(block, 'retention_period', null)),
         snapshot_name: build.template(block.snapshot_name),
@@ -20245,7 +20250,7 @@ local provider(configuration) = {
     },
     redshiftserverless_usage_limit(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_usage_limit', name),
-      _: resource._({
+      _: resource._(block, {
         amount: build.template(block.amount),
         breach_action: build.template(std.get(block, 'breach_action', null)),
         period: build.template(std.get(block, 'period', null)),
@@ -20262,7 +20267,7 @@ local provider(configuration) = {
     },
     redshiftserverless_workgroup(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_workgroup', name),
-      _: resource._({
+      _: resource._(block, {
         enhanced_vpc_routing: build.template(std.get(block, 'enhanced_vpc_routing', null)),
         max_capacity: build.template(std.get(block, 'max_capacity', null)),
         namespace_name: build.template(block.namespace_name),
@@ -20288,7 +20293,7 @@ local provider(configuration) = {
     },
     rekognition_collection(name, block): {
       local resource = blockType.resource('aws_rekognition_collection', name),
-      _: resource._({
+      _: resource._(block, {
         collection_id: build.template(block.collection_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -20301,7 +20306,7 @@ local provider(configuration) = {
     },
     rekognition_project(name, block): {
       local resource = blockType.resource('aws_rekognition_project', name),
-      _: resource._({
+      _: resource._(block, {
         feature: build.template(std.get(block, 'feature', null)),
         name: build.template(block.name),
       }),
@@ -20313,7 +20318,7 @@ local provider(configuration) = {
     },
     rekognition_stream_processor(name, block): {
       local resource = blockType.resource('aws_rekognition_stream_processor', name),
-      _: resource._({
+      _: resource._(block, {
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
         name: build.template(block.name),
         role_arn: build.template(block.role_arn),
@@ -20328,7 +20333,7 @@ local provider(configuration) = {
     },
     resiliencehub_resiliency_policy(name, block): {
       local resource = blockType.resource('aws_resiliencehub_resiliency_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -20345,7 +20350,7 @@ local provider(configuration) = {
     },
     resourceexplorer2_index(name, block): {
       local resource = blockType.resource('aws_resourceexplorer2_index', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         type: build.template(block.type),
       }),
@@ -20357,7 +20362,7 @@ local provider(configuration) = {
     },
     resourceexplorer2_view(name, block): {
       local resource = blockType.resource('aws_resourceexplorer2_view', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -20371,7 +20376,7 @@ local provider(configuration) = {
     },
     resourcegroups_group(name, block): {
       local resource = blockType.resource('aws_resourcegroups_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -20385,7 +20390,7 @@ local provider(configuration) = {
     },
     resourcegroups_resource(name, block): {
       local resource = blockType.resource('aws_resourcegroups_resource', name),
-      _: resource._({
+      _: resource._(block, {
         group_arn: build.template(block.group_arn),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -20396,7 +20401,7 @@ local provider(configuration) = {
     },
     rolesanywhere_profile(name, block): {
       local resource = blockType.resource('aws_rolesanywhere_profile', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(std.get(block, 'enabled', null)),
         managed_policy_arns: build.template(std.get(block, 'managed_policy_arns', null)),
         name: build.template(block.name),
@@ -20419,7 +20424,7 @@ local provider(configuration) = {
     },
     rolesanywhere_trust_anchor(name, block): {
       local resource = blockType.resource('aws_rolesanywhere_trust_anchor', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -20432,7 +20437,7 @@ local provider(configuration) = {
     },
     route(name, block): {
       local resource = blockType.resource('aws_route', name),
-      _: resource._({
+      _: resource._(block, {
         carrier_gateway_id: build.template(std.get(block, 'carrier_gateway_id', null)),
         core_network_arn: build.template(std.get(block, 'core_network_arn', null)),
         destination_cidr_block: build.template(std.get(block, 'destination_cidr_block', null)),
@@ -20469,7 +20474,7 @@ local provider(configuration) = {
     },
     route53_cidr_collection(name, block): {
       local resource = blockType.resource('aws_route53_cidr_collection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -20479,7 +20484,7 @@ local provider(configuration) = {
     },
     route53_cidr_location(name, block): {
       local resource = blockType.resource('aws_route53_cidr_location', name),
-      _: resource._({
+      _: resource._(block, {
         cidr_blocks: build.template(block.cidr_blocks),
         cidr_collection_id: build.template(block.cidr_collection_id),
         name: build.template(block.name),
@@ -20491,7 +20496,7 @@ local provider(configuration) = {
     },
     route53_delegation_set(name, block): {
       local resource = blockType.resource('aws_route53_delegation_set', name),
-      _: resource._({
+      _: resource._(block, {
         reference_name: build.template(std.get(block, 'reference_name', null)),
       }),
       arn: resource.field('arn'),
@@ -20501,7 +20506,7 @@ local provider(configuration) = {
     },
     route53_health_check(name, block): {
       local resource = blockType.resource('aws_route53_health_check', name),
-      _: resource._({
+      _: resource._(block, {
         child_health_threshold: build.template(std.get(block, 'child_health_threshold', null)),
         child_healthchecks: build.template(std.get(block, 'child_healthchecks', null)),
         cloudwatch_alarm_name: build.template(std.get(block, 'cloudwatch_alarm_name', null)),
@@ -20549,7 +20554,7 @@ local provider(configuration) = {
     },
     route53_hosted_zone_dnssec(name, block): {
       local resource = blockType.resource('aws_route53_hosted_zone_dnssec', name),
-      _: resource._({
+      _: resource._(block, {
         hosted_zone_id: build.template(block.hosted_zone_id),
         signing_status: build.template(std.get(block, 'signing_status', null)),
       }),
@@ -20559,7 +20564,7 @@ local provider(configuration) = {
     },
     route53_key_signing_key(name, block): {
       local resource = blockType.resource('aws_route53_key_signing_key', name),
-      _: resource._({
+      _: resource._(block, {
         hosted_zone_id: build.template(block.hosted_zone_id),
         key_management_service_arn: build.template(block.key_management_service_arn),
         name: build.template(block.name),
@@ -20583,7 +20588,7 @@ local provider(configuration) = {
     },
     route53_query_log(name, block): {
       local resource = blockType.resource('aws_route53_query_log', name),
-      _: resource._({
+      _: resource._(block, {
         cloudwatch_log_group_arn: build.template(block.cloudwatch_log_group_arn),
         zone_id: build.template(block.zone_id),
       }),
@@ -20594,7 +20599,7 @@ local provider(configuration) = {
     },
     route53_record(name, block): {
       local resource = blockType.resource('aws_route53_record', name),
-      _: resource._({
+      _: resource._(block, {
         health_check_id: build.template(std.get(block, 'health_check_id', null)),
         multivalue_answer_routing_policy: build.template(std.get(block, 'multivalue_answer_routing_policy', null)),
         name: build.template(block.name),
@@ -20618,7 +20623,7 @@ local provider(configuration) = {
     },
     route53_resolver_config(name, block): {
       local resource = blockType.resource('aws_route53_resolver_config', name),
-      _: resource._({
+      _: resource._(block, {
         autodefined_reverse_flag: build.template(block.autodefined_reverse_flag),
         resource_id: build.template(block.resource_id),
       }),
@@ -20629,7 +20634,7 @@ local provider(configuration) = {
     },
     route53_resolver_dnssec_config(name, block): {
       local resource = blockType.resource('aws_route53_resolver_dnssec_config', name),
-      _: resource._({
+      _: resource._(block, {
         resource_id: build.template(block.resource_id),
       }),
       arn: resource.field('arn'),
@@ -20640,7 +20645,7 @@ local provider(configuration) = {
     },
     route53_resolver_endpoint(name, block): {
       local resource = blockType.resource('aws_route53_resolver_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         direction: build.template(block.direction),
         name: build.template(std.get(block, 'name', null)),
         security_group_ids: build.template(block.security_group_ids),
@@ -20659,7 +20664,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_config(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_config', name),
-      _: resource._({
+      _: resource._(block, {
         resource_id: build.template(block.resource_id),
       }),
       firewall_fail_open: resource.field('firewall_fail_open'),
@@ -20669,7 +20674,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_domain_list(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_domain_list', name),
-      _: resource._({
+      _: resource._(block, {
         domains: build.template(std.get(block, 'domains', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -20683,7 +20688,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_rule(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         block_override_dns_type: build.template(std.get(block, 'block_override_dns_type', null)),
         block_override_domain: build.template(std.get(block, 'block_override_domain', null)),
@@ -20711,7 +20716,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_rule_group(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -20725,7 +20730,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_rule_group_association(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_rule_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         firewall_rule_group_id: build.template(block.firewall_rule_group_id),
         name: build.template(block.name),
         priority: build.template(block.priority),
@@ -20744,7 +20749,7 @@ local provider(configuration) = {
     },
     route53_resolver_query_log_config(name, block): {
       local resource = blockType.resource('aws_route53_resolver_query_log_config', name),
-      _: resource._({
+      _: resource._(block, {
         destination_arn: build.template(block.destination_arn),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -20760,7 +20765,7 @@ local provider(configuration) = {
     },
     route53_resolver_query_log_config_association(name, block): {
       local resource = blockType.resource('aws_route53_resolver_query_log_config_association', name),
-      _: resource._({
+      _: resource._(block, {
         resolver_query_log_config_id: build.template(block.resolver_query_log_config_id),
         resource_id: build.template(block.resource_id),
       }),
@@ -20770,7 +20775,7 @@ local provider(configuration) = {
     },
     route53_resolver_rule(name, block): {
       local resource = blockType.resource('aws_route53_resolver_rule', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         name: build.template(std.get(block, 'name', null)),
         resolver_endpoint_id: build.template(std.get(block, 'resolver_endpoint_id', null)),
@@ -20790,7 +20795,7 @@ local provider(configuration) = {
     },
     route53_resolver_rule_association(name, block): {
       local resource = blockType.resource('aws_route53_resolver_rule_association', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resolver_rule_id: build.template(block.resolver_rule_id),
         vpc_id: build.template(block.vpc_id),
@@ -20802,7 +20807,7 @@ local provider(configuration) = {
     },
     route53_traffic_policy(name, block): {
       local resource = blockType.resource('aws_route53_traffic_policy', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         document: build.template(block.document),
         name: build.template(block.name),
@@ -20816,7 +20821,7 @@ local provider(configuration) = {
     },
     route53_traffic_policy_instance(name, block): {
       local resource = blockType.resource('aws_route53_traffic_policy_instance', name),
-      _: resource._({
+      _: resource._(block, {
         hosted_zone_id: build.template(block.hosted_zone_id),
         name: build.template(block.name),
         traffic_policy_id: build.template(block.traffic_policy_id),
@@ -20832,7 +20837,7 @@ local provider(configuration) = {
     },
     route53_vpc_association_authorization(name, block): {
       local resource = blockType.resource('aws_route53_vpc_association_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_id: build.template(block.vpc_id),
         zone_id: build.template(block.zone_id),
       }),
@@ -20843,7 +20848,7 @@ local provider(configuration) = {
     },
     route53_zone(name, block): {
       local resource = blockType.resource('aws_route53_zone', name),
-      _: resource._({
+      _: resource._(block, {
         comment: build.template(std.get(block, 'comment', null)),
         delegation_set_id: build.template(std.get(block, 'delegation_set_id', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -20864,7 +20869,7 @@ local provider(configuration) = {
     },
     route53_zone_association(name, block): {
       local resource = blockType.resource('aws_route53_zone_association', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_id: build.template(block.vpc_id),
         zone_id: build.template(block.zone_id),
       }),
@@ -20876,7 +20881,7 @@ local provider(configuration) = {
     },
     route53domains_delegation_signer_record(name, block): {
       local resource = blockType.resource('aws_route53domains_delegation_signer_record', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
       }),
       dnssec_key_id: resource.field('dnssec_key_id'),
@@ -20885,7 +20890,7 @@ local provider(configuration) = {
     },
     route53domains_registered_domain(name, block): {
       local resource = blockType.resource('aws_route53domains_registered_domain', name),
-      _: resource._({
+      _: resource._(block, {
         admin_privacy: build.template(std.get(block, 'admin_privacy', null)),
         auto_renew: build.template(std.get(block, 'auto_renew', null)),
         billing_privacy: build.template(std.get(block, 'billing_privacy', null)),
@@ -20918,7 +20923,7 @@ local provider(configuration) = {
     },
     route53profiles_association(name, block): {
       local resource = blockType.resource('aws_route53profiles_association', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         profile_id: build.template(block.profile_id),
         resource_id: build.template(block.resource_id),
@@ -20937,7 +20942,7 @@ local provider(configuration) = {
     },
     route53profiles_profile(name, block): {
       local resource = blockType.resource('aws_route53profiles_profile', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -20953,7 +20958,7 @@ local provider(configuration) = {
     },
     route53profiles_resource_association(name, block): {
       local resource = blockType.resource('aws_route53profiles_resource_association', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         profile_id: build.template(block.profile_id),
         resource_arn: build.template(block.resource_arn),
@@ -20971,7 +20976,7 @@ local provider(configuration) = {
     },
     route53recoverycontrolconfig_cluster(name, block): {
       local resource = blockType.resource('aws_route53recoverycontrolconfig_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -20982,7 +20987,7 @@ local provider(configuration) = {
     },
     route53recoverycontrolconfig_control_panel(name, block): {
       local resource = blockType.resource('aws_route53recoverycontrolconfig_control_panel', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_arn: build.template(block.cluster_arn),
         name: build.template(block.name),
       }),
@@ -20996,7 +21001,7 @@ local provider(configuration) = {
     },
     route53recoverycontrolconfig_routing_control(name, block): {
       local resource = blockType.resource('aws_route53recoverycontrolconfig_routing_control', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_arn: build.template(block.cluster_arn),
         name: build.template(block.name),
       }),
@@ -21009,7 +21014,7 @@ local provider(configuration) = {
     },
     route53recoverycontrolconfig_safety_rule(name, block): {
       local resource = blockType.resource('aws_route53recoverycontrolconfig_safety_rule', name),
-      _: resource._({
+      _: resource._(block, {
         asserted_controls: build.template(std.get(block, 'asserted_controls', null)),
         control_panel_arn: build.template(block.control_panel_arn),
         gating_controls: build.template(std.get(block, 'gating_controls', null)),
@@ -21029,7 +21034,7 @@ local provider(configuration) = {
     },
     route53recoveryreadiness_cell(name, block): {
       local resource = blockType.resource('aws_route53recoveryreadiness_cell', name),
-      _: resource._({
+      _: resource._(block, {
         cell_name: build.template(block.cell_name),
         cells: build.template(std.get(block, 'cells', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -21044,7 +21049,7 @@ local provider(configuration) = {
     },
     route53recoveryreadiness_readiness_check(name, block): {
       local resource = blockType.resource('aws_route53recoveryreadiness_readiness_check', name),
-      _: resource._({
+      _: resource._(block, {
         readiness_check_name: build.template(block.readiness_check_name),
         resource_set_name: build.template(block.resource_set_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -21058,7 +21063,7 @@ local provider(configuration) = {
     },
     route53recoveryreadiness_recovery_group(name, block): {
       local resource = blockType.resource('aws_route53recoveryreadiness_recovery_group', name),
-      _: resource._({
+      _: resource._(block, {
         cells: build.template(std.get(block, 'cells', null)),
         recovery_group_name: build.template(block.recovery_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -21072,7 +21077,7 @@ local provider(configuration) = {
     },
     route53recoveryreadiness_resource_set(name, block): {
       local resource = blockType.resource('aws_route53recoveryreadiness_resource_set', name),
-      _: resource._({
+      _: resource._(block, {
         resource_set_name: build.template(block.resource_set_name),
         resource_set_type: build.template(block.resource_set_type),
         tags: build.template(std.get(block, 'tags', null)),
@@ -21086,7 +21091,7 @@ local provider(configuration) = {
     },
     route_table(name, block): {
       local resource = blockType.resource('aws_route_table', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -21101,7 +21106,7 @@ local provider(configuration) = {
     },
     route_table_association(name, block): {
       local resource = blockType.resource('aws_route_table_association', name),
-      _: resource._({
+      _: resource._(block, {
         gateway_id: build.template(std.get(block, 'gateway_id', null)),
         route_table_id: build.template(block.route_table_id),
         subnet_id: build.template(std.get(block, 'subnet_id', null)),
@@ -21113,7 +21118,7 @@ local provider(configuration) = {
     },
     rum_app_monitor(name, block): {
       local resource = blockType.resource('aws_rum_app_monitor', name),
-      _: resource._({
+      _: resource._(block, {
         cw_log_enabled: build.template(std.get(block, 'cw_log_enabled', null)),
         domain: build.template(block.domain),
         name: build.template(block.name),
@@ -21131,7 +21136,7 @@ local provider(configuration) = {
     },
     rum_metrics_destination(name, block): {
       local resource = blockType.resource('aws_rum_metrics_destination', name),
-      _: resource._({
+      _: resource._(block, {
         app_monitor_name: build.template(block.app_monitor_name),
         destination: build.template(block.destination),
         destination_arn: build.template(std.get(block, 'destination_arn', null)),
@@ -21145,7 +21150,7 @@ local provider(configuration) = {
     },
     s3_access_point(name, block): {
       local resource = blockType.resource('aws_s3_access_point', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         name: build.template(block.name),
       }),
@@ -21164,7 +21169,7 @@ local provider(configuration) = {
     },
     s3_account_public_access_block(name, block): {
       local resource = blockType.resource('aws_s3_account_public_access_block', name),
-      _: resource._({
+      _: resource._(block, {
         block_public_acls: build.template(std.get(block, 'block_public_acls', null)),
         block_public_policy: build.template(std.get(block, 'block_public_policy', null)),
         ignore_public_acls: build.template(std.get(block, 'ignore_public_acls', null)),
@@ -21179,7 +21184,7 @@ local provider(configuration) = {
     },
     s3_bucket(name, block): {
       local resource = blockType.resource('aws_s3_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21204,7 +21209,7 @@ local provider(configuration) = {
     },
     s3_bucket_accelerate_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_accelerate_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
         status: build.template(block.status),
@@ -21216,7 +21221,7 @@ local provider(configuration) = {
     },
     s3_bucket_acl(name, block): {
       local resource = blockType.resource('aws_s3_bucket_acl', name),
-      _: resource._({
+      _: resource._(block, {
         acl: build.template(std.get(block, 'acl', null)),
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
@@ -21228,7 +21233,7 @@ local provider(configuration) = {
     },
     s3_bucket_analytics_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_analytics_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         name: build.template(block.name),
       }),
@@ -21238,7 +21243,7 @@ local provider(configuration) = {
     },
     s3_bucket_cors_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_cors_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
       }),
@@ -21248,7 +21253,7 @@ local provider(configuration) = {
     },
     s3_bucket_intelligent_tiering_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_intelligent_tiering_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         name: build.template(block.name),
         status: build.template(std.get(block, 'status', null)),
@@ -21260,7 +21265,7 @@ local provider(configuration) = {
     },
     s3_bucket_inventory(name, block): {
       local resource = blockType.resource('aws_s3_bucket_inventory', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         enabled: build.template(std.get(block, 'enabled', null)),
         included_object_versions: build.template(block.included_object_versions),
@@ -21276,7 +21281,7 @@ local provider(configuration) = {
     },
     s3_bucket_lifecycle_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_lifecycle_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
       }),
@@ -21287,7 +21292,7 @@ local provider(configuration) = {
     },
     s3_bucket_logging(name, block): {
       local resource = blockType.resource('aws_s3_bucket_logging', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
         target_bucket: build.template(block.target_bucket),
@@ -21301,7 +21306,7 @@ local provider(configuration) = {
     },
     s3_bucket_metric(name, block): {
       local resource = blockType.resource('aws_s3_bucket_metric', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         name: build.template(block.name),
       }),
@@ -21311,7 +21316,7 @@ local provider(configuration) = {
     },
     s3_bucket_notification(name, block): {
       local resource = blockType.resource('aws_s3_bucket_notification', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         eventbridge: build.template(std.get(block, 'eventbridge', null)),
       }),
@@ -21321,7 +21326,7 @@ local provider(configuration) = {
     },
     s3_bucket_object(name, block): {
       local resource = blockType.resource('aws_s3_bucket_object', name),
-      _: resource._({
+      _: resource._(block, {
         acl: build.template(std.get(block, 'acl', null)),
         bucket: build.template(block.bucket),
         cache_control: build.template(std.get(block, 'cache_control', null)),
@@ -21372,7 +21377,7 @@ local provider(configuration) = {
     },
     s3_bucket_object_lock_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_object_lock_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
         object_lock_enabled: build.template(std.get(block, 'object_lock_enabled', null)),
@@ -21386,7 +21391,7 @@ local provider(configuration) = {
     },
     s3_bucket_ownership_controls(name, block): {
       local resource = blockType.resource('aws_s3_bucket_ownership_controls', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
       }),
       bucket: resource.field('bucket'),
@@ -21394,7 +21399,7 @@ local provider(configuration) = {
     },
     s3_bucket_policy(name, block): {
       local resource = blockType.resource('aws_s3_bucket_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         policy: build.template(block.policy),
       }),
@@ -21404,7 +21409,7 @@ local provider(configuration) = {
     },
     s3_bucket_public_access_block(name, block): {
       local resource = blockType.resource('aws_s3_bucket_public_access_block', name),
-      _: resource._({
+      _: resource._(block, {
         block_public_acls: build.template(std.get(block, 'block_public_acls', null)),
         block_public_policy: build.template(std.get(block, 'block_public_policy', null)),
         bucket: build.template(block.bucket),
@@ -21420,7 +21425,7 @@ local provider(configuration) = {
     },
     s3_bucket_replication_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_replication_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         role: build.template(block.role),
         token: build.template(std.get(block, 'token', null)),
@@ -21432,7 +21437,7 @@ local provider(configuration) = {
     },
     s3_bucket_request_payment_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_request_payment_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
         payer: build.template(block.payer),
@@ -21444,7 +21449,7 @@ local provider(configuration) = {
     },
     s3_bucket_server_side_encryption_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_server_side_encryption_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
       }),
@@ -21454,7 +21459,7 @@ local provider(configuration) = {
     },
     s3_bucket_versioning(name, block): {
       local resource = blockType.resource('aws_s3_bucket_versioning', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
         mfa: build.template(std.get(block, 'mfa', null)),
@@ -21466,7 +21471,7 @@ local provider(configuration) = {
     },
     s3_bucket_website_configuration(name, block): {
       local resource = blockType.resource('aws_s3_bucket_website_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         expected_bucket_owner: build.template(std.get(block, 'expected_bucket_owner', null)),
       }),
@@ -21479,7 +21484,7 @@ local provider(configuration) = {
     },
     s3_directory_bucket(name, block): {
       local resource = blockType.resource('aws_s3_directory_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
       }),
       arn: resource.field('arn'),
@@ -21491,7 +21496,7 @@ local provider(configuration) = {
     },
     s3_object(name, block): {
       local resource = blockType.resource('aws_s3_object', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         cache_control: build.template(std.get(block, 'cache_control', null)),
         checksum_algorithm: build.template(std.get(block, 'checksum_algorithm', null)),
@@ -21547,7 +21552,7 @@ local provider(configuration) = {
     },
     s3_object_copy(name, block): {
       local resource = blockType.resource('aws_s3_object_copy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         checksum_algorithm: build.template(std.get(block, 'checksum_algorithm', null)),
         copy_if_match: build.template(std.get(block, 'copy_if_match', null)),
@@ -21623,7 +21628,7 @@ local provider(configuration) = {
     },
     s3control_access_grant(name, block): {
       local resource = blockType.resource('aws_s3control_access_grant', name),
-      _: resource._({
+      _: resource._(block, {
         access_grants_location_id: build.template(block.access_grants_location_id),
         permission: build.template(block.permission),
         s3_prefix_type: build.template(std.get(block, 's3_prefix_type', null)),
@@ -21642,7 +21647,7 @@ local provider(configuration) = {
     },
     s3control_access_grants_instance(name, block): {
       local resource = blockType.resource('aws_s3control_access_grants_instance', name),
-      _: resource._({
+      _: resource._(block, {
         identity_center_arn: build.template(std.get(block, 'identity_center_arn', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21657,7 +21662,7 @@ local provider(configuration) = {
     },
     s3control_access_grants_instance_resource_policy(name, block): {
       local resource = blockType.resource('aws_s3control_access_grants_instance_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
       }),
       account_id: resource.field('account_id'),
@@ -21666,7 +21671,7 @@ local provider(configuration) = {
     },
     s3control_access_grants_location(name, block): {
       local resource = blockType.resource('aws_s3control_access_grants_location', name),
-      _: resource._({
+      _: resource._(block, {
         iam_role_arn: build.template(block.iam_role_arn),
         location_scope: build.template(block.location_scope),
         tags: build.template(std.get(block, 'tags', null)),
@@ -21682,7 +21687,7 @@ local provider(configuration) = {
     },
     s3control_access_point_policy(name, block): {
       local resource = blockType.resource('aws_s3control_access_point_policy', name),
-      _: resource._({
+      _: resource._(block, {
         access_point_arn: build.template(block.access_point_arn),
         policy: build.template(block.policy),
       }),
@@ -21693,7 +21698,7 @@ local provider(configuration) = {
     },
     s3control_bucket(name, block): {
       local resource = blockType.resource('aws_s3control_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         outpost_id: build.template(block.outpost_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -21709,7 +21714,7 @@ local provider(configuration) = {
     },
     s3control_bucket_lifecycle_configuration(name, block): {
       local resource = blockType.resource('aws_s3control_bucket_lifecycle_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
       }),
       bucket: resource.field('bucket'),
@@ -21717,7 +21722,7 @@ local provider(configuration) = {
     },
     s3control_bucket_policy(name, block): {
       local resource = blockType.resource('aws_s3control_bucket_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         policy: build.template(block.policy),
       }),
@@ -21727,7 +21732,7 @@ local provider(configuration) = {
     },
     s3control_multi_region_access_point(name, block): {
       local resource = blockType.resource('aws_s3control_multi_region_access_point', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       account_id: resource.field('account_id'),
       alias: resource.field('alias'),
@@ -21738,7 +21743,7 @@ local provider(configuration) = {
     },
     s3control_multi_region_access_point_policy(name, block): {
       local resource = blockType.resource('aws_s3control_multi_region_access_point_policy', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       account_id: resource.field('account_id'),
       established: resource.field('established'),
@@ -21747,7 +21752,7 @@ local provider(configuration) = {
     },
     s3control_object_lambda_access_point(name, block): {
       local resource = blockType.resource('aws_s3control_object_lambda_access_point', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       account_id: resource.field('account_id'),
@@ -21758,7 +21763,7 @@ local provider(configuration) = {
     },
     s3control_object_lambda_access_point_policy(name, block): {
       local resource = blockType.resource('aws_s3control_object_lambda_access_point_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy: build.template(block.policy),
       }),
@@ -21770,7 +21775,7 @@ local provider(configuration) = {
     },
     s3control_storage_lens_configuration(name, block): {
       local resource = blockType.resource('aws_s3control_storage_lens_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         config_id: build.template(block.config_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21783,7 +21788,7 @@ local provider(configuration) = {
     },
     s3outposts_endpoint(name, block): {
       local resource = blockType.resource('aws_s3outposts_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         customer_owned_ipv4_pool: build.template(std.get(block, 'customer_owned_ipv4_pool', null)),
         outpost_id: build.template(block.outpost_id),
         security_group_id: build.template(block.security_group_id),
@@ -21802,7 +21807,7 @@ local provider(configuration) = {
     },
     sagemaker_app(name, block): {
       local resource = blockType.resource('aws_sagemaker_app', name),
-      _: resource._({
+      _: resource._(block, {
         app_name: build.template(block.app_name),
         app_type: build.template(block.app_type),
         domain_id: build.template(block.domain_id),
@@ -21822,7 +21827,7 @@ local provider(configuration) = {
     },
     sagemaker_app_image_config(name, block): {
       local resource = blockType.resource('aws_sagemaker_app_image_config', name),
-      _: resource._({
+      _: resource._(block, {
         app_image_config_name: build.template(block.app_image_config_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21834,7 +21839,7 @@ local provider(configuration) = {
     },
     sagemaker_code_repository(name, block): {
       local resource = blockType.resource('aws_sagemaker_code_repository', name),
-      _: resource._({
+      _: resource._(block, {
         code_repository_name: build.template(block.code_repository_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21846,7 +21851,7 @@ local provider(configuration) = {
     },
     sagemaker_data_quality_job_definition(name, block): {
       local resource = blockType.resource('aws_sagemaker_data_quality_job_definition', name),
-      _: resource._({
+      _: resource._(block, {
         role_arn: build.template(block.role_arn),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21859,7 +21864,7 @@ local provider(configuration) = {
     },
     sagemaker_device(name, block): {
       local resource = blockType.resource('aws_sagemaker_device', name),
-      _: resource._({
+      _: resource._(block, {
         device_fleet_name: build.template(block.device_fleet_name),
       }),
       agent_version: resource.field('agent_version'),
@@ -21869,7 +21874,7 @@ local provider(configuration) = {
     },
     sagemaker_device_fleet(name, block): {
       local resource = blockType.resource('aws_sagemaker_device_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         device_fleet_name: build.template(block.device_fleet_name),
         enable_iot_role_alias: build.template(std.get(block, 'enable_iot_role_alias', null)),
@@ -21888,7 +21893,7 @@ local provider(configuration) = {
     },
     sagemaker_domain(name, block): {
       local resource = blockType.resource('aws_sagemaker_domain', name),
-      _: resource._({
+      _: resource._(block, {
         app_network_access_type: build.template(std.get(block, 'app_network_access_type', null)),
         app_security_group_management: build.template(std.get(block, 'app_security_group_management', null)),
         auth_mode: build.template(block.auth_mode),
@@ -21919,7 +21924,7 @@ local provider(configuration) = {
     },
     sagemaker_endpoint(name, block): {
       local resource = blockType.resource('aws_sagemaker_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         endpoint_config_name: build.template(block.endpoint_config_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21932,7 +21937,7 @@ local provider(configuration) = {
     },
     sagemaker_endpoint_configuration(name, block): {
       local resource = blockType.resource('aws_sagemaker_endpoint_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         kms_key_arn: build.template(std.get(block, 'kms_key_arn', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -21946,7 +21951,7 @@ local provider(configuration) = {
     },
     sagemaker_feature_group(name, block): {
       local resource = blockType.resource('aws_sagemaker_feature_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         event_time_feature_name: build.template(block.event_time_feature_name),
         feature_group_name: build.template(block.feature_group_name),
@@ -21966,7 +21971,7 @@ local provider(configuration) = {
     },
     sagemaker_flow_definition(name, block): {
       local resource = blockType.resource('aws_sagemaker_flow_definition', name),
-      _: resource._({
+      _: resource._(block, {
         flow_definition_name: build.template(block.flow_definition_name),
         role_arn: build.template(block.role_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -21980,7 +21985,7 @@ local provider(configuration) = {
     },
     sagemaker_hub(name, block): {
       local resource = blockType.resource('aws_sagemaker_hub', name),
-      _: resource._({
+      _: resource._(block, {
         hub_description: build.template(block.hub_description),
         hub_display_name: build.template(std.get(block, 'hub_display_name', null)),
         hub_name: build.template(block.hub_name),
@@ -21998,7 +22003,7 @@ local provider(configuration) = {
     },
     sagemaker_human_task_ui(name, block): {
       local resource = blockType.resource('aws_sagemaker_human_task_ui', name),
-      _: resource._({
+      _: resource._(block, {
         human_task_ui_name: build.template(block.human_task_ui_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -22010,7 +22015,7 @@ local provider(configuration) = {
     },
     sagemaker_image(name, block): {
       local resource = blockType.resource('aws_sagemaker_image', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         image_name: build.template(block.image_name),
@@ -22028,7 +22033,7 @@ local provider(configuration) = {
     },
     sagemaker_image_version(name, block): {
       local resource = blockType.resource('aws_sagemaker_image_version', name),
-      _: resource._({
+      _: resource._(block, {
         base_image: build.template(block.base_image),
         image_name: build.template(block.image_name),
       }),
@@ -22042,7 +22047,7 @@ local provider(configuration) = {
     },
     sagemaker_mlflow_tracking_server(name, block): {
       local resource = blockType.resource('aws_sagemaker_mlflow_tracking_server', name),
-      _: resource._({
+      _: resource._(block, {
         artifact_store_uri: build.template(block.artifact_store_uri),
         automatic_model_registration: build.template(std.get(block, 'automatic_model_registration', null)),
         role_arn: build.template(block.role_arn),
@@ -22065,7 +22070,7 @@ local provider(configuration) = {
     },
     sagemaker_model(name, block): {
       local resource = blockType.resource('aws_sagemaker_model', name),
-      _: resource._({
+      _: resource._(block, {
         enable_network_isolation: build.template(std.get(block, 'enable_network_isolation', null)),
         execution_role_arn: build.template(block.execution_role_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22080,7 +22085,7 @@ local provider(configuration) = {
     },
     sagemaker_model_package_group(name, block): {
       local resource = blockType.resource('aws_sagemaker_model_package_group', name),
-      _: resource._({
+      _: resource._(block, {
         model_package_group_description: build.template(std.get(block, 'model_package_group_description', null)),
         model_package_group_name: build.template(block.model_package_group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22094,7 +22099,7 @@ local provider(configuration) = {
     },
     sagemaker_model_package_group_policy(name, block): {
       local resource = blockType.resource('aws_sagemaker_model_package_group_policy', name),
-      _: resource._({
+      _: resource._(block, {
         model_package_group_name: build.template(block.model_package_group_name),
         resource_policy: build.template(block.resource_policy),
       }),
@@ -22104,7 +22109,7 @@ local provider(configuration) = {
     },
     sagemaker_monitoring_schedule(name, block): {
       local resource = blockType.resource('aws_sagemaker_monitoring_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -22115,7 +22120,7 @@ local provider(configuration) = {
     },
     sagemaker_notebook_instance(name, block): {
       local resource = blockType.resource('aws_sagemaker_notebook_instance', name),
-      _: resource._({
+      _: resource._(block, {
         accelerator_types: build.template(std.get(block, 'accelerator_types', null)),
         additional_code_repositories: build.template(std.get(block, 'additional_code_repositories', null)),
         default_code_repository: build.template(std.get(block, 'default_code_repository', null)),
@@ -22153,7 +22158,7 @@ local provider(configuration) = {
     },
     sagemaker_notebook_instance_lifecycle_configuration(name, block): {
       local resource = blockType.resource('aws_sagemaker_notebook_instance_lifecycle_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         on_create: build.template(std.get(block, 'on_create', null)),
         on_start: build.template(std.get(block, 'on_start', null)),
@@ -22166,7 +22171,7 @@ local provider(configuration) = {
     },
     sagemaker_pipeline(name, block): {
       local resource = blockType.resource('aws_sagemaker_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         pipeline_definition: build.template(std.get(block, 'pipeline_definition', null)),
         pipeline_description: build.template(std.get(block, 'pipeline_description', null)),
         pipeline_display_name: build.template(block.pipeline_display_name),
@@ -22186,7 +22191,7 @@ local provider(configuration) = {
     },
     sagemaker_project(name, block): {
       local resource = blockType.resource('aws_sagemaker_project', name),
-      _: resource._({
+      _: resource._(block, {
         project_description: build.template(std.get(block, 'project_description', null)),
         project_name: build.template(block.project_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22201,7 +22206,7 @@ local provider(configuration) = {
     },
     sagemaker_servicecatalog_portfolio_status(name, block): {
       local resource = blockType.resource('aws_sagemaker_servicecatalog_portfolio_status', name),
-      _: resource._({
+      _: resource._(block, {
         status: build.template(block.status),
       }),
       id: resource.field('id'),
@@ -22209,7 +22214,7 @@ local provider(configuration) = {
     },
     sagemaker_space(name, block): {
       local resource = blockType.resource('aws_sagemaker_space', name),
-      _: resource._({
+      _: resource._(block, {
         domain_id: build.template(block.domain_id),
         space_display_name: build.template(std.get(block, 'space_display_name', null)),
         space_name: build.template(block.space_name),
@@ -22227,7 +22232,7 @@ local provider(configuration) = {
     },
     sagemaker_studio_lifecycle_config(name, block): {
       local resource = blockType.resource('aws_sagemaker_studio_lifecycle_config', name),
-      _: resource._({
+      _: resource._(block, {
         studio_lifecycle_config_app_type: build.template(block.studio_lifecycle_config_app_type),
         studio_lifecycle_config_content: build.template(block.studio_lifecycle_config_content),
         studio_lifecycle_config_name: build.template(block.studio_lifecycle_config_name),
@@ -22243,7 +22248,7 @@ local provider(configuration) = {
     },
     sagemaker_user_profile(name, block): {
       local resource = blockType.resource('aws_sagemaker_user_profile', name),
-      _: resource._({
+      _: resource._(block, {
         domain_id: build.template(block.domain_id),
         single_sign_on_user_identifier: build.template(std.get(block, 'single_sign_on_user_identifier', null)),
         single_sign_on_user_value: build.template(std.get(block, 'single_sign_on_user_value', null)),
@@ -22262,7 +22267,7 @@ local provider(configuration) = {
     },
     sagemaker_workforce(name, block): {
       local resource = blockType.resource('aws_sagemaker_workforce', name),
-      _: resource._({
+      _: resource._(block, {
         workforce_name: build.template(block.workforce_name),
       }),
       arn: resource.field('arn'),
@@ -22272,7 +22277,7 @@ local provider(configuration) = {
     },
     sagemaker_workteam(name, block): {
       local resource = blockType.resource('aws_sagemaker_workteam', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         tags: build.template(std.get(block, 'tags', null)),
         workforce_name: build.template(std.get(block, 'workforce_name', null)),
@@ -22289,7 +22294,7 @@ local provider(configuration) = {
     },
     scheduler_schedule(name, block): {
       local resource = blockType.resource('aws_scheduler_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         end_date: build.template(std.get(block, 'end_date', null)),
         kms_key_arn: build.template(std.get(block, 'kms_key_arn', null)),
@@ -22313,7 +22318,7 @@ local provider(configuration) = {
     },
     scheduler_schedule_group(name, block): {
       local resource = blockType.resource('aws_scheduler_schedule_group', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -22328,7 +22333,7 @@ local provider(configuration) = {
     },
     schemas_discoverer(name, block): {
       local resource = blockType.resource('aws_schemas_discoverer', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         source_arn: build.template(block.source_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22342,7 +22347,7 @@ local provider(configuration) = {
     },
     schemas_registry(name, block): {
       local resource = blockType.resource('aws_schemas_registry', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22356,7 +22361,7 @@ local provider(configuration) = {
     },
     schemas_registry_policy(name, block): {
       local resource = blockType.resource('aws_schemas_registry_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         registry_name: build.template(block.registry_name),
       }),
@@ -22366,7 +22371,7 @@ local provider(configuration) = {
     },
     schemas_schema(name, block): {
       local resource = blockType.resource('aws_schemas_schema', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -22389,7 +22394,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         force_overwrite_replica_secret: build.template(std.get(block, 'force_overwrite_replica_secret', null)),
         kms_key_id: build.template(std.get(block, 'kms_key_id', null)),
@@ -22410,7 +22415,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret_policy(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret_policy', name),
-      _: resource._({
+      _: resource._(block, {
         block_public_policy: build.template(std.get(block, 'block_public_policy', null)),
         policy: build.template(block.policy),
         secret_arn: build.template(block.secret_arn),
@@ -22422,7 +22427,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret_rotation(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret_rotation', name),
-      _: resource._({
+      _: resource._(block, {
         rotate_immediately: build.template(std.get(block, 'rotate_immediately', null)),
         rotation_lambda_arn: build.template(std.get(block, 'rotation_lambda_arn', null)),
         secret_id: build.template(block.secret_id),
@@ -22435,7 +22440,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret_version(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret_version', name),
-      _: resource._({
+      _: resource._(block, {
         secret_binary: build.template(std.get(block, 'secret_binary', null)),
         secret_id: build.template(block.secret_id),
         secret_string: build.template(std.get(block, 'secret_string', null)),
@@ -22450,7 +22455,7 @@ local provider(configuration) = {
     },
     security_group(name, block): {
       local resource = blockType.resource('aws_security_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         revoke_rules_on_delete: build.template(std.get(block, 'revoke_rules_on_delete', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22470,7 +22475,7 @@ local provider(configuration) = {
     },
     security_group_rule(name, block): {
       local resource = blockType.resource('aws_security_group_rule', name),
-      _: resource._({
+      _: resource._(block, {
         cidr_blocks: build.template(std.get(block, 'cidr_blocks', null)),
         description: build.template(std.get(block, 'description', null)),
         from_port: build.template(block.from_port),
@@ -22498,7 +22503,7 @@ local provider(configuration) = {
     },
     securityhub_account(name, block): {
       local resource = blockType.resource('aws_securityhub_account', name),
-      _: resource._({
+      _: resource._(block, {
         auto_enable_controls: build.template(std.get(block, 'auto_enable_controls', null)),
         enable_default_standards: build.template(std.get(block, 'enable_default_standards', null)),
       }),
@@ -22510,7 +22515,7 @@ local provider(configuration) = {
     },
     securityhub_action_target(name, block): {
       local resource = blockType.resource('aws_securityhub_action_target', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         identifier: build.template(block.identifier),
         name: build.template(block.name),
@@ -22523,7 +22528,7 @@ local provider(configuration) = {
     },
     securityhub_automation_rule(name, block): {
       local resource = blockType.resource('aws_securityhub_automation_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         rule_name: build.template(block.rule_name),
         rule_order: build.template(block.rule_order),
@@ -22541,7 +22546,7 @@ local provider(configuration) = {
     },
     securityhub_configuration_policy(name, block): {
       local resource = blockType.resource('aws_securityhub_configuration_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -22552,7 +22557,7 @@ local provider(configuration) = {
     },
     securityhub_configuration_policy_association(name, block): {
       local resource = blockType.resource('aws_securityhub_configuration_policy_association', name),
-      _: resource._({
+      _: resource._(block, {
         policy_id: build.template(block.policy_id),
         target_id: build.template(block.target_id),
       }),
@@ -22562,7 +22567,7 @@ local provider(configuration) = {
     },
     securityhub_finding_aggregator(name, block): {
       local resource = blockType.resource('aws_securityhub_finding_aggregator', name),
-      _: resource._({
+      _: resource._(block, {
         linking_mode: build.template(block.linking_mode),
         specified_regions: build.template(std.get(block, 'specified_regions', null)),
       }),
@@ -22572,7 +22577,7 @@ local provider(configuration) = {
     },
     securityhub_insight(name, block): {
       local resource = blockType.resource('aws_securityhub_insight', name),
-      _: resource._({
+      _: resource._(block, {
         group_by_attribute: build.template(block.group_by_attribute),
         name: build.template(block.name),
       }),
@@ -22583,7 +22588,7 @@ local provider(configuration) = {
     },
     securityhub_invite_accepter(name, block): {
       local resource = blockType.resource('aws_securityhub_invite_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         master_id: build.template(block.master_id),
       }),
       id: resource.field('id'),
@@ -22592,7 +22597,7 @@ local provider(configuration) = {
     },
     securityhub_member(name, block): {
       local resource = blockType.resource('aws_securityhub_member', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         email: build.template(std.get(block, 'email', null)),
         invite: build.template(std.get(block, 'invite', null)),
@@ -22606,7 +22611,7 @@ local provider(configuration) = {
     },
     securityhub_organization_admin_account(name, block): {
       local resource = blockType.resource('aws_securityhub_organization_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
         admin_account_id: build.template(block.admin_account_id),
       }),
       admin_account_id: resource.field('admin_account_id'),
@@ -22614,7 +22619,7 @@ local provider(configuration) = {
     },
     securityhub_organization_configuration(name, block): {
       local resource = blockType.resource('aws_securityhub_organization_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         auto_enable: build.template(block.auto_enable),
       }),
       auto_enable: resource.field('auto_enable'),
@@ -22623,7 +22628,7 @@ local provider(configuration) = {
     },
     securityhub_product_subscription(name, block): {
       local resource = blockType.resource('aws_securityhub_product_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         product_arn: build.template(block.product_arn),
       }),
       arn: resource.field('arn'),
@@ -22632,7 +22637,7 @@ local provider(configuration) = {
     },
     securityhub_standards_control(name, block): {
       local resource = blockType.resource('aws_securityhub_standards_control', name),
-      _: resource._({
+      _: resource._(block, {
         control_status: build.template(block.control_status),
         standards_control_arn: build.template(block.standards_control_arn),
       }),
@@ -22650,7 +22655,7 @@ local provider(configuration) = {
     },
     securityhub_standards_control_association(name, block): {
       local resource = blockType.resource('aws_securityhub_standards_control_association', name),
-      _: resource._({
+      _: resource._(block, {
         association_status: build.template(block.association_status),
         security_control_id: build.template(block.security_control_id),
         standards_arn: build.template(block.standards_arn),
@@ -22664,7 +22669,7 @@ local provider(configuration) = {
     },
     securityhub_standards_subscription(name, block): {
       local resource = blockType.resource('aws_securityhub_standards_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         standards_arn: build.template(block.standards_arn),
       }),
       id: resource.field('id'),
@@ -22672,13 +22677,13 @@ local provider(configuration) = {
     },
     securitylake_aws_log_source(name, block): {
       local resource = blockType.resource('aws_securitylake_aws_log_source', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     securitylake_custom_log_source(name, block): {
       local resource = blockType.resource('aws_securitylake_custom_log_source', name),
-      _: resource._({
+      _: resource._(block, {
         event_classes: build.template(std.get(block, 'event_classes', null)),
         source_name: build.template(block.source_name),
       }),
@@ -22691,7 +22696,7 @@ local provider(configuration) = {
     },
     securitylake_data_lake(name, block): {
       local resource = blockType.resource('aws_securitylake_data_lake', name),
-      _: resource._({
+      _: resource._(block, {
         meta_store_manager_role_arn: build.template(block.meta_store_manager_role_arn),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -22704,7 +22709,7 @@ local provider(configuration) = {
     },
     securitylake_subscriber(name, block): {
       local resource = blockType.resource('aws_securitylake_subscriber', name),
-      _: resource._({
+      _: resource._(block, {
         subscriber_description: build.template(std.get(block, 'subscriber_description', null)),
         subscriber_name: build.template(std.get(block, 'subscriber_name', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22725,7 +22730,7 @@ local provider(configuration) = {
     },
     securitylake_subscriber_notification(name, block): {
       local resource = blockType.resource('aws_securitylake_subscriber_notification', name),
-      _: resource._({
+      _: resource._(block, {
         subscriber_id: build.template(block.subscriber_id),
       }),
       endpoint_id: resource.field('endpoint_id'),
@@ -22735,7 +22740,7 @@ local provider(configuration) = {
     },
     serverlessapplicationrepository_cloudformation_stack(name, block): {
       local resource = blockType.resource('aws_serverlessapplicationrepository_cloudformation_stack', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         capabilities: build.template(block.capabilities),
         name: build.template(block.name),
@@ -22753,7 +22758,7 @@ local provider(configuration) = {
     },
     service_discovery_http_namespace(name, block): {
       local resource = blockType.resource('aws_service_discovery_http_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22768,7 +22773,7 @@ local provider(configuration) = {
     },
     service_discovery_instance(name, block): {
       local resource = blockType.resource('aws_service_discovery_instance', name),
-      _: resource._({
+      _: resource._(block, {
         attributes: build.template(block.attributes),
         instance_id: build.template(block.instance_id),
         service_id: build.template(block.service_id),
@@ -22780,7 +22785,7 @@ local provider(configuration) = {
     },
     service_discovery_private_dns_namespace(name, block): {
       local resource = blockType.resource('aws_service_discovery_private_dns_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22797,7 +22802,7 @@ local provider(configuration) = {
     },
     service_discovery_public_dns_namespace(name, block): {
       local resource = blockType.resource('aws_service_discovery_public_dns_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22812,7 +22817,7 @@ local provider(configuration) = {
     },
     service_discovery_service(name, block): {
       local resource = blockType.resource('aws_service_discovery_service', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         name: build.template(block.name),
@@ -22830,7 +22835,7 @@ local provider(configuration) = {
     },
     servicecatalog_budget_resource_association(name, block): {
       local resource = blockType.resource('aws_servicecatalog_budget_resource_association', name),
-      _: resource._({
+      _: resource._(block, {
         budget_name: build.template(block.budget_name),
         resource_id: build.template(block.resource_id),
       }),
@@ -22840,7 +22845,7 @@ local provider(configuration) = {
     },
     servicecatalog_constraint(name, block): {
       local resource = blockType.resource('aws_servicecatalog_constraint', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         parameters: build.template(block.parameters),
         portfolio_id: build.template(block.portfolio_id),
@@ -22859,7 +22864,7 @@ local provider(configuration) = {
     },
     servicecatalog_organizations_access(name, block): {
       local resource = blockType.resource('aws_servicecatalog_organizations_access', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
       }),
       enabled: resource.field('enabled'),
@@ -22867,7 +22872,7 @@ local provider(configuration) = {
     },
     servicecatalog_portfolio(name, block): {
       local resource = blockType.resource('aws_servicecatalog_portfolio', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         provider_name: build.template(block.provider_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -22883,7 +22888,7 @@ local provider(configuration) = {
     },
     servicecatalog_portfolio_share(name, block): {
       local resource = blockType.resource('aws_servicecatalog_portfolio_share', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         portfolio_id: build.template(block.portfolio_id),
         principal_id: build.template(block.principal_id),
@@ -22904,7 +22909,7 @@ local provider(configuration) = {
     },
     servicecatalog_principal_portfolio_association(name, block): {
       local resource = blockType.resource('aws_servicecatalog_principal_portfolio_association', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         portfolio_id: build.template(block.portfolio_id),
         principal_arn: build.template(block.principal_arn),
@@ -22918,7 +22923,7 @@ local provider(configuration) = {
     },
     servicecatalog_product(name, block): {
       local resource = blockType.resource('aws_servicecatalog_product', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         name: build.template(block.name),
         owner: build.template(block.owner),
@@ -22944,7 +22949,7 @@ local provider(configuration) = {
     },
     servicecatalog_product_portfolio_association(name, block): {
       local resource = blockType.resource('aws_servicecatalog_product_portfolio_association', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         portfolio_id: build.template(block.portfolio_id),
         product_id: build.template(block.product_id),
@@ -22958,7 +22963,7 @@ local provider(configuration) = {
     },
     servicecatalog_provisioned_product(name, block): {
       local resource = blockType.resource('aws_servicecatalog_provisioned_product', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         ignore_errors: build.template(std.get(block, 'ignore_errors', null)),
         name: build.template(block.name),
@@ -22997,7 +23002,7 @@ local provider(configuration) = {
     },
     servicecatalog_provisioning_artifact(name, block): {
       local resource = blockType.resource('aws_servicecatalog_provisioning_artifact', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         active: build.template(std.get(block, 'active', null)),
         disable_template_validation: build.template(std.get(block, 'disable_template_validation', null)),
@@ -23023,7 +23028,7 @@ local provider(configuration) = {
     },
     servicecatalog_service_action(name, block): {
       local resource = blockType.resource('aws_servicecatalog_service_action', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         name: build.template(block.name),
       }),
@@ -23034,7 +23039,7 @@ local provider(configuration) = {
     },
     servicecatalog_tag_option(name, block): {
       local resource = blockType.resource('aws_servicecatalog_tag_option', name),
-      _: resource._({
+      _: resource._(block, {
         active: build.template(std.get(block, 'active', null)),
         key: build.template(block.key),
         value: build.template(block.value),
@@ -23047,7 +23052,7 @@ local provider(configuration) = {
     },
     servicecatalog_tag_option_resource_association(name, block): {
       local resource = blockType.resource('aws_servicecatalog_tag_option_resource_association', name),
-      _: resource._({
+      _: resource._(block, {
         resource_id: build.template(block.resource_id),
         tag_option_id: build.template(block.tag_option_id),
       }),
@@ -23061,7 +23066,7 @@ local provider(configuration) = {
     },
     servicecatalogappregistry_application(name, block): {
       local resource = blockType.resource('aws_servicecatalogappregistry_application', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -23073,7 +23078,7 @@ local provider(configuration) = {
     },
     servicequotas_service_quota(name, block): {
       local resource = blockType.resource('aws_servicequotas_service_quota', name),
-      _: resource._({
+      _: resource._(block, {
         quota_code: build.template(block.quota_code),
         service_code: build.template(block.service_code),
         value: build.template(block.value),
@@ -23093,7 +23098,7 @@ local provider(configuration) = {
     },
     servicequotas_template(name, block): {
       local resource = blockType.resource('aws_servicequotas_template', name),
-      _: resource._({
+      _: resource._(block, {
         quota_code: build.template(block.quota_code),
         region: build.template(block.region),
         service_code: build.template(block.service_code),
@@ -23111,7 +23116,7 @@ local provider(configuration) = {
     },
     servicequotas_template_association(name, block): {
       local resource = blockType.resource('aws_servicequotas_template_association', name),
-      _: resource._({
+      _: resource._(block, {
         skip_destroy: build.template(std.get(block, 'skip_destroy', null)),
       }),
       id: resource.field('id'),
@@ -23120,7 +23125,7 @@ local provider(configuration) = {
     },
     ses_active_receipt_rule_set(name, block): {
       local resource = blockType.resource('aws_ses_active_receipt_rule_set', name),
-      _: resource._({
+      _: resource._(block, {
         rule_set_name: build.template(block.rule_set_name),
       }),
       arn: resource.field('arn'),
@@ -23129,7 +23134,7 @@ local provider(configuration) = {
     },
     ses_configuration_set(name, block): {
       local resource = blockType.resource('aws_ses_configuration_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         reputation_metrics_enabled: build.template(std.get(block, 'reputation_metrics_enabled', null)),
         sending_enabled: build.template(std.get(block, 'sending_enabled', null)),
@@ -23143,7 +23148,7 @@ local provider(configuration) = {
     },
     ses_domain_dkim(name, block): {
       local resource = blockType.resource('aws_ses_domain_dkim', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
       }),
       dkim_tokens: resource.field('dkim_tokens'),
@@ -23152,7 +23157,7 @@ local provider(configuration) = {
     },
     ses_domain_identity(name, block): {
       local resource = blockType.resource('aws_ses_domain_identity', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
       }),
       arn: resource.field('arn'),
@@ -23162,7 +23167,7 @@ local provider(configuration) = {
     },
     ses_domain_identity_verification(name, block): {
       local resource = blockType.resource('aws_ses_domain_identity_verification', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
       }),
       arn: resource.field('arn'),
@@ -23171,7 +23176,7 @@ local provider(configuration) = {
     },
     ses_domain_mail_from(name, block): {
       local resource = blockType.resource('aws_ses_domain_mail_from', name),
-      _: resource._({
+      _: resource._(block, {
         behavior_on_mx_failure: build.template(std.get(block, 'behavior_on_mx_failure', null)),
         domain: build.template(block.domain),
         mail_from_domain: build.template(block.mail_from_domain),
@@ -23183,7 +23188,7 @@ local provider(configuration) = {
     },
     ses_email_identity(name, block): {
       local resource = blockType.resource('aws_ses_email_identity', name),
-      _: resource._({
+      _: resource._(block, {
         email: build.template(block.email),
       }),
       arn: resource.field('arn'),
@@ -23192,7 +23197,7 @@ local provider(configuration) = {
     },
     ses_event_destination(name, block): {
       local resource = blockType.resource('aws_ses_event_destination', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_set_name: build.template(block.configuration_set_name),
         enabled: build.template(std.get(block, 'enabled', null)),
         matching_types: build.template(block.matching_types),
@@ -23207,7 +23212,7 @@ local provider(configuration) = {
     },
     ses_identity_notification_topic(name, block): {
       local resource = blockType.resource('aws_ses_identity_notification_topic', name),
-      _: resource._({
+      _: resource._(block, {
         identity: build.template(block.identity),
         include_original_headers: build.template(std.get(block, 'include_original_headers', null)),
         notification_type: build.template(block.notification_type),
@@ -23221,7 +23226,7 @@ local provider(configuration) = {
     },
     ses_identity_policy(name, block): {
       local resource = blockType.resource('aws_ses_identity_policy', name),
-      _: resource._({
+      _: resource._(block, {
         identity: build.template(block.identity),
         name: build.template(block.name),
         policy: build.template(block.policy),
@@ -23233,7 +23238,7 @@ local provider(configuration) = {
     },
     ses_receipt_filter(name, block): {
       local resource = blockType.resource('aws_ses_receipt_filter', name),
-      _: resource._({
+      _: resource._(block, {
         cidr: build.template(block.cidr),
         name: build.template(block.name),
         policy: build.template(block.policy),
@@ -23246,7 +23251,7 @@ local provider(configuration) = {
     },
     ses_receipt_rule(name, block): {
       local resource = blockType.resource('aws_ses_receipt_rule', name),
-      _: resource._({
+      _: resource._(block, {
         after: build.template(std.get(block, 'after', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -23266,7 +23271,7 @@ local provider(configuration) = {
     },
     ses_receipt_rule_set(name, block): {
       local resource = blockType.resource('aws_ses_receipt_rule_set', name),
-      _: resource._({
+      _: resource._(block, {
         rule_set_name: build.template(block.rule_set_name),
       }),
       arn: resource.field('arn'),
@@ -23275,7 +23280,7 @@ local provider(configuration) = {
     },
     ses_template(name, block): {
       local resource = blockType.resource('aws_ses_template', name),
-      _: resource._({
+      _: resource._(block, {
         html: build.template(std.get(block, 'html', null)),
         name: build.template(block.name),
         subject: build.template(std.get(block, 'subject', null)),
@@ -23290,7 +23295,7 @@ local provider(configuration) = {
     },
     sesv2_account_suppression_attributes(name, block): {
       local resource = blockType.resource('aws_sesv2_account_suppression_attributes', name),
-      _: resource._({
+      _: resource._(block, {
         suppressed_reasons: build.template(block.suppressed_reasons),
       }),
       id: resource.field('id'),
@@ -23298,7 +23303,7 @@ local provider(configuration) = {
     },
     sesv2_account_vdm_attributes(name, block): {
       local resource = blockType.resource('aws_sesv2_account_vdm_attributes', name),
-      _: resource._({
+      _: resource._(block, {
         vdm_enabled: build.template(block.vdm_enabled),
       }),
       id: resource.field('id'),
@@ -23306,7 +23311,7 @@ local provider(configuration) = {
     },
     sesv2_configuration_set(name, block): {
       local resource = blockType.resource('aws_sesv2_configuration_set', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_set_name: build.template(block.configuration_set_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -23318,7 +23323,7 @@ local provider(configuration) = {
     },
     sesv2_configuration_set_event_destination(name, block): {
       local resource = blockType.resource('aws_sesv2_configuration_set_event_destination', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_set_name: build.template(block.configuration_set_name),
         event_destination_name: build.template(block.event_destination_name),
       }),
@@ -23328,7 +23333,7 @@ local provider(configuration) = {
     },
     sesv2_contact_list(name, block): {
       local resource = blockType.resource('aws_sesv2_contact_list', name),
-      _: resource._({
+      _: resource._(block, {
         contact_list_name: build.template(block.contact_list_name),
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -23344,7 +23349,7 @@ local provider(configuration) = {
     },
     sesv2_dedicated_ip_assignment(name, block): {
       local resource = blockType.resource('aws_sesv2_dedicated_ip_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         destination_pool_name: build.template(block.destination_pool_name),
         ip: build.template(block.ip),
       }),
@@ -23354,7 +23359,7 @@ local provider(configuration) = {
     },
     sesv2_dedicated_ip_pool(name, block): {
       local resource = blockType.resource('aws_sesv2_dedicated_ip_pool', name),
-      _: resource._({
+      _: resource._(block, {
         pool_name: build.template(block.pool_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -23367,7 +23372,7 @@ local provider(configuration) = {
     },
     sesv2_email_identity(name, block): {
       local resource = blockType.resource('aws_sesv2_email_identity', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_set_name: build.template(std.get(block, 'configuration_set_name', null)),
         email_identity: build.template(block.email_identity),
         tags: build.template(std.get(block, 'tags', null)),
@@ -23383,7 +23388,7 @@ local provider(configuration) = {
     },
     sesv2_email_identity_feedback_attributes(name, block): {
       local resource = blockType.resource('aws_sesv2_email_identity_feedback_attributes', name),
-      _: resource._({
+      _: resource._(block, {
         email_forwarding_enabled: build.template(std.get(block, 'email_forwarding_enabled', null)),
         email_identity: build.template(block.email_identity),
       }),
@@ -23393,7 +23398,7 @@ local provider(configuration) = {
     },
     sesv2_email_identity_mail_from_attributes(name, block): {
       local resource = blockType.resource('aws_sesv2_email_identity_mail_from_attributes', name),
-      _: resource._({
+      _: resource._(block, {
         behavior_on_mx_failure: build.template(std.get(block, 'behavior_on_mx_failure', null)),
         email_identity: build.template(block.email_identity),
         mail_from_domain: build.template(std.get(block, 'mail_from_domain', null)),
@@ -23405,7 +23410,7 @@ local provider(configuration) = {
     },
     sesv2_email_identity_policy(name, block): {
       local resource = blockType.resource('aws_sesv2_email_identity_policy', name),
-      _: resource._({
+      _: resource._(block, {
         email_identity: build.template(block.email_identity),
         policy: build.template(block.policy),
         policy_name: build.template(block.policy_name),
@@ -23417,7 +23422,7 @@ local provider(configuration) = {
     },
     sfn_activity(name, block): {
       local resource = blockType.resource('aws_sfn_activity', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -23429,7 +23434,7 @@ local provider(configuration) = {
     },
     sfn_alias(name, block): {
       local resource = blockType.resource('aws_sfn_alias', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -23441,7 +23446,7 @@ local provider(configuration) = {
     },
     sfn_state_machine(name, block): {
       local resource = blockType.resource('aws_sfn_state_machine', name),
-      _: resource._({
+      _: resource._(block, {
         definition: build.template(block.definition),
         publish: build.template(std.get(block, 'publish', null)),
         role_arn: build.template(block.role_arn),
@@ -23467,7 +23472,7 @@ local provider(configuration) = {
     },
     shield_application_layer_automatic_response(name, block): {
       local resource = blockType.resource('aws_shield_application_layer_automatic_response', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -23477,7 +23482,7 @@ local provider(configuration) = {
     },
     shield_drt_access_log_bucket_association(name, block): {
       local resource = blockType.resource('aws_shield_drt_access_log_bucket_association', name),
-      _: resource._({
+      _: resource._(block, {
         log_bucket: build.template(block.log_bucket),
         role_arn_association_id: build.template(block.role_arn_association_id),
       }),
@@ -23487,7 +23492,7 @@ local provider(configuration) = {
     },
     shield_drt_access_role_arn_association(name, block): {
       local resource = blockType.resource('aws_shield_drt_access_role_arn_association', name),
-      _: resource._({
+      _: resource._(block, {
         role_arn: build.template(block.role_arn),
       }),
       id: resource.field('id'),
@@ -23495,7 +23500,7 @@ local provider(configuration) = {
     },
     shield_proactive_engagement(name, block): {
       local resource = blockType.resource('aws_shield_proactive_engagement', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
       }),
       enabled: resource.field('enabled'),
@@ -23503,7 +23508,7 @@ local provider(configuration) = {
     },
     shield_protection(name, block): {
       local resource = blockType.resource('aws_shield_protection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         resource_arn: build.template(block.resource_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -23517,7 +23522,7 @@ local provider(configuration) = {
     },
     shield_protection_group(name, block): {
       local resource = blockType.resource('aws_shield_protection_group', name),
-      _: resource._({
+      _: resource._(block, {
         aggregation: build.template(block.aggregation),
         members: build.template(std.get(block, 'members', null)),
         pattern: build.template(block.pattern),
@@ -23537,7 +23542,7 @@ local provider(configuration) = {
     },
     shield_protection_health_check_association(name, block): {
       local resource = blockType.resource('aws_shield_protection_health_check_association', name),
-      _: resource._({
+      _: resource._(block, {
         health_check_arn: build.template(block.health_check_arn),
         shield_protection_id: build.template(block.shield_protection_id),
       }),
@@ -23547,7 +23552,7 @@ local provider(configuration) = {
     },
     shield_subscription(name, block): {
       local resource = blockType.resource('aws_shield_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         skip_destroy: build.template(std.get(block, 'skip_destroy', null)),
       }),
       auto_renew: resource.field('auto_renew'),
@@ -23556,7 +23561,7 @@ local provider(configuration) = {
     },
     signer_signing_job(name, block): {
       local resource = blockType.resource('aws_signer_signing_job', name),
-      _: resource._({
+      _: resource._(block, {
         ignore_signing_job_failure: build.template(std.get(block, 'ignore_signing_job_failure', null)),
         profile_name: build.template(block.profile_name),
       }),
@@ -23580,7 +23585,7 @@ local provider(configuration) = {
     },
     signer_signing_profile(name, block): {
       local resource = blockType.resource('aws_signer_signing_profile', name),
-      _: resource._({
+      _: resource._(block, {
         platform_id: build.template(block.platform_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -23599,7 +23604,7 @@ local provider(configuration) = {
     },
     signer_signing_profile_permission(name, block): {
       local resource = blockType.resource('aws_signer_signing_profile_permission', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         principal: build.template(block.principal),
         profile_name: build.template(block.profile_name),
@@ -23614,7 +23619,7 @@ local provider(configuration) = {
     },
     simpledb_domain(name, block): {
       local resource = blockType.resource('aws_simpledb_domain', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -23622,7 +23627,7 @@ local provider(configuration) = {
     },
     snapshot_create_volume_permission(name, block): {
       local resource = blockType.resource('aws_snapshot_create_volume_permission', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         snapshot_id: build.template(block.snapshot_id),
       }),
@@ -23632,7 +23637,7 @@ local provider(configuration) = {
     },
     sns_platform_application(name, block): {
       local resource = blockType.resource('aws_sns_platform_application', name),
-      _: resource._({
+      _: resource._(block, {
         apple_platform_bundle_id: build.template(std.get(block, 'apple_platform_bundle_id', null)),
         apple_platform_team_id: build.template(std.get(block, 'apple_platform_team_id', null)),
         event_delivery_failure_topic_arn: build.template(std.get(block, 'event_delivery_failure_topic_arn', null)),
@@ -23665,7 +23670,7 @@ local provider(configuration) = {
     },
     sns_sms_preferences(name, block): {
       local resource = blockType.resource('aws_sns_sms_preferences', name),
-      _: resource._({
+      _: resource._(block, {
         default_sender_id: build.template(std.get(block, 'default_sender_id', null)),
         default_sms_type: build.template(std.get(block, 'default_sms_type', null)),
         delivery_status_iam_role_arn: build.template(std.get(block, 'delivery_status_iam_role_arn', null)),
@@ -23682,7 +23687,7 @@ local provider(configuration) = {
     },
     sns_topic(name, block): {
       local resource = blockType.resource('aws_sns_topic', name),
-      _: resource._({
+      _: resource._(block, {
         application_failure_feedback_role_arn: build.template(std.get(block, 'application_failure_feedback_role_arn', null)),
         application_success_feedback_role_arn: build.template(std.get(block, 'application_success_feedback_role_arn', null)),
         application_success_feedback_sample_rate: build.template(std.get(block, 'application_success_feedback_sample_rate', null)),
@@ -23741,7 +23746,7 @@ local provider(configuration) = {
     },
     sns_topic_data_protection_policy(name, block): {
       local resource = blockType.resource('aws_sns_topic_data_protection_policy', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         policy: build.template(block.policy),
       }),
@@ -23751,7 +23756,7 @@ local provider(configuration) = {
     },
     sns_topic_policy(name, block): {
       local resource = blockType.resource('aws_sns_topic_policy', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         policy: build.template(block.policy),
       }),
@@ -23762,7 +23767,7 @@ local provider(configuration) = {
     },
     sns_topic_subscription(name, block): {
       local resource = blockType.resource('aws_sns_topic_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         confirmation_timeout_in_minutes: build.template(std.get(block, 'confirmation_timeout_in_minutes', null)),
         delivery_policy: build.template(std.get(block, 'delivery_policy', null)),
         endpoint: build.template(block.endpoint),
@@ -23795,7 +23800,7 @@ local provider(configuration) = {
     },
     spot_datafeed_subscription(name, block): {
       local resource = blockType.resource('aws_spot_datafeed_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         prefix: build.template(std.get(block, 'prefix', null)),
       }),
@@ -23805,7 +23810,7 @@ local provider(configuration) = {
     },
     spot_fleet_request(name, block): {
       local resource = blockType.resource('aws_spot_fleet_request', name),
-      _: resource._({
+      _: resource._(block, {
         allocation_strategy: build.template(std.get(block, 'allocation_strategy', null)),
         context: build.template(std.get(block, 'context', null)),
         excess_capacity_termination_policy: build.template(std.get(block, 'excess_capacity_termination_policy', null)),
@@ -23856,7 +23861,7 @@ local provider(configuration) = {
     },
     spot_instance_request(name, block): {
       local resource = blockType.resource('aws_spot_instance_request', name),
-      _: resource._({
+      _: resource._(block, {
         block_duration_minutes: build.template(std.get(block, 'block_duration_minutes', null)),
         get_password_data: build.template(std.get(block, 'get_password_data', null)),
         hibernation: build.template(std.get(block, 'hibernation', null)),
@@ -23926,7 +23931,7 @@ local provider(configuration) = {
     },
     sqs_queue(name, block): {
       local resource = blockType.resource('aws_sqs_queue', name),
-      _: resource._({
+      _: resource._(block, {
         content_based_deduplication: build.template(std.get(block, 'content_based_deduplication', null)),
         delay_seconds: build.template(std.get(block, 'delay_seconds', null)),
         fifo_queue: build.template(std.get(block, 'fifo_queue', null)),
@@ -23962,7 +23967,7 @@ local provider(configuration) = {
     },
     sqs_queue_policy(name, block): {
       local resource = blockType.resource('aws_sqs_queue_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         queue_url: build.template(block.queue_url),
       }),
@@ -23972,7 +23977,7 @@ local provider(configuration) = {
     },
     sqs_queue_redrive_allow_policy(name, block): {
       local resource = blockType.resource('aws_sqs_queue_redrive_allow_policy', name),
-      _: resource._({
+      _: resource._(block, {
         queue_url: build.template(block.queue_url),
         redrive_allow_policy: build.template(block.redrive_allow_policy),
       }),
@@ -23982,7 +23987,7 @@ local provider(configuration) = {
     },
     sqs_queue_redrive_policy(name, block): {
       local resource = blockType.resource('aws_sqs_queue_redrive_policy', name),
-      _: resource._({
+      _: resource._(block, {
         queue_url: build.template(block.queue_url),
         redrive_policy: build.template(block.redrive_policy),
       }),
@@ -23992,7 +23997,7 @@ local provider(configuration) = {
     },
     ssm_activation(name, block): {
       local resource = blockType.resource('aws_ssm_activation', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         iam_role: build.template(block.iam_role),
         name: build.template(std.get(block, 'name', null)),
@@ -24013,7 +24018,7 @@ local provider(configuration) = {
     },
     ssm_association(name, block): {
       local resource = blockType.resource('aws_ssm_association', name),
-      _: resource._({
+      _: resource._(block, {
         apply_only_at_cron_interval: build.template(std.get(block, 'apply_only_at_cron_interval', null)),
         association_name: build.template(std.get(block, 'association_name', null)),
         automation_target_parameter_name: build.template(std.get(block, 'automation_target_parameter_name', null)),
@@ -24048,7 +24053,7 @@ local provider(configuration) = {
     },
     ssm_default_patch_baseline(name, block): {
       local resource = blockType.resource('aws_ssm_default_patch_baseline', name),
-      _: resource._({
+      _: resource._(block, {
         baseline_id: build.template(block.baseline_id),
         operating_system: build.template(block.operating_system),
       }),
@@ -24058,7 +24063,7 @@ local provider(configuration) = {
     },
     ssm_document(name, block): {
       local resource = blockType.resource('aws_ssm_document', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(block.content),
         document_format: build.template(std.get(block, 'document_format', null)),
         document_type: build.template(block.document_type),
@@ -24094,7 +24099,7 @@ local provider(configuration) = {
     },
     ssm_maintenance_window(name, block): {
       local resource = blockType.resource('aws_ssm_maintenance_window', name),
-      _: resource._({
+      _: resource._(block, {
         allow_unassociated_targets: build.template(std.get(block, 'allow_unassociated_targets', null)),
         cutoff: build.template(block.cutoff),
         description: build.template(std.get(block, 'description', null)),
@@ -24125,7 +24130,7 @@ local provider(configuration) = {
     },
     ssm_maintenance_window_target(name, block): {
       local resource = blockType.resource('aws_ssm_maintenance_window_target', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(std.get(block, 'name', null)),
         owner_information: build.template(std.get(block, 'owner_information', null)),
@@ -24141,7 +24146,7 @@ local provider(configuration) = {
     },
     ssm_maintenance_window_task(name, block): {
       local resource = blockType.resource('aws_ssm_maintenance_window_task', name),
-      _: resource._({
+      _: resource._(block, {
         cutoff_behavior: build.template(std.get(block, 'cutoff_behavior', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -24166,7 +24171,7 @@ local provider(configuration) = {
     },
     ssm_parameter(name, block): {
       local resource = blockType.resource('aws_ssm_parameter', name),
-      _: resource._({
+      _: resource._(block, {
         allowed_pattern: build.template(std.get(block, 'allowed_pattern', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -24192,7 +24197,7 @@ local provider(configuration) = {
     },
     ssm_patch_baseline(name, block): {
       local resource = blockType.resource('aws_ssm_patch_baseline', name),
-      _: resource._({
+      _: resource._(block, {
         approved_patches: build.template(std.get(block, 'approved_patches', null)),
         approved_patches_compliance_level: build.template(std.get(block, 'approved_patches_compliance_level', null)),
         approved_patches_enable_non_security: build.template(std.get(block, 'approved_patches_enable_non_security', null)),
@@ -24218,7 +24223,7 @@ local provider(configuration) = {
     },
     ssm_patch_group(name, block): {
       local resource = blockType.resource('aws_ssm_patch_group', name),
-      _: resource._({
+      _: resource._(block, {
         baseline_id: build.template(block.baseline_id),
         patch_group: build.template(block.patch_group),
       }),
@@ -24228,7 +24233,7 @@ local provider(configuration) = {
     },
     ssm_resource_data_sync(name, block): {
       local resource = blockType.resource('aws_ssm_resource_data_sync', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -24236,7 +24241,7 @@ local provider(configuration) = {
     },
     ssm_service_setting(name, block): {
       local resource = blockType.resource('aws_ssm_service_setting', name),
-      _: resource._({
+      _: resource._(block, {
         setting_id: build.template(block.setting_id),
         setting_value: build.template(block.setting_value),
       }),
@@ -24248,7 +24253,7 @@ local provider(configuration) = {
     },
     ssmcontacts_contact(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_contact', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(block.alias),
         display_name: build.template(std.get(block, 'display_name', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -24264,7 +24269,7 @@ local provider(configuration) = {
     },
     ssmcontacts_contact_channel(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_contact_channel', name),
-      _: resource._({
+      _: resource._(block, {
         contact_id: build.template(block.contact_id),
         name: build.template(block.name),
         type: build.template(block.type),
@@ -24278,7 +24283,7 @@ local provider(configuration) = {
     },
     ssmcontacts_plan(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_plan', name),
-      _: resource._({
+      _: resource._(block, {
         contact_id: build.template(block.contact_id),
       }),
       contact_id: resource.field('contact_id'),
@@ -24286,7 +24291,7 @@ local provider(configuration) = {
     },
     ssmcontacts_rotation(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_rotation', name),
-      _: resource._({
+      _: resource._(block, {
         contact_ids: build.template(block.contact_ids),
         name: build.template(block.name),
         start_time: build.template(std.get(block, 'start_time', null)),
@@ -24304,7 +24309,7 @@ local provider(configuration) = {
     },
     ssmincidents_replication_set(name, block): {
       local resource = blockType.resource('aws_ssmincidents_replication_set', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arn: resource.field('arn'),
@@ -24318,7 +24323,7 @@ local provider(configuration) = {
     },
     ssmincidents_response_plan(name, block): {
       local resource = blockType.resource('aws_ssmincidents_response_plan', name),
-      _: resource._({
+      _: resource._(block, {
         chat_channel: build.template(std.get(block, 'chat_channel', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         engagements: build.template(std.get(block, 'engagements', null)),
@@ -24336,7 +24341,7 @@ local provider(configuration) = {
     },
     ssmquicksetup_configuration_manager(name, block): {
       local resource = blockType.resource('aws_ssmquicksetup_configuration_manager', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -24349,7 +24354,7 @@ local provider(configuration) = {
     },
     ssoadmin_account_assignment(name, block): {
       local resource = blockType.resource('aws_ssoadmin_account_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
         permission_set_arn: build.template(block.permission_set_arn),
         principal_id: build.template(block.principal_id),
@@ -24367,7 +24372,7 @@ local provider(configuration) = {
     },
     ssoadmin_application(name, block): {
       local resource = blockType.resource('aws_ssoadmin_application', name),
-      _: resource._({
+      _: resource._(block, {
         application_provider_arn: build.template(block.application_provider_arn),
         client_token: build.template(std.get(block, 'client_token', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -24389,7 +24394,7 @@ local provider(configuration) = {
     },
     ssoadmin_application_access_scope(name, block): {
       local resource = blockType.resource('aws_ssoadmin_application_access_scope', name),
-      _: resource._({
+      _: resource._(block, {
         application_arn: build.template(block.application_arn),
         authorized_targets: build.template(std.get(block, 'authorized_targets', null)),
         scope: build.template(block.scope),
@@ -24401,7 +24406,7 @@ local provider(configuration) = {
     },
     ssoadmin_application_assignment(name, block): {
       local resource = blockType.resource('aws_ssoadmin_application_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         application_arn: build.template(block.application_arn),
         principal_id: build.template(block.principal_id),
         principal_type: build.template(block.principal_type),
@@ -24413,7 +24418,7 @@ local provider(configuration) = {
     },
     ssoadmin_application_assignment_configuration(name, block): {
       local resource = blockType.resource('aws_ssoadmin_application_assignment_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         application_arn: build.template(block.application_arn),
         assignment_required: build.template(block.assignment_required),
       }),
@@ -24423,7 +24428,7 @@ local provider(configuration) = {
     },
     ssoadmin_customer_managed_policy_attachment(name, block): {
       local resource = blockType.resource('aws_ssoadmin_customer_managed_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
         permission_set_arn: build.template(block.permission_set_arn),
       }),
@@ -24433,7 +24438,7 @@ local provider(configuration) = {
     },
     ssoadmin_instance_access_control_attributes(name, block): {
       local resource = blockType.resource('aws_ssoadmin_instance_access_control_attributes', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
       }),
       id: resource.field('id'),
@@ -24443,7 +24448,7 @@ local provider(configuration) = {
     },
     ssoadmin_managed_policy_attachment(name, block): {
       local resource = blockType.resource('aws_ssoadmin_managed_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
         managed_policy_arn: build.template(block.managed_policy_arn),
         permission_set_arn: build.template(block.permission_set_arn),
@@ -24456,7 +24461,7 @@ local provider(configuration) = {
     },
     ssoadmin_permission_set(name, block): {
       local resource = blockType.resource('aws_ssoadmin_permission_set', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance_arn: build.template(block.instance_arn),
         name: build.template(block.name),
@@ -24477,7 +24482,7 @@ local provider(configuration) = {
     },
     ssoadmin_permission_set_inline_policy(name, block): {
       local resource = blockType.resource('aws_ssoadmin_permission_set_inline_policy', name),
-      _: resource._({
+      _: resource._(block, {
         inline_policy: build.template(block.inline_policy),
         instance_arn: build.template(block.instance_arn),
         permission_set_arn: build.template(block.permission_set_arn),
@@ -24489,7 +24494,7 @@ local provider(configuration) = {
     },
     ssoadmin_permissions_boundary_attachment(name, block): {
       local resource = blockType.resource('aws_ssoadmin_permissions_boundary_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
         permission_set_arn: build.template(block.permission_set_arn),
       }),
@@ -24499,7 +24504,7 @@ local provider(configuration) = {
     },
     ssoadmin_trusted_token_issuer(name, block): {
       local resource = blockType.resource('aws_ssoadmin_trusted_token_issuer', name),
-      _: resource._({
+      _: resource._(block, {
         client_token: build.template(std.get(block, 'client_token', null)),
         instance_arn: build.template(block.instance_arn),
         name: build.template(block.name),
@@ -24517,7 +24522,7 @@ local provider(configuration) = {
     },
     storagegateway_cache(name, block): {
       local resource = blockType.resource('aws_storagegateway_cache', name),
-      _: resource._({
+      _: resource._(block, {
         disk_id: build.template(block.disk_id),
         gateway_arn: build.template(block.gateway_arn),
       }),
@@ -24527,7 +24532,7 @@ local provider(configuration) = {
     },
     storagegateway_cached_iscsi_volume(name, block): {
       local resource = blockType.resource('aws_storagegateway_cached_iscsi_volume', name),
-      _: resource._({
+      _: resource._(block, {
         gateway_arn: build.template(block.gateway_arn),
         kms_encrypted: build.template(std.get(block, 'kms_encrypted', null)),
         kms_key: build.template(std.get(block, 'kms_key', null)),
@@ -24559,7 +24564,7 @@ local provider(configuration) = {
     },
     storagegateway_file_system_association(name, block): {
       local resource = blockType.resource('aws_storagegateway_file_system_association', name),
-      _: resource._({
+      _: resource._(block, {
         audit_destination_arn: build.template(std.get(block, 'audit_destination_arn', null)),
         gateway_arn: build.template(block.gateway_arn),
         location_arn: build.template(block.location_arn),
@@ -24579,7 +24584,7 @@ local provider(configuration) = {
     },
     storagegateway_gateway(name, block): {
       local resource = blockType.resource('aws_storagegateway_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         average_download_rate_limit_in_bits_per_sec: build.template(std.get(block, 'average_download_rate_limit_in_bits_per_sec', null)),
         average_upload_rate_limit_in_bits_per_sec: build.template(std.get(block, 'average_upload_rate_limit_in_bits_per_sec', null)),
         cloudwatch_log_group_arn: build.template(std.get(block, 'cloudwatch_log_group_arn', null)),
@@ -24619,7 +24624,7 @@ local provider(configuration) = {
     },
     storagegateway_nfs_file_share(name, block): {
       local resource = blockType.resource('aws_storagegateway_nfs_file_share', name),
-      _: resource._({
+      _: resource._(block, {
         audit_destination_arn: build.template(std.get(block, 'audit_destination_arn', null)),
         bucket_region: build.template(std.get(block, 'bucket_region', null)),
         client_list: build.template(block.client_list),
@@ -24664,7 +24669,7 @@ local provider(configuration) = {
     },
     storagegateway_smb_file_share(name, block): {
       local resource = blockType.resource('aws_storagegateway_smb_file_share', name),
-      _: resource._({
+      _: resource._(block, {
         access_based_enumeration: build.template(std.get(block, 'access_based_enumeration', null)),
         admin_user_list: build.template(std.get(block, 'admin_user_list', null)),
         audit_destination_arn: build.template(std.get(block, 'audit_destination_arn', null)),
@@ -24720,7 +24725,7 @@ local provider(configuration) = {
     },
     storagegateway_stored_iscsi_volume(name, block): {
       local resource = blockType.resource('aws_storagegateway_stored_iscsi_volume', name),
-      _: resource._({
+      _: resource._(block, {
         disk_id: build.template(block.disk_id),
         gateway_arn: build.template(block.gateway_arn),
         kms_encrypted: build.template(std.get(block, 'kms_encrypted', null)),
@@ -24755,7 +24760,7 @@ local provider(configuration) = {
     },
     storagegateway_tape_pool(name, block): {
       local resource = blockType.resource('aws_storagegateway_tape_pool', name),
-      _: resource._({
+      _: resource._(block, {
         pool_name: build.template(block.pool_name),
         retention_lock_time_in_days: build.template(std.get(block, 'retention_lock_time_in_days', null)),
         retention_lock_type: build.template(std.get(block, 'retention_lock_type', null)),
@@ -24773,7 +24778,7 @@ local provider(configuration) = {
     },
     storagegateway_upload_buffer(name, block): {
       local resource = blockType.resource('aws_storagegateway_upload_buffer', name),
-      _: resource._({
+      _: resource._(block, {
         gateway_arn: build.template(block.gateway_arn),
       }),
       disk_id: resource.field('disk_id'),
@@ -24783,7 +24788,7 @@ local provider(configuration) = {
     },
     storagegateway_working_storage(name, block): {
       local resource = blockType.resource('aws_storagegateway_working_storage', name),
-      _: resource._({
+      _: resource._(block, {
         disk_id: build.template(block.disk_id),
         gateway_arn: build.template(block.gateway_arn),
       }),
@@ -24793,7 +24798,7 @@ local provider(configuration) = {
     },
     subnet(name, block): {
       local resource = blockType.resource('aws_subnet', name),
-      _: resource._({
+      _: resource._(block, {
         assign_ipv6_address_on_creation: build.template(std.get(block, 'assign_ipv6_address_on_creation', null)),
         cidr_block: build.template(std.get(block, 'cidr_block', null)),
         customer_owned_ipv4_pool: build.template(std.get(block, 'customer_owned_ipv4_pool', null)),
@@ -24834,7 +24839,7 @@ local provider(configuration) = {
     },
     swf_domain(name, block): {
       local resource = blockType.resource('aws_swf_domain', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
         workflow_execution_retention_period_in_days: build.template(block.workflow_execution_retention_period_in_days),
@@ -24850,7 +24855,7 @@ local provider(configuration) = {
     },
     synthetics_canary(name, block): {
       local resource = blockType.resource('aws_synthetics_canary', name),
-      _: resource._({
+      _: resource._(block, {
         artifact_s3_location: build.template(block.artifact_s3_location),
         delete_lambda: build.template(std.get(block, 'delete_lambda', null)),
         execution_role_arn: build.template(block.execution_role_arn),
@@ -24890,7 +24895,7 @@ local provider(configuration) = {
     },
     synthetics_group(name, block): {
       local resource = blockType.resource('aws_synthetics_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -24903,7 +24908,7 @@ local provider(configuration) = {
     },
     synthetics_group_association(name, block): {
       local resource = blockType.resource('aws_synthetics_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         canary_arn: build.template(block.canary_arn),
         group_name: build.template(block.group_name),
       }),
@@ -24915,7 +24920,7 @@ local provider(configuration) = {
     },
     timestreaminfluxdb_db_instance(name, block): {
       local resource = blockType.resource('aws_timestreaminfluxdb_db_instance', name),
-      _: resource._({
+      _: resource._(block, {
         allocated_storage: build.template(block.allocated_storage),
         bucket: build.template(block.bucket),
         db_instance_type: build.template(block.db_instance_type),
@@ -24952,7 +24957,7 @@ local provider(configuration) = {
     },
     timestreamwrite_database(name, block): {
       local resource = blockType.resource('aws_timestreamwrite_database', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -24966,7 +24971,7 @@ local provider(configuration) = {
     },
     timestreamwrite_table(name, block): {
       local resource = blockType.resource('aws_timestreamwrite_table', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         table_name: build.template(block.table_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -24980,7 +24985,7 @@ local provider(configuration) = {
     },
     transcribe_language_model(name, block): {
       local resource = blockType.resource('aws_transcribe_language_model', name),
-      _: resource._({
+      _: resource._(block, {
         base_model_name: build.template(block.base_model_name),
         language_code: build.template(block.language_code),
         model_name: build.template(block.model_name),
@@ -24996,7 +25001,7 @@ local provider(configuration) = {
     },
     transcribe_medical_vocabulary(name, block): {
       local resource = blockType.resource('aws_transcribe_medical_vocabulary', name),
-      _: resource._({
+      _: resource._(block, {
         language_code: build.template(block.language_code),
         tags: build.template(std.get(block, 'tags', null)),
         vocabulary_file_uri: build.template(block.vocabulary_file_uri),
@@ -25013,7 +25018,7 @@ local provider(configuration) = {
     },
     transcribe_vocabulary(name, block): {
       local resource = blockType.resource('aws_transcribe_vocabulary', name),
-      _: resource._({
+      _: resource._(block, {
         language_code: build.template(block.language_code),
         phrases: build.template(std.get(block, 'phrases', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25031,7 +25036,7 @@ local provider(configuration) = {
     },
     transcribe_vocabulary_filter(name, block): {
       local resource = blockType.resource('aws_transcribe_vocabulary_filter', name),
-      _: resource._({
+      _: resource._(block, {
         language_code: build.template(block.language_code),
         tags: build.template(std.get(block, 'tags', null)),
         vocabulary_filter_file_uri: build.template(std.get(block, 'vocabulary_filter_file_uri', null)),
@@ -25050,7 +25055,7 @@ local provider(configuration) = {
     },
     transfer_access(name, block): {
       local resource = blockType.resource('aws_transfer_access', name),
-      _: resource._({
+      _: resource._(block, {
         external_id: build.template(block.external_id),
         home_directory: build.template(std.get(block, 'home_directory', null)),
         home_directory_type: build.template(std.get(block, 'home_directory_type', null)),
@@ -25068,7 +25073,7 @@ local provider(configuration) = {
     },
     transfer_agreement(name, block): {
       local resource = blockType.resource('aws_transfer_agreement', name),
-      _: resource._({
+      _: resource._(block, {
         access_role: build.template(block.access_role),
         base_directory: build.template(block.base_directory),
         description: build.template(std.get(block, 'description', null)),
@@ -25092,7 +25097,7 @@ local provider(configuration) = {
     },
     transfer_certificate(name, block): {
       local resource = blockType.resource('aws_transfer_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate: build.template(block.certificate),
         certificate_chain: build.template(std.get(block, 'certificate_chain', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -25115,7 +25120,7 @@ local provider(configuration) = {
     },
     transfer_connector(name, block): {
       local resource = blockType.resource('aws_transfer_connector', name),
-      _: resource._({
+      _: resource._(block, {
         access_role: build.template(block.access_role),
         logging_role: build.template(std.get(block, 'logging_role', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25133,7 +25138,7 @@ local provider(configuration) = {
     },
     transfer_profile(name, block): {
       local resource = blockType.resource('aws_transfer_profile', name),
-      _: resource._({
+      _: resource._(block, {
         as2_id: build.template(block.as2_id),
         certificate_ids: build.template(std.get(block, 'certificate_ids', null)),
         profile_type: build.template(block.profile_type),
@@ -25150,7 +25155,7 @@ local provider(configuration) = {
     },
     transfer_server(name, block): {
       local resource = blockType.resource('aws_transfer_server', name),
-      _: resource._({
+      _: resource._(block, {
         certificate: build.template(std.get(block, 'certificate', null)),
         directory_id: build.template(std.get(block, 'directory_id', null)),
         domain: build.template(std.get(block, 'domain', null)),
@@ -25194,7 +25199,7 @@ local provider(configuration) = {
     },
     transfer_ssh_key(name, block): {
       local resource = blockType.resource('aws_transfer_ssh_key', name),
-      _: resource._({
+      _: resource._(block, {
         body: build.template(block.body),
         server_id: build.template(block.server_id),
         user_name: build.template(block.user_name),
@@ -25207,7 +25212,7 @@ local provider(configuration) = {
     },
     transfer_tag(name, block): {
       local resource = blockType.resource('aws_transfer_tag', name),
-      _: resource._({
+      _: resource._(block, {
         key: build.template(block.key),
         resource_arn: build.template(block.resource_arn),
         value: build.template(block.value),
@@ -25219,7 +25224,7 @@ local provider(configuration) = {
     },
     transfer_user(name, block): {
       local resource = blockType.resource('aws_transfer_user', name),
-      _: resource._({
+      _: resource._(block, {
         home_directory: build.template(std.get(block, 'home_directory', null)),
         home_directory_type: build.template(std.get(block, 'home_directory_type', null)),
         policy: build.template(std.get(block, 'policy', null)),
@@ -25241,7 +25246,7 @@ local provider(configuration) = {
     },
     transfer_workflow(name, block): {
       local resource = blockType.resource('aws_transfer_workflow', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -25253,7 +25258,7 @@ local provider(configuration) = {
     },
     verifiedaccess_endpoint(name, block): {
       local resource = blockType.resource('aws_verifiedaccess_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         application_domain: build.template(block.application_domain),
         attachment_type: build.template(block.attachment_type),
         description: build.template(std.get(block, 'description', null)),
@@ -25283,7 +25288,7 @@ local provider(configuration) = {
     },
     verifiedaccess_group(name, block): {
       local resource = blockType.resource('aws_verifiedaccess_group', name),
-      _: resource._({
+      _: resource._(block, {
         policy_document: build.template(std.get(block, 'policy_document', null)),
         tags: build.template(std.get(block, 'tags', null)),
         verifiedaccess_instance_id: build.template(block.verifiedaccess_instance_id),
@@ -25303,7 +25308,7 @@ local provider(configuration) = {
     },
     verifiedaccess_instance(name, block): {
       local resource = blockType.resource('aws_verifiedaccess_instance', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         fips_enabled: build.template(std.get(block, 'fips_enabled', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25319,7 +25324,7 @@ local provider(configuration) = {
     },
     verifiedaccess_instance_logging_configuration(name, block): {
       local resource = blockType.resource('aws_verifiedaccess_instance_logging_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         verifiedaccess_instance_id: build.template(block.verifiedaccess_instance_id),
       }),
       id: resource.field('id'),
@@ -25327,7 +25332,7 @@ local provider(configuration) = {
     },
     verifiedaccess_instance_trust_provider_attachment(name, block): {
       local resource = blockType.resource('aws_verifiedaccess_instance_trust_provider_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         verifiedaccess_instance_id: build.template(block.verifiedaccess_instance_id),
         verifiedaccess_trust_provider_id: build.template(block.verifiedaccess_trust_provider_id),
       }),
@@ -25337,7 +25342,7 @@ local provider(configuration) = {
     },
     verifiedaccess_trust_provider(name, block): {
       local resource = blockType.resource('aws_verifiedaccess_trust_provider', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         device_trust_provider_type: build.template(std.get(block, 'device_trust_provider_type', null)),
         policy_reference_name: build.template(block.policy_reference_name),
@@ -25356,7 +25361,7 @@ local provider(configuration) = {
     },
     verifiedpermissions_identity_source(name, block): {
       local resource = blockType.resource('aws_verifiedpermissions_identity_source', name),
-      _: resource._({
+      _: resource._(block, {
         policy_store_id: build.template(block.policy_store_id),
       }),
       id: resource.field('id'),
@@ -25365,7 +25370,7 @@ local provider(configuration) = {
     },
     verifiedpermissions_policy(name, block): {
       local resource = blockType.resource('aws_verifiedpermissions_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_store_id: build.template(block.policy_store_id),
       }),
       created_date: resource.field('created_date'),
@@ -25375,7 +25380,7 @@ local provider(configuration) = {
     },
     verifiedpermissions_policy_store(name, block): {
       local resource = blockType.resource('aws_verifiedpermissions_policy_store', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
       }),
       arn: resource.field('arn'),
@@ -25385,7 +25390,7 @@ local provider(configuration) = {
     },
     verifiedpermissions_policy_template(name, block): {
       local resource = blockType.resource('aws_verifiedpermissions_policy_template', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         policy_store_id: build.template(block.policy_store_id),
         statement: build.template(block.statement),
@@ -25399,7 +25404,7 @@ local provider(configuration) = {
     },
     verifiedpermissions_schema(name, block): {
       local resource = blockType.resource('aws_verifiedpermissions_schema', name),
-      _: resource._({
+      _: resource._(block, {
         policy_store_id: build.template(block.policy_store_id),
       }),
       id: resource.field('id'),
@@ -25408,7 +25413,7 @@ local provider(configuration) = {
     },
     volume_attachment(name, block): {
       local resource = blockType.resource('aws_volume_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         device_name: build.template(block.device_name),
         force_detach: build.template(std.get(block, 'force_detach', null)),
         instance_id: build.template(block.instance_id),
@@ -25426,7 +25431,7 @@ local provider(configuration) = {
     },
     vpc(name, block): {
       local resource = blockType.resource('aws_vpc', name),
-      _: resource._({
+      _: resource._(block, {
         assign_generated_ipv6_cidr_block: build.template(std.get(block, 'assign_generated_ipv6_cidr_block', null)),
         enable_dns_support: build.template(std.get(block, 'enable_dns_support', null)),
         instance_tenancy: build.template(std.get(block, 'instance_tenancy', null)),
@@ -25462,7 +25467,7 @@ local provider(configuration) = {
     },
     vpc_dhcp_options(name, block): {
       local resource = blockType.resource('aws_vpc_dhcp_options', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(std.get(block, 'domain_name', null)),
         domain_name_servers: build.template(std.get(block, 'domain_name_servers', null)),
         ipv6_address_preferred_lease_time: build.template(std.get(block, 'ipv6_address_preferred_lease_time', null)),
@@ -25485,7 +25490,7 @@ local provider(configuration) = {
     },
     vpc_dhcp_options_association(name, block): {
       local resource = blockType.resource('aws_vpc_dhcp_options_association', name),
-      _: resource._({
+      _: resource._(block, {
         dhcp_options_id: build.template(block.dhcp_options_id),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -25495,7 +25500,7 @@ local provider(configuration) = {
     },
     vpc_endpoint(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         auto_accept: build.template(std.get(block, 'auto_accept', null)),
         service_name: build.template(block.service_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25526,7 +25531,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_connection_accepter(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_connection_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_endpoint_id: build.template(block.vpc_endpoint_id),
         vpc_endpoint_service_id: build.template(block.vpc_endpoint_service_id),
       }),
@@ -25537,7 +25542,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_connection_notification(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_connection_notification', name),
-      _: resource._({
+      _: resource._(block, {
         connection_events: build.template(block.connection_events),
         connection_notification_arn: build.template(block.connection_notification_arn),
         vpc_endpoint_id: build.template(std.get(block, 'vpc_endpoint_id', null)),
@@ -25553,7 +25558,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_policy(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_policy', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_endpoint_id: build.template(block.vpc_endpoint_id),
       }),
       id: resource.field('id'),
@@ -25562,7 +25567,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_private_dns(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_private_dns', name),
-      _: resource._({
+      _: resource._(block, {
         private_dns_enabled: build.template(block.private_dns_enabled),
         vpc_endpoint_id: build.template(block.vpc_endpoint_id),
       }),
@@ -25571,7 +25576,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_route_table_association(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_route_table_association', name),
-      _: resource._({
+      _: resource._(block, {
         route_table_id: build.template(block.route_table_id),
         vpc_endpoint_id: build.template(block.vpc_endpoint_id),
       }),
@@ -25581,7 +25586,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_security_group_association(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_security_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         replace_default_association: build.template(std.get(block, 'replace_default_association', null)),
         security_group_id: build.template(block.security_group_id),
         vpc_endpoint_id: build.template(block.vpc_endpoint_id),
@@ -25593,7 +25598,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_service(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_service', name),
-      _: resource._({
+      _: resource._(block, {
         acceptance_required: build.template(block.acceptance_required),
         gateway_load_balancer_arns: build.template(std.get(block, 'gateway_load_balancer_arns', null)),
         network_load_balancer_arns: build.template(std.get(block, 'network_load_balancer_arns', null)),
@@ -25619,7 +25624,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_service_allowed_principal(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_service_allowed_principal', name),
-      _: resource._({
+      _: resource._(block, {
         principal_arn: build.template(block.principal_arn),
         vpc_endpoint_service_id: build.template(block.vpc_endpoint_service_id),
       }),
@@ -25629,7 +25634,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_service_private_dns_verification(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_service_private_dns_verification', name),
-      _: resource._({
+      _: resource._(block, {
         service_id: build.template(block.service_id),
         wait_for_verification: build.template(std.get(block, 'wait_for_verification', null)),
       }),
@@ -25638,7 +25643,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_subnet_association(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_subnet_association', name),
-      _: resource._({
+      _: resource._(block, {
         subnet_id: build.template(block.subnet_id),
         vpc_endpoint_id: build.template(block.vpc_endpoint_id),
       }),
@@ -25648,7 +25653,7 @@ local provider(configuration) = {
     },
     vpc_ipam(name, block): {
       local resource = blockType.resource('aws_vpc_ipam', name),
-      _: resource._({
+      _: resource._(block, {
         cascade: build.template(std.get(block, 'cascade', null)),
         description: build.template(std.get(block, 'description', null)),
         enable_private_gua: build.template(std.get(block, 'enable_private_gua', null)),
@@ -25671,7 +25676,7 @@ local provider(configuration) = {
     },
     vpc_ipam_organization_admin_account(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_organization_admin_account', name),
-      _: resource._({
+      _: resource._(block, {
         delegated_admin_account_id: build.template(block.delegated_admin_account_id),
       }),
       arn: resource.field('arn'),
@@ -25683,7 +25688,7 @@ local provider(configuration) = {
     },
     vpc_ipam_pool(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_pool', name),
-      _: resource._({
+      _: resource._(block, {
         address_family: build.template(block.address_family),
         allocation_default_netmask_length: build.template(std.get(block, 'allocation_default_netmask_length', null)),
         allocation_max_netmask_length: build.template(std.get(block, 'allocation_max_netmask_length', null)),
@@ -25724,7 +25729,7 @@ local provider(configuration) = {
     },
     vpc_ipam_pool_cidr(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_pool_cidr', name),
-      _: resource._({
+      _: resource._(block, {
         ipam_pool_id: build.template(block.ipam_pool_id),
         netmask_length: build.template(std.get(block, 'netmask_length', null)),
       }),
@@ -25736,7 +25741,7 @@ local provider(configuration) = {
     },
     vpc_ipam_pool_cidr_allocation(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_pool_cidr_allocation', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disallowed_cidrs: build.template(std.get(block, 'disallowed_cidrs', null)),
         ipam_pool_id: build.template(block.ipam_pool_id),
@@ -25754,7 +25759,7 @@ local provider(configuration) = {
     },
     vpc_ipam_preview_next_cidr(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_preview_next_cidr', name),
-      _: resource._({
+      _: resource._(block, {
         disallowed_cidrs: build.template(std.get(block, 'disallowed_cidrs', null)),
         ipam_pool_id: build.template(block.ipam_pool_id),
         netmask_length: build.template(std.get(block, 'netmask_length', null)),
@@ -25767,7 +25772,7 @@ local provider(configuration) = {
     },
     vpc_ipam_resource_discovery(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_resource_discovery', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -25782,7 +25787,7 @@ local provider(configuration) = {
     },
     vpc_ipam_resource_discovery_association(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_resource_discovery_association', name),
-      _: resource._({
+      _: resource._(block, {
         ipam_id: build.template(block.ipam_id),
         ipam_resource_discovery_id: build.template(block.ipam_resource_discovery_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25801,7 +25806,7 @@ local provider(configuration) = {
     },
     vpc_ipam_scope(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_scope', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ipam_id: build.template(block.ipam_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25819,7 +25824,7 @@ local provider(configuration) = {
     },
     vpc_ipv4_cidr_block_association(name, block): {
       local resource = blockType.resource('aws_vpc_ipv4_cidr_block_association', name),
-      _: resource._({
+      _: resource._(block, {
         ipv4_ipam_pool_id: build.template(std.get(block, 'ipv4_ipam_pool_id', null)),
         ipv4_netmask_length: build.template(std.get(block, 'ipv4_netmask_length', null)),
         vpc_id: build.template(block.vpc_id),
@@ -25832,7 +25837,7 @@ local provider(configuration) = {
     },
     vpc_ipv6_cidr_block_association(name, block): {
       local resource = blockType.resource('aws_vpc_ipv6_cidr_block_association', name),
-      _: resource._({
+      _: resource._(block, {
         ipv6_ipam_pool_id: build.template(std.get(block, 'ipv6_ipam_pool_id', null)),
         ipv6_netmask_length: build.template(std.get(block, 'ipv6_netmask_length', null)),
         vpc_id: build.template(block.vpc_id),
@@ -25849,7 +25854,7 @@ local provider(configuration) = {
     },
     vpc_network_performance_metric_subscription(name, block): {
       local resource = blockType.resource('aws_vpc_network_performance_metric_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         destination: build.template(block.destination),
         metric: build.template(std.get(block, 'metric', null)),
         source: build.template(block.source),
@@ -25864,7 +25869,7 @@ local provider(configuration) = {
     },
     vpc_peering_connection(name, block): {
       local resource = blockType.resource('aws_vpc_peering_connection', name),
-      _: resource._({
+      _: resource._(block, {
         auto_accept: build.template(std.get(block, 'auto_accept', null)),
         peer_vpc_id: build.template(block.peer_vpc_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25882,7 +25887,7 @@ local provider(configuration) = {
     },
     vpc_peering_connection_accepter(name, block): {
       local resource = blockType.resource('aws_vpc_peering_connection_accepter', name),
-      _: resource._({
+      _: resource._(block, {
         auto_accept: build.template(std.get(block, 'auto_accept', null)),
         tags: build.template(std.get(block, 'tags', null)),
         vpc_peering_connection_id: build.template(block.vpc_peering_connection_id),
@@ -25900,7 +25905,7 @@ local provider(configuration) = {
     },
     vpc_peering_connection_options(name, block): {
       local resource = blockType.resource('aws_vpc_peering_connection_options', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_peering_connection_id: build.template(block.vpc_peering_connection_id),
       }),
       id: resource.field('id'),
@@ -25908,7 +25913,7 @@ local provider(configuration) = {
     },
     vpc_security_group_egress_rule(name, block): {
       local resource = blockType.resource('aws_vpc_security_group_egress_rule', name),
-      _: resource._({
+      _: resource._(block, {
         cidr_ipv4: build.template(std.get(block, 'cidr_ipv4', null)),
         cidr_ipv6: build.template(std.get(block, 'cidr_ipv6', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -25937,7 +25942,7 @@ local provider(configuration) = {
     },
     vpc_security_group_ingress_rule(name, block): {
       local resource = blockType.resource('aws_vpc_security_group_ingress_rule', name),
-      _: resource._({
+      _: resource._(block, {
         cidr_ipv4: build.template(std.get(block, 'cidr_ipv4', null)),
         cidr_ipv6: build.template(std.get(block, 'cidr_ipv6', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -25966,7 +25971,7 @@ local provider(configuration) = {
     },
     vpc_security_group_vpc_association(name, block): {
       local resource = blockType.resource('aws_vpc_security_group_vpc_association', name),
-      _: resource._({
+      _: resource._(block, {
         security_group_id: build.template(block.security_group_id),
         vpc_id: build.template(block.vpc_id),
       }),
@@ -25976,7 +25981,7 @@ local provider(configuration) = {
     },
     vpclattice_access_log_subscription(name, block): {
       local resource = blockType.resource('aws_vpclattice_access_log_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         destination_arn: build.template(block.destination_arn),
         resource_identifier: build.template(block.resource_identifier),
         tags: build.template(std.get(block, 'tags', null)),
@@ -25991,7 +25996,7 @@ local provider(configuration) = {
     },
     vpclattice_auth_policy(name, block): {
       local resource = blockType.resource('aws_vpclattice_auth_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_identifier: build.template(block.resource_identifier),
         state: build.template(std.get(block, 'state', null)),
@@ -26003,7 +26008,7 @@ local provider(configuration) = {
     },
     vpclattice_listener(name, block): {
       local resource = blockType.resource('aws_vpclattice_listener', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         protocol: build.template(block.protocol),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26023,7 +26028,7 @@ local provider(configuration) = {
     },
     vpclattice_listener_rule(name, block): {
       local resource = blockType.resource('aws_vpclattice_listener_rule', name),
-      _: resource._({
+      _: resource._(block, {
         listener_identifier: build.template(block.listener_identifier),
         name: build.template(block.name),
         priority: build.template(block.priority),
@@ -26042,7 +26047,7 @@ local provider(configuration) = {
     },
     vpclattice_resource_policy(name, block): {
       local resource = blockType.resource('aws_vpclattice_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(block.policy),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -26052,7 +26057,7 @@ local provider(configuration) = {
     },
     vpclattice_service(name, block): {
       local resource = blockType.resource('aws_vpclattice_service', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_arn: build.template(std.get(block, 'certificate_arn', null)),
         custom_domain_name: build.template(std.get(block, 'custom_domain_name', null)),
         name: build.template(block.name),
@@ -26071,7 +26076,7 @@ local provider(configuration) = {
     },
     vpclattice_service_network(name, block): {
       local resource = blockType.resource('aws_vpclattice_service_network', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -26084,7 +26089,7 @@ local provider(configuration) = {
     },
     vpclattice_service_network_service_association(name, block): {
       local resource = blockType.resource('aws_vpclattice_service_network_service_association', name),
-      _: resource._({
+      _: resource._(block, {
         service_identifier: build.template(block.service_identifier),
         service_network_identifier: build.template(block.service_network_identifier),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26102,7 +26107,7 @@ local provider(configuration) = {
     },
     vpclattice_service_network_vpc_association(name, block): {
       local resource = blockType.resource('aws_vpclattice_service_network_vpc_association', name),
-      _: resource._({
+      _: resource._(block, {
         security_group_ids: build.template(std.get(block, 'security_group_ids', null)),
         service_network_identifier: build.template(block.service_network_identifier),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26120,7 +26125,7 @@ local provider(configuration) = {
     },
     vpclattice_target_group(name, block): {
       local resource = blockType.resource('aws_vpclattice_target_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
         type: build.template(block.type),
@@ -26135,7 +26140,7 @@ local provider(configuration) = {
     },
     vpclattice_target_group_attachment(name, block): {
       local resource = blockType.resource('aws_vpclattice_target_group_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         target_group_identifier: build.template(block.target_group_identifier),
       }),
       id: resource.field('id'),
@@ -26143,7 +26148,7 @@ local provider(configuration) = {
     },
     vpn_connection(name, block): {
       local resource = blockType.resource('aws_vpn_connection', name),
-      _: resource._({
+      _: resource._(block, {
         customer_gateway_id: build.template(block.customer_gateway_id),
         tags: build.template(std.get(block, 'tags', null)),
         transit_gateway_id: build.template(std.get(block, 'transit_gateway_id', null)),
@@ -26257,7 +26262,7 @@ local provider(configuration) = {
     },
     vpn_connection_route(name, block): {
       local resource = blockType.resource('aws_vpn_connection_route', name),
-      _: resource._({
+      _: resource._(block, {
         destination_cidr_block: build.template(block.destination_cidr_block),
         vpn_connection_id: build.template(block.vpn_connection_id),
       }),
@@ -26267,7 +26272,7 @@ local provider(configuration) = {
     },
     vpn_gateway(name, block): {
       local resource = blockType.resource('aws_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(std.get(block, 'availability_zone', null)),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -26281,7 +26286,7 @@ local provider(configuration) = {
     },
     vpn_gateway_attachment(name, block): {
       local resource = blockType.resource('aws_vpn_gateway_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_id: build.template(block.vpc_id),
         vpn_gateway_id: build.template(block.vpn_gateway_id),
       }),
@@ -26291,7 +26296,7 @@ local provider(configuration) = {
     },
     vpn_gateway_route_propagation(name, block): {
       local resource = blockType.resource('aws_vpn_gateway_route_propagation', name),
-      _: resource._({
+      _: resource._(block, {
         route_table_id: build.template(block.route_table_id),
         vpn_gateway_id: build.template(block.vpn_gateway_id),
       }),
@@ -26301,7 +26306,7 @@ local provider(configuration) = {
     },
     waf_byte_match_set(name, block): {
       local resource = blockType.resource('aws_waf_byte_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -26309,7 +26314,7 @@ local provider(configuration) = {
     },
     waf_geo_match_set(name, block): {
       local resource = blockType.resource('aws_waf_geo_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -26318,7 +26323,7 @@ local provider(configuration) = {
     },
     waf_ipset(name, block): {
       local resource = blockType.resource('aws_waf_ipset', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -26327,7 +26332,7 @@ local provider(configuration) = {
     },
     waf_rate_based_rule(name, block): {
       local resource = blockType.resource('aws_waf_rate_based_rule', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         rate_key: build.template(block.rate_key),
@@ -26345,7 +26350,7 @@ local provider(configuration) = {
     },
     waf_regex_match_set(name, block): {
       local resource = blockType.resource('aws_waf_regex_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -26354,7 +26359,7 @@ local provider(configuration) = {
     },
     waf_regex_pattern_set(name, block): {
       local resource = blockType.resource('aws_waf_regex_pattern_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         regex_pattern_strings: build.template(std.get(block, 'regex_pattern_strings', null)),
       }),
@@ -26365,7 +26370,7 @@ local provider(configuration) = {
     },
     waf_rule(name, block): {
       local resource = blockType.resource('aws_waf_rule', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26379,7 +26384,7 @@ local provider(configuration) = {
     },
     waf_rule_group(name, block): {
       local resource = blockType.resource('aws_waf_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26393,7 +26398,7 @@ local provider(configuration) = {
     },
     waf_size_constraint_set(name, block): {
       local resource = blockType.resource('aws_waf_size_constraint_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -26402,7 +26407,7 @@ local provider(configuration) = {
     },
     waf_sql_injection_match_set(name, block): {
       local resource = blockType.resource('aws_waf_sql_injection_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -26410,7 +26415,7 @@ local provider(configuration) = {
     },
     waf_web_acl(name, block): {
       local resource = blockType.resource('aws_waf_web_acl', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26424,7 +26429,7 @@ local provider(configuration) = {
     },
     waf_xss_match_set(name, block): {
       local resource = blockType.resource('aws_waf_xss_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -26433,7 +26438,7 @@ local provider(configuration) = {
     },
     wafregional_byte_match_set(name, block): {
       local resource = blockType.resource('aws_wafregional_byte_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -26441,7 +26446,7 @@ local provider(configuration) = {
     },
     wafregional_geo_match_set(name, block): {
       local resource = blockType.resource('aws_wafregional_geo_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -26449,7 +26454,7 @@ local provider(configuration) = {
     },
     wafregional_ipset(name, block): {
       local resource = blockType.resource('aws_wafregional_ipset', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -26458,7 +26463,7 @@ local provider(configuration) = {
     },
     wafregional_rate_based_rule(name, block): {
       local resource = blockType.resource('aws_wafregional_rate_based_rule', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         rate_key: build.template(block.rate_key),
@@ -26476,7 +26481,7 @@ local provider(configuration) = {
     },
     wafregional_regex_match_set(name, block): {
       local resource = blockType.resource('aws_wafregional_regex_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -26484,7 +26489,7 @@ local provider(configuration) = {
     },
     wafregional_regex_pattern_set(name, block): {
       local resource = blockType.resource('aws_wafregional_regex_pattern_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         regex_pattern_strings: build.template(std.get(block, 'regex_pattern_strings', null)),
       }),
@@ -26494,7 +26499,7 @@ local provider(configuration) = {
     },
     wafregional_rule(name, block): {
       local resource = blockType.resource('aws_wafregional_rule', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26508,7 +26513,7 @@ local provider(configuration) = {
     },
     wafregional_rule_group(name, block): {
       local resource = blockType.resource('aws_wafregional_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26522,7 +26527,7 @@ local provider(configuration) = {
     },
     wafregional_size_constraint_set(name, block): {
       local resource = blockType.resource('aws_wafregional_size_constraint_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -26531,7 +26536,7 @@ local provider(configuration) = {
     },
     wafregional_sql_injection_match_set(name, block): {
       local resource = blockType.resource('aws_wafregional_sql_injection_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -26539,7 +26544,7 @@ local provider(configuration) = {
     },
     wafregional_web_acl(name, block): {
       local resource = blockType.resource('aws_wafregional_web_acl', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(block.metric_name),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26553,7 +26558,7 @@ local provider(configuration) = {
     },
     wafregional_web_acl_association(name, block): {
       local resource = blockType.resource('aws_wafregional_web_acl_association', name),
-      _: resource._({
+      _: resource._(block, {
         resource_arn: build.template(block.resource_arn),
         web_acl_id: build.template(block.web_acl_id),
       }),
@@ -26563,7 +26568,7 @@ local provider(configuration) = {
     },
     wafregional_xss_match_set(name, block): {
       local resource = blockType.resource('aws_wafregional_xss_match_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -26571,7 +26576,7 @@ local provider(configuration) = {
     },
     wafv2_ip_set(name, block): {
       local resource = blockType.resource('aws_wafv2_ip_set', name),
-      _: resource._({
+      _: resource._(block, {
         addresses: build.template(std.get(block, 'addresses', null)),
         description: build.template(std.get(block, 'description', null)),
         ip_address_version: build.template(block.ip_address_version),
@@ -26592,7 +26597,7 @@ local provider(configuration) = {
     },
     wafv2_regex_pattern_set(name, block): {
       local resource = blockType.resource('aws_wafv2_regex_pattern_set', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         scope: build.template(block.scope),
@@ -26609,7 +26614,7 @@ local provider(configuration) = {
     },
     wafv2_rule_group(name, block): {
       local resource = blockType.resource('aws_wafv2_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         capacity: build.template(block.capacity),
         description: build.template(std.get(block, 'description', null)),
         scope: build.template(block.scope),
@@ -26628,7 +26633,7 @@ local provider(configuration) = {
     },
     wafv2_web_acl(name, block): {
       local resource = blockType.resource('aws_wafv2_web_acl', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         rule_json: build.template(std.get(block, 'rule_json', null)),
@@ -26651,7 +26656,7 @@ local provider(configuration) = {
     },
     wafv2_web_acl_association(name, block): {
       local resource = blockType.resource('aws_wafv2_web_acl_association', name),
-      _: resource._({
+      _: resource._(block, {
         resource_arn: build.template(block.resource_arn),
         web_acl_arn: build.template(block.web_acl_arn),
       }),
@@ -26661,7 +26666,7 @@ local provider(configuration) = {
     },
     wafv2_web_acl_logging_configuration(name, block): {
       local resource = blockType.resource('aws_wafv2_web_acl_logging_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         log_destination_configs: build.template(block.log_destination_configs),
         resource_arn: build.template(block.resource_arn),
       }),
@@ -26671,7 +26676,7 @@ local provider(configuration) = {
     },
     worklink_fleet(name, block): {
       local resource = blockType.resource('aws_worklink_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         audit_stream_arn: build.template(std.get(block, 'audit_stream_arn', null)),
         device_ca_certificate: build.template(std.get(block, 'device_ca_certificate', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -26691,7 +26696,7 @@ local provider(configuration) = {
     },
     worklink_website_certificate_authority_association(name, block): {
       local resource = blockType.resource('aws_worklink_website_certificate_authority_association', name),
-      _: resource._({
+      _: resource._(block, {
         certificate: build.template(block.certificate),
         display_name: build.template(std.get(block, 'display_name', null)),
         fleet_arn: build.template(block.fleet_arn),
@@ -26704,7 +26709,7 @@ local provider(configuration) = {
     },
     workspaces_connection_alias(name, block): {
       local resource = blockType.resource('aws_workspaces_connection_alias', name),
-      _: resource._({
+      _: resource._(block, {
         connection_string: build.template(block.connection_string),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -26717,7 +26722,7 @@ local provider(configuration) = {
     },
     workspaces_directory(name, block): {
       local resource = blockType.resource('aws_workspaces_directory', name),
-      _: resource._({
+      _: resource._(block, {
         directory_id: build.template(block.directory_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -26738,7 +26743,7 @@ local provider(configuration) = {
     },
     workspaces_ip_group(name, block): {
       local resource = blockType.resource('aws_workspaces_ip_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26751,7 +26756,7 @@ local provider(configuration) = {
     },
     workspaces_workspace(name, block): {
       local resource = blockType.resource('aws_workspaces_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         bundle_id: build.template(block.bundle_id),
         directory_id: build.template(block.directory_id),
         root_volume_encryption_enabled: build.template(std.get(block, 'root_volume_encryption_enabled', null)),
@@ -26775,7 +26780,7 @@ local provider(configuration) = {
     },
     xray_encryption_config(name, block): {
       local resource = blockType.resource('aws_xray_encryption_config', name),
-      _: resource._({
+      _: resource._(block, {
         key_id: build.template(std.get(block, 'key_id', null)),
         type: build.template(block.type),
       }),
@@ -26785,7 +26790,7 @@ local provider(configuration) = {
     },
     xray_group(name, block): {
       local resource = blockType.resource('aws_xray_group', name),
-      _: resource._({
+      _: resource._(block, {
         filter_expression: build.template(block.filter_expression),
         group_name: build.template(block.group_name),
         tags: build.template(std.get(block, 'tags', null)),
@@ -26799,7 +26804,7 @@ local provider(configuration) = {
     },
     xray_sampling_rule(name, block): {
       local resource = blockType.resource('aws_xray_sampling_rule', name),
-      _: resource._({
+      _: resource._(block, {
         attributes: build.template(std.get(block, 'attributes', null)),
         fixed_rate: build.template(block.fixed_rate),
         host: build.template(block.host),
@@ -26836,7 +26841,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('data'),
     acm_certificate(name, block): {
       local resource = blockType.resource('aws_acm_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         key_types: build.template(std.get(block, 'key_types', null)),
         most_recent: build.template(std.get(block, 'most_recent', null)),
         statuses: build.template(std.get(block, 'statuses', null)),
@@ -26856,7 +26861,7 @@ local provider(configuration) = {
     },
     acmpca_certificate(name, block): {
       local resource = blockType.resource('aws_acmpca_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         certificate_authority_arn: build.template(block.certificate_authority_arn),
       }),
@@ -26868,7 +26873,7 @@ local provider(configuration) = {
     },
     acmpca_certificate_authority(name, block): {
       local resource = blockType.resource('aws_acmpca_certificate_authority', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -26888,7 +26893,7 @@ local provider(configuration) = {
     },
     alb(name, block): {
       local resource = blockType.resource('aws_alb', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       access_logs: resource.field('access_logs'),
       arn: resource.field('arn'),
@@ -26925,7 +26930,7 @@ local provider(configuration) = {
     },
     alb_listener(name, block): {
       local resource = blockType.resource('aws_alb_listener', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       alpn_policy: resource.field('alpn_policy'),
       arn: resource.field('arn'),
@@ -26941,7 +26946,7 @@ local provider(configuration) = {
     },
     alb_target_group(name, block): {
       local resource = blockType.resource('aws_alb_target_group', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       arn_suffix: resource.field('arn_suffix'),
@@ -26968,7 +26973,7 @@ local provider(configuration) = {
     },
     ami(name, block): {
       local resource = blockType.resource('aws_ami', name),
-      _: resource._({
+      _: resource._(block, {
         executable_users: build.template(std.get(block, 'executable_users', null)),
         include_deprecated: build.template(std.get(block, 'include_deprecated', null)),
         most_recent: build.template(std.get(block, 'most_recent', null)),
@@ -27016,7 +27021,7 @@ local provider(configuration) = {
     },
     ami_ids(name, block): {
       local resource = blockType.resource('aws_ami_ids', name),
-      _: resource._({
+      _: resource._(block, {
         executable_users: build.template(std.get(block, 'executable_users', null)),
         include_deprecated: build.template(std.get(block, 'include_deprecated', null)),
         name_regex: build.template(std.get(block, 'name_regex', null)),
@@ -27033,7 +27038,7 @@ local provider(configuration) = {
     },
     api_gateway_api_key(name, block): {
       local resource = blockType.resource('aws_api_gateway_api_key', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -27049,7 +27054,7 @@ local provider(configuration) = {
     },
     api_gateway_authorizer(name, block): {
       local resource = blockType.resource('aws_api_gateway_authorizer', name),
-      _: resource._({
+      _: resource._(block, {
         authorizer_id: build.template(block.authorizer_id),
         rest_api_id: build.template(block.rest_api_id),
       }),
@@ -27068,7 +27073,7 @@ local provider(configuration) = {
     },
     api_gateway_authorizers(name, block): {
       local resource = blockType.resource('aws_api_gateway_authorizers', name),
-      _: resource._({
+      _: resource._(block, {
         rest_api_id: build.template(block.rest_api_id),
       }),
       id: resource.field('id'),
@@ -27077,7 +27082,7 @@ local provider(configuration) = {
     },
     api_gateway_domain_name(name, block): {
       local resource = blockType.resource('aws_api_gateway_domain_name', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
       }),
       arn: resource.field('arn'),
@@ -27098,7 +27103,7 @@ local provider(configuration) = {
     },
     api_gateway_export(name, block): {
       local resource = blockType.resource('aws_api_gateway_export', name),
-      _: resource._({
+      _: resource._(block, {
         accepts: build.template(std.get(block, 'accepts', null)),
         export_type: build.template(block.export_type),
         parameters: build.template(std.get(block, 'parameters', null)),
@@ -27117,7 +27122,7 @@ local provider(configuration) = {
     },
     api_gateway_resource(name, block): {
       local resource = blockType.resource('aws_api_gateway_resource', name),
-      _: resource._({
+      _: resource._(block, {
         path: build.template(block.path),
         rest_api_id: build.template(block.rest_api_id),
       }),
@@ -27129,7 +27134,7 @@ local provider(configuration) = {
     },
     api_gateway_rest_api(name, block): {
       local resource = blockType.resource('aws_api_gateway_rest_api', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       api_key_source: resource.field('api_key_source'),
@@ -27147,7 +27152,7 @@ local provider(configuration) = {
     },
     api_gateway_sdk(name, block): {
       local resource = blockType.resource('aws_api_gateway_sdk', name),
-      _: resource._({
+      _: resource._(block, {
         parameters: build.template(std.get(block, 'parameters', null)),
         rest_api_id: build.template(block.rest_api_id),
         sdk_type: build.template(block.sdk_type),
@@ -27164,7 +27169,7 @@ local provider(configuration) = {
     },
     api_gateway_vpc_link(name, block): {
       local resource = blockType.resource('aws_api_gateway_vpc_link', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27178,7 +27183,7 @@ local provider(configuration) = {
     },
     apigatewayv2_api(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_api', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
       }),
       api_endpoint: resource.field('api_endpoint'),
@@ -27198,7 +27203,7 @@ local provider(configuration) = {
     },
     apigatewayv2_apis(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_apis', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         protocol_type: build.template(std.get(block, 'protocol_type', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -27211,7 +27216,7 @@ local provider(configuration) = {
     },
     apigatewayv2_export(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_export', name),
-      _: resource._({
+      _: resource._(block, {
         api_id: build.template(block.api_id),
         export_version: build.template(std.get(block, 'export_version', null)),
         include_extensions: build.template(std.get(block, 'include_extensions', null)),
@@ -27230,7 +27235,7 @@ local provider(configuration) = {
     },
     apigatewayv2_vpc_link(name, block): {
       local resource = blockType.resource('aws_apigatewayv2_vpc_link', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_link_id: build.template(block.vpc_link_id),
       }),
       arn: resource.field('arn'),
@@ -27243,7 +27248,7 @@ local provider(configuration) = {
     },
     appconfig_configuration_profile(name, block): {
       local resource = blockType.resource('aws_appconfig_configuration_profile', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         configuration_profile_id: build.template(block.configuration_profile_id),
       }),
@@ -27262,7 +27267,7 @@ local provider(configuration) = {
     },
     appconfig_configuration_profiles(name, block): {
       local resource = blockType.resource('aws_appconfig_configuration_profiles', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
       }),
       application_id: resource.field('application_id'),
@@ -27271,7 +27276,7 @@ local provider(configuration) = {
     },
     appconfig_environment(name, block): {
       local resource = blockType.resource('aws_appconfig_environment', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         environment_id: build.template(block.environment_id),
       }),
@@ -27287,7 +27292,7 @@ local provider(configuration) = {
     },
     appconfig_environments(name, block): {
       local resource = blockType.resource('aws_appconfig_environments', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
       }),
       application_id: resource.field('application_id'),
@@ -27296,7 +27301,7 @@ local provider(configuration) = {
     },
     appintegrations_event_integration(name, block): {
       local resource = blockType.resource('aws_appintegrations_event_integration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27309,7 +27314,7 @@ local provider(configuration) = {
     },
     appmesh_gateway_route(name, block): {
       local resource = blockType.resource('aws_appmesh_gateway_route', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         virtual_gateway_name: build.template(block.virtual_gateway_name),
@@ -27328,7 +27333,7 @@ local provider(configuration) = {
     },
     appmesh_mesh(name, block): {
       local resource = blockType.resource('aws_appmesh_mesh', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27343,7 +27348,7 @@ local provider(configuration) = {
     },
     appmesh_route(name, block): {
       local resource = blockType.resource('aws_appmesh_route', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
         virtual_router_name: build.template(block.virtual_router_name),
@@ -27362,7 +27367,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_gateway(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
       }),
@@ -27379,7 +27384,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_node(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_node', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
       }),
@@ -27396,7 +27401,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_router(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_router', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
       }),
@@ -27413,7 +27418,7 @@ local provider(configuration) = {
     },
     appmesh_virtual_service(name, block): {
       local resource = blockType.resource('aws_appmesh_virtual_service', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_name: build.template(block.mesh_name),
         name: build.template(block.name),
       }),
@@ -27430,14 +27435,14 @@ local provider(configuration) = {
     },
     apprunner_hosted_zone_id(name, block): {
       local resource = blockType.resource('aws_apprunner_hosted_zone_id', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       region: resource.field('region'),
     },
     appstream_image(name, block): {
       local resource = blockType.resource('aws_appstream_image', name),
-      _: resource._({
+      _: resource._(block, {
         most_recent: build.template(std.get(block, 'most_recent', null)),
         name_regex: build.template(std.get(block, 'name_regex', null)),
         type: build.template(std.get(block, 'type', null)),
@@ -27463,7 +27468,7 @@ local provider(configuration) = {
     },
     arn(name, block): {
       local resource = blockType.resource('aws_arn', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       account: resource.field('account'),
@@ -27476,7 +27481,7 @@ local provider(configuration) = {
     },
     athena_named_query(name, block): {
       local resource = blockType.resource('aws_athena_named_query', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         workgroup: build.template(std.get(block, 'workgroup', null)),
       }),
@@ -27489,7 +27494,7 @@ local provider(configuration) = {
     },
     auditmanager_control(name, block): {
       local resource = blockType.resource('aws_auditmanager_control', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         type: build.template(block.type),
       }),
@@ -27505,7 +27510,7 @@ local provider(configuration) = {
     },
     auditmanager_framework(name, block): {
       local resource = blockType.resource('aws_auditmanager_framework', name),
-      _: resource._({
+      _: resource._(block, {
         framework_type: build.template(block.framework_type),
         name: build.template(block.name),
       }),
@@ -27519,7 +27524,7 @@ local provider(configuration) = {
     },
     autoscaling_group(name, block): {
       local resource = blockType.resource('aws_autoscaling_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27556,7 +27561,7 @@ local provider(configuration) = {
     },
     autoscaling_groups(name, block): {
       local resource = blockType.resource('aws_autoscaling_groups', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
@@ -27564,7 +27569,7 @@ local provider(configuration) = {
     },
     availability_zone(name, block): {
       local resource = blockType.resource('aws_availability_zone', name),
-      _: resource._({
+      _: resource._(block, {
         all_availability_zones: build.template(std.get(block, 'all_availability_zones', null)),
       }),
       all_availability_zones: resource.field('all_availability_zones'),
@@ -27583,7 +27588,7 @@ local provider(configuration) = {
     },
     availability_zones(name, block): {
       local resource = blockType.resource('aws_availability_zones', name),
-      _: resource._({
+      _: resource._(block, {
         all_availability_zones: build.template(std.get(block, 'all_availability_zones', null)),
         exclude_names: build.template(std.get(block, 'exclude_names', null)),
         exclude_zone_ids: build.template(std.get(block, 'exclude_zone_ids', null)),
@@ -27600,7 +27605,7 @@ local provider(configuration) = {
     },
     backup_framework(name, block): {
       local resource = blockType.resource('aws_backup_framework', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27615,7 +27620,7 @@ local provider(configuration) = {
     },
     backup_plan(name, block): {
       local resource = blockType.resource('aws_backup_plan', name),
-      _: resource._({
+      _: resource._(block, {
         plan_id: build.template(block.plan_id),
       }),
       arn: resource.field('arn'),
@@ -27628,7 +27633,7 @@ local provider(configuration) = {
     },
     backup_report_plan(name, block): {
       local resource = blockType.resource('aws_backup_report_plan', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27643,7 +27648,7 @@ local provider(configuration) = {
     },
     backup_selection(name, block): {
       local resource = blockType.resource('aws_backup_selection', name),
-      _: resource._({
+      _: resource._(block, {
         plan_id: build.template(block.plan_id),
         selection_id: build.template(block.selection_id),
       }),
@@ -27656,7 +27661,7 @@ local provider(configuration) = {
     },
     backup_vault(name, block): {
       local resource = blockType.resource('aws_backup_vault', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27668,7 +27673,7 @@ local provider(configuration) = {
     },
     batch_compute_environment(name, block): {
       local resource = blockType.resource('aws_batch_compute_environment', name),
-      _: resource._({
+      _: resource._(block, {
         compute_environment_name: build.template(block.compute_environment_name),
       }),
       arn: resource.field('arn'),
@@ -27685,7 +27690,7 @@ local provider(configuration) = {
     },
     batch_job_definition(name, block): {
       local resource = blockType.resource('aws_batch_job_definition', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(std.get(block, 'arn', null)),
         name: build.template(std.get(block, 'name', null)),
         revision: build.template(std.get(block, 'revision', null)),
@@ -27708,7 +27713,7 @@ local provider(configuration) = {
     },
     batch_job_queue(name, block): {
       local resource = blockType.resource('aws_batch_job_queue', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -27725,7 +27730,7 @@ local provider(configuration) = {
     },
     batch_scheduling_policy(name, block): {
       local resource = blockType.resource('aws_batch_scheduling_policy', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -27736,7 +27741,7 @@ local provider(configuration) = {
     },
     bedrock_custom_model(name, block): {
       local resource = blockType.resource('aws_bedrock_custom_model', name),
-      _: resource._({
+      _: resource._(block, {
         model_id: build.template(block.model_id),
       }),
       base_model_arn: resource.field('base_model_arn'),
@@ -27759,14 +27764,14 @@ local provider(configuration) = {
     },
     bedrock_custom_models(name, block): {
       local resource = blockType.resource('aws_bedrock_custom_models', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       model_summaries: resource.field('model_summaries'),
     },
     bedrock_foundation_model(name, block): {
       local resource = blockType.resource('aws_bedrock_foundation_model', name),
-      _: resource._({
+      _: resource._(block, {
         model_id: build.template(block.model_id),
       }),
       customizations_supported: resource.field('customizations_supported'),
@@ -27782,7 +27787,7 @@ local provider(configuration) = {
     },
     bedrock_foundation_models(name, block): {
       local resource = blockType.resource('aws_bedrock_foundation_models', name),
-      _: resource._({
+      _: resource._(block, {
         by_customization_type: build.template(std.get(block, 'by_customization_type', null)),
         by_inference_type: build.template(std.get(block, 'by_inference_type', null)),
         by_output_modality: build.template(std.get(block, 'by_output_modality', null)),
@@ -27797,7 +27802,7 @@ local provider(configuration) = {
     },
     bedrock_inference_profile(name, block): {
       local resource = blockType.resource('aws_bedrock_inference_profile', name),
-      _: resource._({
+      _: resource._(block, {
         inference_profile_id: build.template(block.inference_profile_id),
       }),
       created_at: resource.field('created_at'),
@@ -27812,27 +27817,27 @@ local provider(configuration) = {
     },
     bedrock_inference_profiles(name, block): {
       local resource = blockType.resource('aws_bedrock_inference_profiles', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       inference_profile_summaries: resource.field('inference_profile_summaries'),
     },
     bedrockagent_agent_versions(name, block): {
       local resource = blockType.resource('aws_bedrockagent_agent_versions', name),
-      _: resource._({
+      _: resource._(block, {
         agent_id: build.template(block.agent_id),
       }),
       agent_id: resource.field('agent_id'),
     },
     billing_service_account(name, block): {
       local resource = blockType.resource('aws_billing_service_account', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       id: resource.field('id'),
     },
     budgets_budget(name, block): {
       local resource = blockType.resource('aws_budgets_budget', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         name_prefix: build.template(std.get(block, 'name_prefix', null)),
       }),
@@ -27857,7 +27862,7 @@ local provider(configuration) = {
     },
     caller_identity(name, block): {
       local resource = blockType.resource('aws_caller_identity', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       account_id: resource.field('account_id'),
       arn: resource.field('arn'),
@@ -27866,14 +27871,14 @@ local provider(configuration) = {
     },
     canonical_user_id(name, block): {
       local resource = blockType.resource('aws_canonical_user_id', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       display_name: resource.field('display_name'),
       id: resource.field('id'),
     },
     ce_cost_category(name, block): {
       local resource = blockType.resource('aws_ce_cost_category', name),
-      _: resource._({
+      _: resource._(block, {
         cost_category_arn: build.template(block.cost_category_arn),
       }),
       cost_category_arn: resource.field('cost_category_arn'),
@@ -27889,7 +27894,7 @@ local provider(configuration) = {
     },
     ce_tags(name, block): {
       local resource = blockType.resource('aws_ce_tags', name),
-      _: resource._({
+      _: resource._(block, {
         search_string: build.template(std.get(block, 'search_string', null)),
         tag_key: build.template(std.get(block, 'tag_key', null)),
       }),
@@ -27900,7 +27905,7 @@ local provider(configuration) = {
     },
     chatbot_slack_workspace(name, block): {
       local resource = blockType.resource('aws_chatbot_slack_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         slack_team_name: build.template(block.slack_team_name),
       }),
       slack_team_id: resource.field('slack_team_id'),
@@ -27908,7 +27913,7 @@ local provider(configuration) = {
     },
     cloudcontrolapi_resource(name, block): {
       local resource = blockType.resource('aws_cloudcontrolapi_resource', name),
-      _: resource._({
+      _: resource._(block, {
         identifier: build.template(block.identifier),
         role_arn: build.template(std.get(block, 'role_arn', null)),
         type_name: build.template(block.type_name),
@@ -27923,7 +27928,7 @@ local provider(configuration) = {
     },
     cloudformation_export(name, block): {
       local resource = blockType.resource('aws_cloudformation_export', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       exporting_stack_id: resource.field('exporting_stack_id'),
@@ -27933,7 +27938,7 @@ local provider(configuration) = {
     },
     cloudformation_stack(name, block): {
       local resource = blockType.resource('aws_cloudformation_stack', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       capabilities: resource.field('capabilities'),
@@ -27951,7 +27956,7 @@ local provider(configuration) = {
     },
     cloudformation_type(name, block): {
       local resource = blockType.resource('aws_cloudformation_type', name),
-      _: resource._({
+      _: resource._(block, {
         version_id: build.template(std.get(block, 'version_id', null)),
       }),
       arn: resource.field('arn'),
@@ -27974,7 +27979,7 @@ local provider(configuration) = {
     },
     cloudfront_cache_policy(name, block): {
       local resource = blockType.resource('aws_cloudfront_cache_policy', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(std.get(block, 'id', null)),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -27989,7 +27994,7 @@ local provider(configuration) = {
     },
     cloudfront_distribution(name, block): {
       local resource = blockType.resource('aws_cloudfront_distribution', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       aliases: resource.field('aliases'),
@@ -28007,7 +28012,7 @@ local provider(configuration) = {
     },
     cloudfront_function(name, block): {
       local resource = blockType.resource('aws_cloudfront_function', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         stage: build.template(block.stage),
       }),
@@ -28025,7 +28030,7 @@ local provider(configuration) = {
     },
     cloudfront_log_delivery_canonical_user_id(name, block): {
       local resource = blockType.resource('aws_cloudfront_log_delivery_canonical_user_id', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
       }),
       id: resource.field('id'),
@@ -28033,7 +28038,7 @@ local provider(configuration) = {
     },
     cloudfront_origin_access_control(name, block): {
       local resource = blockType.resource('aws_cloudfront_origin_access_control', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       description: resource.field('description'),
@@ -28046,7 +28051,7 @@ local provider(configuration) = {
     },
     cloudfront_origin_access_identities(name, block): {
       local resource = blockType.resource('aws_cloudfront_origin_access_identities', name),
-      _: resource._({
+      _: resource._(block, {
         comments: build.template(std.get(block, 'comments', null)),
       }),
       comments: resource.field('comments'),
@@ -28057,7 +28062,7 @@ local provider(configuration) = {
     },
     cloudfront_origin_access_identity(name, block): {
       local resource = blockType.resource('aws_cloudfront_origin_access_identity', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       caller_reference: resource.field('caller_reference'),
@@ -28070,7 +28075,7 @@ local provider(configuration) = {
     },
     cloudfront_origin_request_policy(name, block): {
       local resource = blockType.resource('aws_cloudfront_origin_request_policy', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(std.get(block, 'id', null)),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -28084,7 +28089,7 @@ local provider(configuration) = {
     },
     cloudfront_realtime_log_config(name, block): {
       local resource = blockType.resource('aws_cloudfront_realtime_log_config', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28096,7 +28101,7 @@ local provider(configuration) = {
     },
     cloudfront_response_headers_policy(name, block): {
       local resource = blockType.resource('aws_cloudfront_response_headers_policy', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       comment: resource.field('comment'),
       cors_config: resource.field('cors_config'),
@@ -28110,7 +28115,7 @@ local provider(configuration) = {
     },
     cloudhsm_v2_cluster(name, block): {
       local resource = blockType.resource('aws_cloudhsm_v2_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
       }),
       cluster_certificates: resource.field('cluster_certificates'),
@@ -28123,7 +28128,7 @@ local provider(configuration) = {
     },
     cloudtrail_service_account(name, block): {
       local resource = blockType.resource('aws_cloudtrail_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
       }),
       arn: resource.field('arn'),
@@ -28132,7 +28137,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_bus(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_bus', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28143,7 +28148,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_connection(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28154,7 +28159,7 @@ local provider(configuration) = {
     },
     cloudwatch_event_source(name, block): {
       local resource = blockType.resource('aws_cloudwatch_event_source', name),
-      _: resource._({
+      _: resource._(block, {
         name_prefix: build.template(std.get(block, 'name_prefix', null)),
       }),
       arn: resource.field('arn'),
@@ -28166,7 +28171,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_data_protection_policy_document(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_data_protection_policy_document', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         version: build.template(std.get(block, 'version', null)),
@@ -28179,7 +28184,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_group(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28193,7 +28198,7 @@ local provider(configuration) = {
     },
     cloudwatch_log_groups(name, block): {
       local resource = blockType.resource('aws_cloudwatch_log_groups', name),
-      _: resource._({
+      _: resource._(block, {
         log_group_name_prefix: build.template(std.get(block, 'log_group_name_prefix', null)),
       }),
       arns: resource.field('arns'),
@@ -28203,7 +28208,7 @@ local provider(configuration) = {
     },
     codeartifact_authorization_token(name, block): {
       local resource = blockType.resource('aws_codeartifact_authorization_token', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
         duration_seconds: build.template(std.get(block, 'duration_seconds', null)),
       }),
@@ -28216,7 +28221,7 @@ local provider(configuration) = {
     },
     codeartifact_repository_endpoint(name, block): {
       local resource = blockType.resource('aws_codeartifact_repository_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
         format: build.template(block.format),
         repository: build.template(block.repository),
@@ -28230,7 +28235,7 @@ local provider(configuration) = {
     },
     codebuild_fleet(name, block): {
       local resource = blockType.resource('aws_codebuild_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28251,7 +28256,7 @@ local provider(configuration) = {
     },
     codecatalyst_dev_environment(name, block): {
       local resource = blockType.resource('aws_codecatalyst_dev_environment', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(std.get(block, 'alias', null)),
         creator_id: build.template(std.get(block, 'creator_id', null)),
         env_id: build.template(block.env_id),
@@ -28275,7 +28280,7 @@ local provider(configuration) = {
     },
     codecommit_approval_rule_template(name, block): {
       local resource = blockType.resource('aws_codecommit_approval_rule_template', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       approval_rule_template_id: resource.field('approval_rule_template_id'),
@@ -28290,7 +28295,7 @@ local provider(configuration) = {
     },
     codecommit_repository(name, block): {
       local resource = blockType.resource('aws_codecommit_repository', name),
-      _: resource._({
+      _: resource._(block, {
         repository_name: build.template(block.repository_name),
       }),
       arn: resource.field('arn'),
@@ -28303,7 +28308,7 @@ local provider(configuration) = {
     },
     codeguruprofiler_profiling_group(name, block): {
       local resource = blockType.resource('aws_codeguruprofiler_profiling_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       agent_orchestration_config: resource.field('agent_orchestration_config'),
@@ -28318,7 +28323,7 @@ local provider(configuration) = {
     },
     codestarconnections_connection(name, block): {
       local resource = blockType.resource('aws_codestarconnections_connection', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       connection_status: resource.field('connection_status'),
@@ -28330,7 +28335,7 @@ local provider(configuration) = {
     },
     cognito_identity_pool(name, block): {
       local resource = blockType.resource('aws_cognito_identity_pool', name),
-      _: resource._({
+      _: resource._(block, {
         identity_pool_name: build.template(block.identity_pool_name),
       }),
       allow_classic_flow: resource.field('allow_classic_flow'),
@@ -28347,7 +28352,7 @@ local provider(configuration) = {
     },
     cognito_user_group(name, block): {
       local resource = blockType.resource('aws_cognito_user_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         user_pool_id: build.template(block.user_pool_id),
       }),
@@ -28360,7 +28365,7 @@ local provider(configuration) = {
     },
     cognito_user_groups(name, block): {
       local resource = blockType.resource('aws_cognito_user_groups', name),
-      _: resource._({
+      _: resource._(block, {
         user_pool_id: build.template(block.user_pool_id),
       }),
       groups: resource.field('groups'),
@@ -28369,7 +28374,7 @@ local provider(configuration) = {
     },
     cognito_user_pool(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool', name),
-      _: resource._({
+      _: resource._(block, {
         user_pool_id: build.template(block.user_pool_id),
       }),
       account_recovery_setting: resource.field('account_recovery_setting'),
@@ -28399,7 +28404,7 @@ local provider(configuration) = {
     },
     cognito_user_pool_client(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool_client', name),
-      _: resource._({
+      _: resource._(block, {
         client_id: build.template(block.client_id),
         user_pool_id: build.template(block.user_pool_id),
       }),
@@ -28430,7 +28435,7 @@ local provider(configuration) = {
     },
     cognito_user_pool_clients(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool_clients', name),
-      _: resource._({
+      _: resource._(block, {
         user_pool_id: build.template(block.user_pool_id),
       }),
       client_ids: resource.field('client_ids'),
@@ -28440,7 +28445,7 @@ local provider(configuration) = {
     },
     cognito_user_pool_signing_certificate(name, block): {
       local resource = blockType.resource('aws_cognito_user_pool_signing_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         user_pool_id: build.template(block.user_pool_id),
       }),
       certificate: resource.field('certificate'),
@@ -28449,7 +28454,7 @@ local provider(configuration) = {
     },
     cognito_user_pools(name, block): {
       local resource = blockType.resource('aws_cognito_user_pools', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arns: resource.field('arns'),
@@ -28459,7 +28464,7 @@ local provider(configuration) = {
     },
     connect_bot_association(name, block): {
       local resource = blockType.resource('aws_connect_bot_association', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       id: resource.field('id'),
@@ -28467,7 +28472,7 @@ local provider(configuration) = {
     },
     connect_contact_flow(name, block): {
       local resource = blockType.resource('aws_connect_contact_flow', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         type: build.template(std.get(block, 'type', null)),
       }),
@@ -28483,7 +28488,7 @@ local provider(configuration) = {
     },
     connect_contact_flow_module(name, block): {
       local resource = blockType.resource('aws_connect_contact_flow_module', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28499,7 +28504,7 @@ local provider(configuration) = {
     },
     connect_hours_of_operation(name, block): {
       local resource = blockType.resource('aws_connect_hours_of_operation', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28514,7 +28519,7 @@ local provider(configuration) = {
     },
     connect_instance(name, block): {
       local resource = blockType.resource('aws_connect_instance', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       auto_resolve_best_voices_enabled: resource.field('auto_resolve_best_voices_enabled'),
@@ -28535,7 +28540,7 @@ local provider(configuration) = {
     },
     connect_instance_storage_config(name, block): {
       local resource = blockType.resource('aws_connect_instance_storage_config', name),
-      _: resource._({
+      _: resource._(block, {
         association_id: build.template(block.association_id),
         instance_id: build.template(block.instance_id),
         resource_type: build.template(block.resource_type),
@@ -28548,7 +28553,7 @@ local provider(configuration) = {
     },
     connect_lambda_function_association(name, block): {
       local resource = blockType.resource('aws_connect_lambda_function_association', name),
-      _: resource._({
+      _: resource._(block, {
         function_arn: build.template(block.function_arn),
         instance_id: build.template(block.instance_id),
       }),
@@ -28558,7 +28563,7 @@ local provider(configuration) = {
     },
     connect_prompt(name, block): {
       local resource = blockType.resource('aws_connect_prompt', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         name: build.template(block.name),
       }),
@@ -28570,7 +28575,7 @@ local provider(configuration) = {
     },
     connect_queue(name, block): {
       local resource = blockType.resource('aws_connect_queue', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28587,7 +28592,7 @@ local provider(configuration) = {
     },
     connect_quick_connect(name, block): {
       local resource = blockType.resource('aws_connect_quick_connect', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28601,7 +28606,7 @@ local provider(configuration) = {
     },
     connect_routing_profile(name, block): {
       local resource = blockType.resource('aws_connect_routing_profile', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28617,7 +28622,7 @@ local provider(configuration) = {
     },
     connect_security_profile(name, block): {
       local resource = blockType.resource('aws_connect_security_profile', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28632,7 +28637,7 @@ local provider(configuration) = {
     },
     connect_user(name, block): {
       local resource = blockType.resource('aws_connect_user', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28650,7 +28655,7 @@ local provider(configuration) = {
     },
     connect_user_hierarchy_group(name, block): {
       local resource = blockType.resource('aws_connect_user_hierarchy_group', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28664,7 +28669,7 @@ local provider(configuration) = {
     },
     connect_user_hierarchy_structure(name, block): {
       local resource = blockType.resource('aws_connect_user_hierarchy_structure', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       hierarchy_structure: resource.field('hierarchy_structure'),
@@ -28673,7 +28678,7 @@ local provider(configuration) = {
     },
     connect_vocabulary(name, block): {
       local resource = blockType.resource('aws_connect_vocabulary', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       arn: resource.field('arn'),
@@ -28690,7 +28695,7 @@ local provider(configuration) = {
     },
     controltower_controls(name, block): {
       local resource = blockType.resource('aws_controltower_controls', name),
-      _: resource._({
+      _: resource._(block, {
         target_identifier: build.template(block.target_identifier),
       }),
       enabled_controls: resource.field('enabled_controls'),
@@ -28699,7 +28704,7 @@ local provider(configuration) = {
     },
     cur_report_definition(name, block): {
       local resource = blockType.resource('aws_cur_report_definition', name),
-      _: resource._({
+      _: resource._(block, {
         report_name: build.template(block.report_name),
       }),
       additional_artifacts: resource.field('additional_artifacts'),
@@ -28718,7 +28723,7 @@ local provider(configuration) = {
     },
     customer_gateway(name, block): {
       local resource = blockType.resource('aws_customer_gateway', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       bgp_asn: resource.field('bgp_asn'),
@@ -28732,7 +28737,7 @@ local provider(configuration) = {
     },
     datapipeline_pipeline(name, block): {
       local resource = blockType.resource('aws_datapipeline_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         pipeline_id: build.template(block.pipeline_id),
       }),
       description: resource.field('description'),
@@ -28743,7 +28748,7 @@ local provider(configuration) = {
     },
     datapipeline_pipeline_definition(name, block): {
       local resource = blockType.resource('aws_datapipeline_pipeline_definition', name),
-      _: resource._({
+      _: resource._(block, {
         pipeline_id: build.template(block.pipeline_id),
       }),
       id: resource.field('id'),
@@ -28753,7 +28758,7 @@ local provider(configuration) = {
     },
     datazone_environment_blueprint(name, block): {
       local resource = blockType.resource('aws_datazone_environment_blueprint', name),
-      _: resource._({
+      _: resource._(block, {
         domain_id: build.template(block.domain_id),
         managed: build.template(block.managed),
         name: build.template(block.name),
@@ -28767,7 +28772,7 @@ local provider(configuration) = {
     },
     db_cluster_snapshot(name, block): {
       local resource = blockType.resource('aws_db_cluster_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         db_cluster_identifier: build.template(std.get(block, 'db_cluster_identifier', null)),
         db_cluster_snapshot_identifier: build.template(std.get(block, 'db_cluster_snapshot_identifier', null)),
         include_public: build.template(std.get(block, 'include_public', null)),
@@ -28799,7 +28804,7 @@ local provider(configuration) = {
     },
     db_event_categories(name, block): {
       local resource = blockType.resource('aws_db_event_categories', name),
-      _: resource._({
+      _: resource._(block, {
         source_type: build.template(std.get(block, 'source_type', null)),
       }),
       event_categories: resource.field('event_categories'),
@@ -28808,7 +28813,7 @@ local provider(configuration) = {
     },
     db_instance(name, block): {
       local resource = blockType.resource('aws_db_instance', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       address: resource.field('address'),
       allocated_storage: resource.field('allocated_storage'),
@@ -28856,7 +28861,7 @@ local provider(configuration) = {
     },
     db_instances(name, block): {
       local resource = blockType.resource('aws_db_instances', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       instance_arns: resource.field('instance_arns'),
@@ -28865,7 +28870,7 @@ local provider(configuration) = {
     },
     db_parameter_group(name, block): {
       local resource = blockType.resource('aws_db_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28876,7 +28881,7 @@ local provider(configuration) = {
     },
     db_proxy(name, block): {
       local resource = blockType.resource('aws_db_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28895,7 +28900,7 @@ local provider(configuration) = {
     },
     db_snapshot(name, block): {
       local resource = blockType.resource('aws_db_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         db_instance_identifier: build.template(std.get(block, 'db_instance_identifier', null)),
         db_snapshot_identifier: build.template(std.get(block, 'db_snapshot_identifier', null)),
         include_public: build.template(std.get(block, 'include_public', null)),
@@ -28932,7 +28937,7 @@ local provider(configuration) = {
     },
     db_subnet_group(name, block): {
       local resource = blockType.resource('aws_db_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -28946,21 +28951,21 @@ local provider(configuration) = {
     },
     default_tags(name, block): {
       local resource = blockType.resource('aws_default_tags', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       tags: resource.field('tags'),
     },
     devopsguru_notification_channel(name, block): {
       local resource = blockType.resource('aws_devopsguru_notification_channel', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       id: resource.field('id'),
     },
     devopsguru_resource_collection(name, block): {
       local resource = blockType.resource('aws_devopsguru_resource_collection', name),
-      _: resource._({
+      _: resource._(block, {
         type: build.template(block.type),
       }),
       id: resource.field('id'),
@@ -28968,7 +28973,7 @@ local provider(configuration) = {
     },
     directory_service_directory(name, block): {
       local resource = blockType.resource('aws_directory_service_directory', name),
-      _: resource._({
+      _: resource._(block, {
         directory_id: build.template(block.directory_id),
       }),
       access_url: resource.field('access_url'),
@@ -28991,7 +28996,7 @@ local provider(configuration) = {
     },
     dms_certificate(name, block): {
       local resource = blockType.resource('aws_dms_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_id: build.template(block.certificate_id),
       }),
       certificate_arn: resource.field('certificate_arn'),
@@ -29009,7 +29014,7 @@ local provider(configuration) = {
     },
     dms_endpoint(name, block): {
       local resource = blockType.resource('aws_dms_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         endpoint_id: build.template(block.endpoint_id),
       }),
       certificate_arn: resource.field('certificate_arn'),
@@ -29041,7 +29046,7 @@ local provider(configuration) = {
     },
     dms_replication_instance(name, block): {
       local resource = blockType.resource('aws_dms_replication_instance', name),
-      _: resource._({
+      _: resource._(block, {
         replication_instance_id: build.template(block.replication_instance_id),
       }),
       allocated_storage: resource.field('allocated_storage'),
@@ -29065,7 +29070,7 @@ local provider(configuration) = {
     },
     dms_replication_subnet_group(name, block): {
       local resource = blockType.resource('aws_dms_replication_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         replication_subnet_group_id: build.template(block.replication_subnet_group_id),
       }),
       id: resource.field('id'),
@@ -29079,7 +29084,7 @@ local provider(configuration) = {
     },
     dms_replication_task(name, block): {
       local resource = blockType.resource('aws_dms_replication_task', name),
-      _: resource._({
+      _: resource._(block, {
         replication_task_id: build.template(block.replication_task_id),
       }),
       cdc_start_position: resource.field('cdc_start_position'),
@@ -29099,7 +29104,7 @@ local provider(configuration) = {
     },
     docdb_engine_version(name, block): {
       local resource = blockType.resource('aws_docdb_engine_version', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(std.get(block, 'engine', null)),
         preferred_versions: build.template(std.get(block, 'preferred_versions', null)),
       }),
@@ -29116,7 +29121,7 @@ local provider(configuration) = {
     },
     docdb_orderable_db_instance(name, block): {
       local resource = blockType.resource('aws_docdb_orderable_db_instance', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(std.get(block, 'engine', null)),
         license_model: build.template(std.get(block, 'license_model', null)),
         preferred_instance_classes: build.template(std.get(block, 'preferred_instance_classes', null)),
@@ -29132,7 +29137,7 @@ local provider(configuration) = {
     },
     dx_connection(name, block): {
       local resource = blockType.resource('aws_dx_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -29149,7 +29154,7 @@ local provider(configuration) = {
     },
     dx_gateway(name, block): {
       local resource = blockType.resource('aws_dx_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       amazon_side_asn: resource.field('amazon_side_asn'),
@@ -29159,7 +29164,7 @@ local provider(configuration) = {
     },
     dx_location(name, block): {
       local resource = blockType.resource('aws_dx_location', name),
-      _: resource._({
+      _: resource._(block, {
         location_code: build.template(block.location_code),
       }),
       available_macsec_port_speeds: resource.field('available_macsec_port_speeds'),
@@ -29171,14 +29176,14 @@ local provider(configuration) = {
     },
     dx_locations(name, block): {
       local resource = blockType.resource('aws_dx_locations', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       location_codes: resource.field('location_codes'),
     },
     dx_router_configuration(name, block): {
       local resource = blockType.resource('aws_dx_router_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         router_type_identifier: build.template(block.router_type_identifier),
         virtual_interface_id: build.template(block.virtual_interface_id),
       }),
@@ -29191,7 +29196,7 @@ local provider(configuration) = {
     },
     dynamodb_table(name, block): {
       local resource = blockType.resource('aws_dynamodb_table', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -29218,7 +29223,7 @@ local provider(configuration) = {
     },
     dynamodb_table_item(name, block): {
       local resource = blockType.resource('aws_dynamodb_table_item', name),
-      _: resource._({
+      _: resource._(block, {
         expression_attribute_names: build.template(std.get(block, 'expression_attribute_names', null)),
         key: build.template(block.key),
         projection_expression: build.template(std.get(block, 'projection_expression', null)),
@@ -29233,21 +29238,21 @@ local provider(configuration) = {
     },
     ebs_default_kms_key(name, block): {
       local resource = blockType.resource('aws_ebs_default_kms_key', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       key_arn: resource.field('key_arn'),
     },
     ebs_encryption_by_default(name, block): {
       local resource = blockType.resource('aws_ebs_encryption_by_default', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       enabled: resource.field('enabled'),
       id: resource.field('id'),
     },
     ebs_snapshot(name, block): {
       local resource = blockType.resource('aws_ebs_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         most_recent: build.template(std.get(block, 'most_recent', null)),
         owners: build.template(std.get(block, 'owners', null)),
         restorable_by_user_ids: build.template(std.get(block, 'restorable_by_user_ids', null)),
@@ -29276,7 +29281,7 @@ local provider(configuration) = {
     },
     ebs_snapshot_ids(name, block): {
       local resource = blockType.resource('aws_ebs_snapshot_ids', name),
-      _: resource._({
+      _: resource._(block, {
         owners: build.template(std.get(block, 'owners', null)),
         restorable_by_user_ids: build.template(std.get(block, 'restorable_by_user_ids', null)),
       }),
@@ -29287,7 +29292,7 @@ local provider(configuration) = {
     },
     ebs_volume(name, block): {
       local resource = blockType.resource('aws_ebs_volume', name),
-      _: resource._({
+      _: resource._(block, {
         most_recent: build.template(std.get(block, 'most_recent', null)),
       }),
       arn: resource.field('arn'),
@@ -29308,7 +29313,7 @@ local provider(configuration) = {
     },
     ebs_volumes(name, block): {
       local resource = blockType.resource('aws_ebs_volumes', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       id: resource.field('id'),
@@ -29317,7 +29322,7 @@ local provider(configuration) = {
     },
     ec2_capacity_block_offering(name, block): {
       local resource = blockType.resource('aws_ec2_capacity_block_offering', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_duration_hours: build.template(block.capacity_duration_hours),
         instance_count: build.template(block.instance_count),
         instance_type: build.template(block.instance_type),
@@ -29335,7 +29340,7 @@ local provider(configuration) = {
     },
     ec2_client_vpn_endpoint(name, block): {
       local resource = blockType.resource('aws_ec2_client_vpn_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       authentication_options: resource.field('authentication_options'),
@@ -29361,7 +29366,7 @@ local provider(configuration) = {
     },
     ec2_coip_pool(name, block): {
       local resource = blockType.resource('aws_ec2_coip_pool', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       id: resource.field('id'),
@@ -29372,7 +29377,7 @@ local provider(configuration) = {
     },
     ec2_coip_pools(name, block): {
       local resource = blockType.resource('aws_ec2_coip_pools', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       id: resource.field('id'),
@@ -29381,7 +29386,7 @@ local provider(configuration) = {
     },
     ec2_host(name, block): {
       local resource = blockType.resource('aws_ec2_host', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       asset_id: resource.field('asset_id'),
@@ -29401,7 +29406,7 @@ local provider(configuration) = {
     },
     ec2_instance_type(name, block): {
       local resource = blockType.resource('aws_ec2_instance_type', name),
-      _: resource._({
+      _: resource._(block, {
         instance_type: build.template(block.instance_type),
       }),
       auto_recovery_supported: resource.field('auto_recovery_supported'),
@@ -29455,7 +29460,7 @@ local provider(configuration) = {
     },
     ec2_instance_type_offering(name, block): {
       local resource = blockType.resource('aws_ec2_instance_type_offering', name),
-      _: resource._({
+      _: resource._(block, {
         location_type: build.template(std.get(block, 'location_type', null)),
         preferred_instance_types: build.template(std.get(block, 'preferred_instance_types', null)),
       }),
@@ -29466,7 +29471,7 @@ local provider(configuration) = {
     },
     ec2_instance_type_offerings(name, block): {
       local resource = blockType.resource('aws_ec2_instance_type_offerings', name),
-      _: resource._({
+      _: resource._(block, {
         location_type: build.template(std.get(block, 'location_type', null)),
       }),
       id: resource.field('id'),
@@ -29477,14 +29482,14 @@ local provider(configuration) = {
     },
     ec2_instance_types(name, block): {
       local resource = blockType.resource('aws_ec2_instance_types', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       instance_types: resource.field('instance_types'),
     },
     ec2_local_gateway(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       outpost_arn: resource.field('outpost_arn'),
@@ -29494,7 +29499,7 @@ local provider(configuration) = {
     },
     ec2_local_gateway_route_table(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway_route_table', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       local_gateway_id: resource.field('local_gateway_id'),
@@ -29505,7 +29510,7 @@ local provider(configuration) = {
     },
     ec2_local_gateway_route_tables(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway_route_tables', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -29513,7 +29518,7 @@ local provider(configuration) = {
     },
     ec2_local_gateway_virtual_interface(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway_virtual_interface', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       local_address: resource.field('local_address'),
@@ -29527,7 +29532,7 @@ local provider(configuration) = {
     },
     ec2_local_gateway_virtual_interface_group(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway_virtual_interface_group', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       local_gateway_id: resource.field('local_gateway_id'),
@@ -29536,7 +29541,7 @@ local provider(configuration) = {
     },
     ec2_local_gateway_virtual_interface_groups(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateway_virtual_interface_groups', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       id: resource.field('id'),
@@ -29546,7 +29551,7 @@ local provider(configuration) = {
     },
     ec2_local_gateways(name, block): {
       local resource = blockType.resource('aws_ec2_local_gateways', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -29554,7 +29559,7 @@ local provider(configuration) = {
     },
     ec2_managed_prefix_list(name, block): {
       local resource = blockType.resource('aws_ec2_managed_prefix_list', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       address_family: resource.field('address_family'),
       arn: resource.field('arn'),
@@ -29568,7 +29573,7 @@ local provider(configuration) = {
     },
     ec2_managed_prefix_lists(name, block): {
       local resource = blockType.resource('aws_ec2_managed_prefix_lists', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -29576,7 +29581,7 @@ local provider(configuration) = {
     },
     ec2_network_insights_analysis(name, block): {
       local resource = blockType.resource('aws_ec2_network_insights_analysis', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       alternate_path_hints: resource.field('alternate_path_hints'),
       arn: resource.field('arn'),
@@ -29596,7 +29601,7 @@ local provider(configuration) = {
     },
     ec2_network_insights_path(name, block): {
       local resource = blockType.resource('aws_ec2_network_insights_path', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       destination: resource.field('destination'),
@@ -29613,7 +29618,7 @@ local provider(configuration) = {
     },
     ec2_public_ipv4_pool(name, block): {
       local resource = blockType.resource('aws_ec2_public_ipv4_pool', name),
-      _: resource._({
+      _: resource._(block, {
         pool_id: build.template(block.pool_id),
       }),
       description: resource.field('description'),
@@ -29627,7 +29632,7 @@ local provider(configuration) = {
     },
     ec2_public_ipv4_pools(name, block): {
       local resource = blockType.resource('aws_ec2_public_ipv4_pools', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       pool_ids: resource.field('pool_ids'),
@@ -29635,14 +29640,14 @@ local provider(configuration) = {
     },
     ec2_serial_console_access(name, block): {
       local resource = blockType.resource('aws_ec2_serial_console_access', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       enabled: resource.field('enabled'),
       id: resource.field('id'),
     },
     ec2_spot_price(name, block): {
       local resource = blockType.resource('aws_ec2_spot_price', name),
-      _: resource._({
+      _: resource._(block, {
         availability_zone: build.template(std.get(block, 'availability_zone', null)),
         instance_type: build.template(std.get(block, 'instance_type', null)),
       }),
@@ -29654,7 +29659,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       amazon_side_asn: resource.field('amazon_side_asn'),
       arn: resource.field('arn'),
@@ -29675,7 +29680,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_attachment(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_attachment', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       association_state: resource.field('association_state'),
@@ -29692,7 +29697,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_attachments(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_attachments', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -29700,7 +29705,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_connect(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_connect', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       protocol: resource.field('protocol'),
@@ -29711,7 +29716,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_connect_peer(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_connect_peer', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       bgp_asn: resource.field('bgp_asn'),
@@ -29727,7 +29732,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_dx_gateway_attachment(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_dx_gateway_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         dx_gateway_id: build.template(std.get(block, 'dx_gateway_id', null)),
         transit_gateway_id: build.template(std.get(block, 'transit_gateway_id', null)),
       }),
@@ -29738,7 +29743,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_multicast_domain(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_multicast_domain', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       associations: resource.field('associations'),
@@ -29757,7 +29762,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_peering_attachment(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_peering_attachment', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       peer_account_id: resource.field('peer_account_id'),
@@ -29769,14 +29774,14 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_peering_attachments(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_peering_attachments', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
     },
     ec2_transit_gateway_route_table(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_table', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       default_association_route_table: resource.field('default_association_route_table'),
@@ -29787,7 +29792,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route_table_associations(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_table_associations', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_route_table_id: build.template(block.transit_gateway_route_table_id),
       }),
       id: resource.field('id'),
@@ -29796,7 +29801,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route_table_propagations(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_table_propagations', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_route_table_id: build.template(block.transit_gateway_route_table_id),
       }),
       id: resource.field('id'),
@@ -29805,7 +29810,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route_table_routes(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_table_routes', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_route_table_id: build.template(block.transit_gateway_route_table_id),
       }),
       id: resource.field('id'),
@@ -29814,7 +29819,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_route_tables(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_route_tables', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -29822,7 +29827,7 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_vpc_attachment(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_vpc_attachment', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       appliance_mode_support: resource.field('appliance_mode_support'),
       dns_support: resource.field('dns_support'),
@@ -29837,14 +29842,14 @@ local provider(configuration) = {
     },
     ec2_transit_gateway_vpc_attachments(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_vpc_attachments', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
     },
     ec2_transit_gateway_vpn_attachment(name, block): {
       local resource = blockType.resource('aws_ec2_transit_gateway_vpn_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         transit_gateway_id: build.template(std.get(block, 'transit_gateway_id', null)),
         vpn_connection_id: build.template(std.get(block, 'vpn_connection_id', null)),
       }),
@@ -29855,7 +29860,7 @@ local provider(configuration) = {
     },
     ecr_authorization_token(name, block): {
       local resource = blockType.resource('aws_ecr_authorization_token', name),
-      _: resource._({
+      _: resource._(block, {
         registry_id: build.template(std.get(block, 'registry_id', null)),
       }),
       authorization_token: resource.field('authorization_token'),
@@ -29868,7 +29873,7 @@ local provider(configuration) = {
     },
     ecr_image(name, block): {
       local resource = blockType.resource('aws_ecr_image', name),
-      _: resource._({
+      _: resource._(block, {
         image_tag: build.template(std.get(block, 'image_tag', null)),
         most_recent: build.template(std.get(block, 'most_recent', null)),
         repository_name: build.template(block.repository_name),
@@ -29886,13 +29891,13 @@ local provider(configuration) = {
     },
     ecr_lifecycle_policy_document(name, block): {
       local resource = blockType.resource('aws_ecr_lifecycle_policy_document', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       json: resource.field('json'),
     },
     ecr_pull_through_cache_rule(name, block): {
       local resource = blockType.resource('aws_ecr_pull_through_cache_rule', name),
-      _: resource._({
+      _: resource._(block, {
         ecr_repository_prefix: build.template(block.ecr_repository_prefix),
       }),
       credential_arn: resource.field('credential_arn'),
@@ -29903,14 +29908,14 @@ local provider(configuration) = {
     },
     ecr_repositories(name, block): {
       local resource = blockType.resource('aws_ecr_repositories', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       names: resource.field('names'),
     },
     ecr_repository(name, block): {
       local resource = blockType.resource('aws_ecr_repository', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -29926,7 +29931,7 @@ local provider(configuration) = {
     },
     ecr_repository_creation_template(name, block): {
       local resource = blockType.resource('aws_ecr_repository_creation_template', name),
-      _: resource._({
+      _: resource._(block, {
         prefix: build.template(block.prefix),
       }),
       applied_for: resource.field('applied_for'),
@@ -29943,7 +29948,7 @@ local provider(configuration) = {
     },
     ecrpublic_authorization_token(name, block): {
       local resource = blockType.resource('aws_ecrpublic_authorization_token', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       authorization_token: resource.field('authorization_token'),
       expires_at: resource.field('expires_at'),
@@ -29953,7 +29958,7 @@ local provider(configuration) = {
     },
     ecs_cluster(name, block): {
       local resource = blockType.resource('aws_ecs_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
       }),
       arn: resource.field('arn'),
@@ -29969,7 +29974,7 @@ local provider(configuration) = {
     },
     ecs_container_definition(name, block): {
       local resource = blockType.resource('aws_ecs_container_definition', name),
-      _: resource._({
+      _: resource._(block, {
         container_name: build.template(block.container_name),
         task_definition: build.template(block.task_definition),
       }),
@@ -29987,7 +29992,7 @@ local provider(configuration) = {
     },
     ecs_service(name, block): {
       local resource = blockType.resource('aws_ecs_service', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_arn: build.template(block.cluster_arn),
         service_name: build.template(block.service_name),
       }),
@@ -30003,7 +30008,7 @@ local provider(configuration) = {
     },
     ecs_task_definition(name, block): {
       local resource = blockType.resource('aws_ecs_task_definition', name),
-      _: resource._({
+      _: resource._(block, {
         task_definition: build.template(block.task_definition),
       }),
       arn: resource.field('arn'),
@@ -30019,7 +30024,7 @@ local provider(configuration) = {
     },
     ecs_task_execution(name, block): {
       local resource = blockType.resource('aws_ecs_task_execution', name),
-      _: resource._({
+      _: resource._(block, {
         client_token: build.template(std.get(block, 'client_token', null)),
         cluster: build.template(block.cluster),
         desired_count: build.template(std.get(block, 'desired_count', null)),
@@ -30052,7 +30057,7 @@ local provider(configuration) = {
     },
     efs_access_point(name, block): {
       local resource = blockType.resource('aws_efs_access_point', name),
-      _: resource._({
+      _: resource._(block, {
         access_point_id: build.template(block.access_point_id),
       }),
       access_point_id: resource.field('access_point_id'),
@@ -30067,7 +30072,7 @@ local provider(configuration) = {
     },
     efs_access_points(name, block): {
       local resource = blockType.resource('aws_efs_access_points', name),
-      _: resource._({
+      _: resource._(block, {
         file_system_id: build.template(block.file_system_id),
       }),
       arns: resource.field('arns'),
@@ -30077,7 +30082,7 @@ local provider(configuration) = {
     },
     efs_file_system(name, block): {
       local resource = blockType.resource('aws_efs_file_system', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       availability_zone_id: resource.field('availability_zone_id'),
@@ -30099,7 +30104,7 @@ local provider(configuration) = {
     },
     efs_mount_target(name, block): {
       local resource = blockType.resource('aws_efs_mount_target', name),
-      _: resource._({
+      _: resource._(block, {
         access_point_id: build.template(std.get(block, 'access_point_id', null)),
       }),
       access_point_id: resource.field('access_point_id'),
@@ -30119,7 +30124,7 @@ local provider(configuration) = {
     },
     eip(name, block): {
       local resource = blockType.resource('aws_eip', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       association_id: resource.field('association_id'),
@@ -30142,7 +30147,7 @@ local provider(configuration) = {
     },
     eips(name, block): {
       local resource = blockType.resource('aws_eips', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       allocation_ids: resource.field('allocation_ids'),
@@ -30152,7 +30157,7 @@ local provider(configuration) = {
     },
     eks_access_entry(name, block): {
       local resource = blockType.resource('aws_eks_access_entry', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         principal_arn: build.template(block.principal_arn),
         tags: build.template(std.get(block, 'tags', null)),
@@ -30171,7 +30176,7 @@ local provider(configuration) = {
     },
     eks_addon(name, block): {
       local resource = blockType.resource('aws_eks_addon', name),
-      _: resource._({
+      _: resource._(block, {
         addon_name: build.template(block.addon_name),
         cluster_name: build.template(block.cluster_name),
       }),
@@ -30189,7 +30194,7 @@ local provider(configuration) = {
     },
     eks_addon_version(name, block): {
       local resource = blockType.resource('aws_eks_addon_version', name),
-      _: resource._({
+      _: resource._(block, {
         addon_name: build.template(block.addon_name),
         kubernetes_version: build.template(block.kubernetes_version),
         most_recent: build.template(std.get(block, 'most_recent', null)),
@@ -30202,7 +30207,7 @@ local provider(configuration) = {
     },
     eks_cluster(name, block): {
       local resource = blockType.resource('aws_eks_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       access_config: resource.field('access_config'),
@@ -30228,7 +30233,7 @@ local provider(configuration) = {
     },
     eks_cluster_auth(name, block): {
       local resource = blockType.resource('aws_eks_cluster_auth', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -30237,14 +30242,14 @@ local provider(configuration) = {
     },
     eks_clusters(name, block): {
       local resource = blockType.resource('aws_eks_clusters', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       names: resource.field('names'),
     },
     eks_node_group(name, block): {
       local resource = blockType.resource('aws_eks_node_group', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         node_group_name: build.template(block.node_group_name),
       }),
@@ -30271,7 +30276,7 @@ local provider(configuration) = {
     },
     eks_node_groups(name, block): {
       local resource = blockType.resource('aws_eks_node_groups', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
       }),
       cluster_name: resource.field('cluster_name'),
@@ -30280,7 +30285,7 @@ local provider(configuration) = {
     },
     elastic_beanstalk_application(name, block): {
       local resource = blockType.resource('aws_elastic_beanstalk_application', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       appversion_lifecycle: resource.field('appversion_lifecycle'),
@@ -30291,7 +30296,7 @@ local provider(configuration) = {
     },
     elastic_beanstalk_hosted_zone(name, block): {
       local resource = blockType.resource('aws_elastic_beanstalk_hosted_zone', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
       }),
       id: resource.field('id'),
@@ -30299,7 +30304,7 @@ local provider(configuration) = {
     },
     elastic_beanstalk_solution_stack(name, block): {
       local resource = blockType.resource('aws_elastic_beanstalk_solution_stack', name),
-      _: resource._({
+      _: resource._(block, {
         most_recent: build.template(std.get(block, 'most_recent', null)),
         name_regex: build.template(block.name_regex),
       }),
@@ -30310,7 +30315,7 @@ local provider(configuration) = {
     },
     elasticache_cluster(name, block): {
       local resource = blockType.resource('aws_elasticache_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
       }),
       arn: resource.field('arn'),
@@ -30341,7 +30346,7 @@ local provider(configuration) = {
     },
     elasticache_replication_group(name, block): {
       local resource = blockType.resource('aws_elasticache_replication_group', name),
-      _: resource._({
+      _: resource._(block, {
         replication_group_id: build.template(block.replication_group_id),
       }),
       arn: resource.field('arn'),
@@ -30367,7 +30372,7 @@ local provider(configuration) = {
     },
     elasticache_reserved_cache_node_offering(name, block): {
       local resource = blockType.resource('aws_elasticache_reserved_cache_node_offering', name),
-      _: resource._({
+      _: resource._(block, {
         cache_node_type: build.template(block.cache_node_type),
         duration: build.template(block.duration),
         offering_type: build.template(block.offering_type),
@@ -30382,7 +30387,7 @@ local provider(configuration) = {
     },
     elasticache_serverless_cache(name, block): {
       local resource = blockType.resource('aws_elasticache_serverless_cache', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -30405,7 +30410,7 @@ local provider(configuration) = {
     },
     elasticache_subnet_group(name, block): {
       local resource = blockType.resource('aws_elasticache_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -30419,7 +30424,7 @@ local provider(configuration) = {
     },
     elasticache_user(name, block): {
       local resource = blockType.resource('aws_elasticache_user', name),
-      _: resource._({
+      _: resource._(block, {
         access_string: build.template(std.get(block, 'access_string', null)),
         engine: build.template(std.get(block, 'engine', null)),
         no_password_required: build.template(std.get(block, 'no_password_required', null)),
@@ -30437,7 +30442,7 @@ local provider(configuration) = {
     },
     elasticsearch_domain(name, block): {
       local resource = blockType.resource('aws_elasticsearch_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
       }),
       access_policies: resource.field('access_policies'),
@@ -30466,7 +30471,7 @@ local provider(configuration) = {
     },
     elb(name, block): {
       local resource = blockType.resource('aws_elb', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       access_logs: resource.field('access_logs'),
@@ -30493,7 +30498,7 @@ local provider(configuration) = {
     },
     elb_hosted_zone_id(name, block): {
       local resource = blockType.resource('aws_elb_hosted_zone_id', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
       }),
       id: resource.field('id'),
@@ -30501,7 +30506,7 @@ local provider(configuration) = {
     },
     elb_service_account(name, block): {
       local resource = blockType.resource('aws_elb_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
       }),
       arn: resource.field('arn'),
@@ -30510,14 +30515,14 @@ local provider(configuration) = {
     },
     emr_release_labels(name, block): {
       local resource = blockType.resource('aws_emr_release_labels', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       release_labels: resource.field('release_labels'),
     },
     emr_supported_instance_types(name, block): {
       local resource = blockType.resource('aws_emr_supported_instance_types', name),
-      _: resource._({
+      _: resource._(block, {
         release_label: build.template(block.release_label),
       }),
       id: resource.field('id'),
@@ -30525,7 +30530,7 @@ local provider(configuration) = {
     },
     emrcontainers_virtual_cluster(name, block): {
       local resource = blockType.resource('aws_emrcontainers_virtual_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         virtual_cluster_id: build.template(block.virtual_cluster_id),
       }),
       arn: resource.field('arn'),
@@ -30539,7 +30544,7 @@ local provider(configuration) = {
     },
     fsx_ontap_file_system(name, block): {
       local resource = blockType.resource('aws_fsx_ontap_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -30568,7 +30573,7 @@ local provider(configuration) = {
     },
     fsx_ontap_storage_virtual_machine(name, block): {
       local resource = blockType.resource('aws_fsx_ontap_storage_virtual_machine', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       active_directory_configuration: resource.field('active_directory_configuration'),
       arn: resource.field('arn'),
@@ -30585,14 +30590,14 @@ local provider(configuration) = {
     },
     fsx_ontap_storage_virtual_machines(name, block): {
       local resource = blockType.resource('aws_fsx_ontap_storage_virtual_machines', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
     },
     fsx_openzfs_snapshot(name, block): {
       local resource = blockType.resource('aws_fsx_openzfs_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         most_recent: build.template(std.get(block, 'most_recent', null)),
         name: build.template(std.get(block, 'name', null)),
         snapshot_ids: build.template(std.get(block, 'snapshot_ids', null)),
@@ -30609,7 +30614,7 @@ local provider(configuration) = {
     },
     fsx_windows_file_system(name, block): {
       local resource = blockType.resource('aws_fsx_windows_file_system', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       active_directory_id: resource.field('active_directory_id'),
@@ -30641,7 +30646,7 @@ local provider(configuration) = {
     },
     globalaccelerator_accelerator(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_accelerator', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       attributes: resource.field('attributes'),
@@ -30657,7 +30662,7 @@ local provider(configuration) = {
     },
     globalaccelerator_custom_routing_accelerator(name, block): {
       local resource = blockType.resource('aws_globalaccelerator_custom_routing_accelerator', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       attributes: resource.field('attributes'),
@@ -30672,7 +30677,7 @@ local provider(configuration) = {
     },
     glue_catalog_table(name, block): {
       local resource = blockType.resource('aws_glue_catalog_table', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         name: build.template(block.name),
         query_as_of_time: build.template(std.get(block, 'query_as_of_time', null)),
@@ -30699,7 +30704,7 @@ local provider(configuration) = {
     },
     glue_connection(name, block): {
       local resource = blockType.resource('aws_glue_connection', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -30715,7 +30720,7 @@ local provider(configuration) = {
     },
     glue_data_catalog_encryption_settings(name, block): {
       local resource = blockType.resource('aws_glue_data_catalog_encryption_settings', name),
-      _: resource._({
+      _: resource._(block, {
         catalog_id: build.template(block.catalog_id),
       }),
       catalog_id: resource.field('catalog_id'),
@@ -30724,7 +30729,7 @@ local provider(configuration) = {
     },
     glue_registry(name, block): {
       local resource = blockType.resource('aws_glue_registry', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -30733,7 +30738,7 @@ local provider(configuration) = {
     },
     glue_script(name, block): {
       local resource = blockType.resource('aws_glue_script', name),
-      _: resource._({
+      _: resource._(block, {
         language: build.template(std.get(block, 'language', null)),
       }),
       id: resource.field('id'),
@@ -30743,7 +30748,7 @@ local provider(configuration) = {
     },
     grafana_workspace(name, block): {
       local resource = blockType.resource('aws_grafana_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         workspace_id: build.template(block.workspace_id),
       }),
       account_access_type: resource.field('account_access_type'),
@@ -30770,7 +30775,7 @@ local provider(configuration) = {
     },
     guardduty_detector(name, block): {
       local resource = blockType.resource('aws_guardduty_detector', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       features: resource.field('features'),
       finding_publishing_frequency: resource.field('finding_publishing_frequency'),
@@ -30780,7 +30785,7 @@ local provider(configuration) = {
     },
     guardduty_finding_ids(name, block): {
       local resource = blockType.resource('aws_guardduty_finding_ids', name),
-      _: resource._({
+      _: resource._(block, {
         detector_id: build.template(block.detector_id),
       }),
       detector_id: resource.field('detector_id'),
@@ -30790,7 +30795,7 @@ local provider(configuration) = {
     },
     iam_access_keys(name, block): {
       local resource = blockType.resource('aws_iam_access_keys', name),
-      _: resource._({
+      _: resource._(block, {
         user: build.template(block.user),
       }),
       access_keys: resource.field('access_keys'),
@@ -30799,14 +30804,14 @@ local provider(configuration) = {
     },
     iam_account_alias(name, block): {
       local resource = blockType.resource('aws_iam_account_alias', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       account_alias: resource.field('account_alias'),
       id: resource.field('id'),
     },
     iam_group(name, block): {
       local resource = blockType.resource('aws_iam_group', name),
-      _: resource._({
+      _: resource._(block, {
         group_name: build.template(block.group_name),
       }),
       arn: resource.field('arn'),
@@ -30818,7 +30823,7 @@ local provider(configuration) = {
     },
     iam_instance_profile(name, block): {
       local resource = blockType.resource('aws_iam_instance_profile', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -30832,7 +30837,7 @@ local provider(configuration) = {
     },
     iam_instance_profiles(name, block): {
       local resource = blockType.resource('aws_iam_instance_profiles', name),
-      _: resource._({
+      _: resource._(block, {
         role_name: build.template(block.role_name),
       }),
       arns: resource.field('arns'),
@@ -30843,7 +30848,7 @@ local provider(configuration) = {
     },
     iam_openid_connect_provider(name, block): {
       local resource = blockType.resource('aws_iam_openid_connect_provider', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       client_id_list: resource.field('client_id_list'),
@@ -30854,7 +30859,7 @@ local provider(configuration) = {
     },
     iam_policy(name, block): {
       local resource = blockType.resource('aws_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         path_prefix: build.template(std.get(block, 'path_prefix', null)),
       }),
       arn: resource.field('arn'),
@@ -30870,7 +30875,7 @@ local provider(configuration) = {
     },
     iam_policy_document(name, block): {
       local resource = blockType.resource('aws_iam_policy_document', name),
-      _: resource._({
+      _: resource._(block, {
         override_json: build.template(std.get(block, 'override_json', null)),
         override_policy_documents: build.template(std.get(block, 'override_policy_documents', null)),
         policy_id: build.template(std.get(block, 'policy_id', null)),
@@ -30890,7 +30895,7 @@ local provider(configuration) = {
     },
     iam_principal_policy_simulation(name, block): {
       local resource = blockType.resource('aws_iam_principal_policy_simulation', name),
-      _: resource._({
+      _: resource._(block, {
         action_names: build.template(block.action_names),
         additional_policies_json: build.template(std.get(block, 'additional_policies_json', null)),
         caller_arn: build.template(std.get(block, 'caller_arn', null)),
@@ -30916,7 +30921,7 @@ local provider(configuration) = {
     },
     iam_role(name, block): {
       local resource = blockType.resource('aws_iam_role', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -30934,7 +30939,7 @@ local provider(configuration) = {
     },
     iam_roles(name, block): {
       local resource = blockType.resource('aws_iam_roles', name),
-      _: resource._({
+      _: resource._(block, {
         name_regex: build.template(std.get(block, 'name_regex', null)),
         path_prefix: build.template(std.get(block, 'path_prefix', null)),
       }),
@@ -30946,7 +30951,7 @@ local provider(configuration) = {
     },
     iam_saml_provider(name, block): {
       local resource = blockType.resource('aws_iam_saml_provider', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -30959,7 +30964,7 @@ local provider(configuration) = {
     },
     iam_server_certificate(name, block): {
       local resource = blockType.resource('aws_iam_server_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         latest: build.template(std.get(block, 'latest', null)),
         name_prefix: build.template(std.get(block, 'name_prefix', null)),
         path_prefix: build.template(std.get(block, 'path_prefix', null)),
@@ -30978,7 +30983,7 @@ local provider(configuration) = {
     },
     iam_session_context(name, block): {
       local resource = blockType.resource('aws_iam_session_context', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -30990,7 +30995,7 @@ local provider(configuration) = {
     },
     iam_user(name, block): {
       local resource = blockType.resource('aws_iam_user', name),
-      _: resource._({
+      _: resource._(block, {
         user_name: build.template(block.user_name),
       }),
       arn: resource.field('arn'),
@@ -31003,7 +31008,7 @@ local provider(configuration) = {
     },
     iam_user_ssh_key(name, block): {
       local resource = blockType.resource('aws_iam_user_ssh_key', name),
-      _: resource._({
+      _: resource._(block, {
         encoding: build.template(block.encoding),
         ssh_public_key_id: build.template(block.ssh_public_key_id),
         username: build.template(block.username),
@@ -31018,7 +31023,7 @@ local provider(configuration) = {
     },
     iam_users(name, block): {
       local resource = blockType.resource('aws_iam_users', name),
-      _: resource._({
+      _: resource._(block, {
         name_regex: build.template(std.get(block, 'name_regex', null)),
         path_prefix: build.template(std.get(block, 'path_prefix', null)),
       }),
@@ -31030,7 +31035,7 @@ local provider(configuration) = {
     },
     identitystore_group(name, block): {
       local resource = blockType.resource('aws_identitystore_group', name),
-      _: resource._({
+      _: resource._(block, {
         identity_store_id: build.template(block.identity_store_id),
       }),
       description: resource.field('description'),
@@ -31042,7 +31047,7 @@ local provider(configuration) = {
     },
     identitystore_groups(name, block): {
       local resource = blockType.resource('aws_identitystore_groups', name),
-      _: resource._({
+      _: resource._(block, {
         identity_store_id: build.template(block.identity_store_id),
       }),
       groups: resource.field('groups'),
@@ -31050,7 +31055,7 @@ local provider(configuration) = {
     },
     identitystore_user(name, block): {
       local resource = blockType.resource('aws_identitystore_user', name),
-      _: resource._({
+      _: resource._(block, {
         identity_store_id: build.template(block.identity_store_id),
       }),
       addresses: resource.field('addresses'),
@@ -31073,7 +31078,7 @@ local provider(configuration) = {
     },
     imagebuilder_component(name, block): {
       local resource = blockType.resource('aws_imagebuilder_component', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31094,7 +31099,7 @@ local provider(configuration) = {
     },
     imagebuilder_components(name, block): {
       local resource = blockType.resource('aws_imagebuilder_components', name),
-      _: resource._({
+      _: resource._(block, {
         owner: build.template(std.get(block, 'owner', null)),
       }),
       arns: resource.field('arns'),
@@ -31104,7 +31109,7 @@ local provider(configuration) = {
     },
     imagebuilder_container_recipe(name, block): {
       local resource = blockType.resource('aws_imagebuilder_container_recipe', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31128,7 +31133,7 @@ local provider(configuration) = {
     },
     imagebuilder_container_recipes(name, block): {
       local resource = blockType.resource('aws_imagebuilder_container_recipes', name),
-      _: resource._({
+      _: resource._(block, {
         owner: build.template(std.get(block, 'owner', null)),
       }),
       arns: resource.field('arns'),
@@ -31138,7 +31143,7 @@ local provider(configuration) = {
     },
     imagebuilder_distribution_configuration(name, block): {
       local resource = blockType.resource('aws_imagebuilder_distribution_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31152,7 +31157,7 @@ local provider(configuration) = {
     },
     imagebuilder_distribution_configurations(name, block): {
       local resource = blockType.resource('aws_imagebuilder_distribution_configurations', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
@@ -31160,7 +31165,7 @@ local provider(configuration) = {
     },
     imagebuilder_image(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31183,7 +31188,7 @@ local provider(configuration) = {
     },
     imagebuilder_image_pipeline(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31208,7 +31213,7 @@ local provider(configuration) = {
     },
     imagebuilder_image_pipelines(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image_pipelines', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
@@ -31216,7 +31221,7 @@ local provider(configuration) = {
     },
     imagebuilder_image_recipe(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image_recipe', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31236,7 +31241,7 @@ local provider(configuration) = {
     },
     imagebuilder_image_recipes(name, block): {
       local resource = blockType.resource('aws_imagebuilder_image_recipes', name),
-      _: resource._({
+      _: resource._(block, {
         owner: build.template(std.get(block, 'owner', null)),
       }),
       arns: resource.field('arns'),
@@ -31246,7 +31251,7 @@ local provider(configuration) = {
     },
     imagebuilder_infrastructure_configuration(name, block): {
       local resource = blockType.resource('aws_imagebuilder_infrastructure_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31269,7 +31274,7 @@ local provider(configuration) = {
     },
     imagebuilder_infrastructure_configurations(name, block): {
       local resource = blockType.resource('aws_imagebuilder_infrastructure_configurations', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
@@ -31277,14 +31282,14 @@ local provider(configuration) = {
     },
     inspector_rules_packages(name, block): {
       local resource = blockType.resource('aws_inspector_rules_packages', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
     },
     instance(name, block): {
       local resource = blockType.resource('aws_instance', name),
-      _: resource._({
+      _: resource._(block, {
         get_password_data: build.template(std.get(block, 'get_password_data', null)),
         get_user_data: build.template(std.get(block, 'get_user_data', null)),
         instance_id: build.template(std.get(block, 'instance_id', null)),
@@ -31339,7 +31344,7 @@ local provider(configuration) = {
     },
     instances(name, block): {
       local resource = blockType.resource('aws_instances', name),
-      _: resource._({
+      _: resource._(block, {
         instance_state_names: build.template(std.get(block, 'instance_state_names', null)),
       }),
       id: resource.field('id'),
@@ -31352,7 +31357,7 @@ local provider(configuration) = {
     },
     internet_gateway(name, block): {
       local resource = blockType.resource('aws_internet_gateway', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       attachments: resource.field('attachments'),
@@ -31363,7 +31368,7 @@ local provider(configuration) = {
     },
     iot_endpoint(name, block): {
       local resource = blockType.resource('aws_iot_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         endpoint_type: build.template(std.get(block, 'endpoint_type', null)),
       }),
       endpoint_address: resource.field('endpoint_address'),
@@ -31372,14 +31377,14 @@ local provider(configuration) = {
     },
     iot_registration_code(name, block): {
       local resource = blockType.resource('aws_iot_registration_code', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       registration_code: resource.field('registration_code'),
     },
     ip_ranges(name, block): {
       local resource = blockType.resource('aws_ip_ranges', name),
-      _: resource._({
+      _: resource._(block, {
         regions: build.template(std.get(block, 'regions', null)),
         services: build.template(block.services),
         url: build.template(std.get(block, 'url', null)),
@@ -31395,7 +31400,7 @@ local provider(configuration) = {
     },
     ivs_stream_key(name, block): {
       local resource = blockType.resource('aws_ivs_stream_key', name),
-      _: resource._({
+      _: resource._(block, {
         channel_arn: build.template(block.channel_arn),
       }),
       arn: resource.field('arn'),
@@ -31406,7 +31411,7 @@ local provider(configuration) = {
     },
     kendra_experience(name, block): {
       local resource = blockType.resource('aws_kendra_experience', name),
-      _: resource._({
+      _: resource._(block, {
         experience_id: build.template(block.experience_id),
         index_id: build.template(block.index_id),
       }),
@@ -31426,7 +31431,7 @@ local provider(configuration) = {
     },
     kendra_faq(name, block): {
       local resource = blockType.resource('aws_kendra_faq', name),
-      _: resource._({
+      _: resource._(block, {
         faq_id: build.template(block.faq_id),
         index_id: build.template(block.index_id),
       }),
@@ -31448,7 +31453,7 @@ local provider(configuration) = {
     },
     kendra_index(name, block): {
       local resource = blockType.resource('aws_kendra_index', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -31472,7 +31477,7 @@ local provider(configuration) = {
     },
     kendra_query_suggestions_block_list(name, block): {
       local resource = blockType.resource('aws_kendra_query_suggestions_block_list', name),
-      _: resource._({
+      _: resource._(block, {
         index_id: build.template(block.index_id),
         query_suggestions_block_list_id: build.template(block.query_suggestions_block_list_id),
       }),
@@ -31494,7 +31499,7 @@ local provider(configuration) = {
     },
     kendra_thesaurus(name, block): {
       local resource = blockType.resource('aws_kendra_thesaurus', name),
-      _: resource._({
+      _: resource._(block, {
         index_id: build.template(block.index_id),
         thesaurus_id: build.template(block.thesaurus_id),
       }),
@@ -31517,7 +31522,7 @@ local provider(configuration) = {
     },
     key_pair(name, block): {
       local resource = blockType.resource('aws_key_pair', name),
-      _: resource._({
+      _: resource._(block, {
         include_public_key: build.template(std.get(block, 'include_public_key', null)),
         key_name: build.template(std.get(block, 'key_name', null)),
         key_pair_id: build.template(std.get(block, 'key_pair_id', null)),
@@ -31535,7 +31540,7 @@ local provider(configuration) = {
     },
     kinesis_firehose_delivery_stream(name, block): {
       local resource = blockType.resource('aws_kinesis_firehose_delivery_stream', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -31544,7 +31549,7 @@ local provider(configuration) = {
     },
     kinesis_stream(name, block): {
       local resource = blockType.resource('aws_kinesis_stream', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -31563,7 +31568,7 @@ local provider(configuration) = {
     },
     kinesis_stream_consumer(name, block): {
       local resource = blockType.resource('aws_kinesis_stream_consumer', name),
-      _: resource._({
+      _: resource._(block, {
         stream_arn: build.template(block.stream_arn),
       }),
       arn: resource.field('arn'),
@@ -31575,7 +31580,7 @@ local provider(configuration) = {
     },
     kms_alias(name, block): {
       local resource = blockType.resource('aws_kms_alias', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -31586,7 +31591,7 @@ local provider(configuration) = {
     },
     kms_ciphertext(name, block): {
       local resource = blockType.resource('aws_kms_ciphertext', name),
-      _: resource._({
+      _: resource._(block, {
         context: build.template(std.get(block, 'context', null)),
         key_id: build.template(block.key_id),
         plaintext: build.template(block.plaintext),
@@ -31599,7 +31604,7 @@ local provider(configuration) = {
     },
     kms_custom_key_store(name, block): {
       local resource = blockType.resource('aws_kms_custom_key_store', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       cloud_hsm_cluster_id: resource.field('cloud_hsm_cluster_id'),
       connection_state: resource.field('connection_state'),
@@ -31611,7 +31616,7 @@ local provider(configuration) = {
     },
     kms_key(name, block): {
       local resource = blockType.resource('aws_kms_key', name),
-      _: resource._({
+      _: resource._(block, {
         grant_tokens: build.template(std.get(block, 'grant_tokens', null)),
         key_id: build.template(block.key_id),
       }),
@@ -31641,7 +31646,7 @@ local provider(configuration) = {
     },
     kms_public_key(name, block): {
       local resource = blockType.resource('aws_kms_public_key', name),
-      _: resource._({
+      _: resource._(block, {
         grant_tokens: build.template(std.get(block, 'grant_tokens', null)),
         key_id: build.template(block.key_id),
       }),
@@ -31658,20 +31663,20 @@ local provider(configuration) = {
     },
     kms_secret(name, block): {
       local resource = blockType.resource('aws_kms_secret', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     kms_secrets(name, block): {
       local resource = blockType.resource('aws_kms_secrets', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       plaintext: resource.field('plaintext'),
     },
     lakeformation_data_lake_settings(name, block): {
       local resource = blockType.resource('aws_lakeformation_data_lake_settings', name),
-      _: resource._({
+      _: resource._(block, {
         catalog_id: build.template(std.get(block, 'catalog_id', null)),
       }),
       admins: resource.field('admins'),
@@ -31689,7 +31694,7 @@ local provider(configuration) = {
     },
     lakeformation_permissions(name, block): {
       local resource = blockType.resource('aws_lakeformation_permissions', name),
-      _: resource._({
+      _: resource._(block, {
         catalog_id: build.template(std.get(block, 'catalog_id', null)),
         catalog_resource: build.template(std.get(block, 'catalog_resource', null)),
         principal: build.template(block.principal),
@@ -31703,7 +31708,7 @@ local provider(configuration) = {
     },
     lakeformation_resource(name, block): {
       local resource = blockType.resource('aws_lakeformation_resource', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -31713,7 +31718,7 @@ local provider(configuration) = {
     },
     lambda_alias(name, block): {
       local resource = blockType.resource('aws_lambda_alias', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         name: build.template(block.name),
       }),
@@ -31727,7 +31732,7 @@ local provider(configuration) = {
     },
     lambda_code_signing_config(name, block): {
       local resource = blockType.resource('aws_lambda_code_signing_config', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       allowed_publishers: resource.field('allowed_publishers'),
@@ -31740,7 +31745,7 @@ local provider(configuration) = {
     },
     lambda_function(name, block): {
       local resource = blockType.resource('aws_lambda_function', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         qualifier: build.template(std.get(block, 'qualifier', null)),
       }),
@@ -31781,7 +31786,7 @@ local provider(configuration) = {
     },
     lambda_function_url(name, block): {
       local resource = blockType.resource('aws_lambda_function_url', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         qualifier: build.template(std.get(block, 'qualifier', null)),
       }),
@@ -31799,7 +31804,7 @@ local provider(configuration) = {
     },
     lambda_functions(name, block): {
       local resource = blockType.resource('aws_lambda_functions', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       function_arns: resource.field('function_arns'),
       function_names: resource.field('function_names'),
@@ -31807,7 +31812,7 @@ local provider(configuration) = {
     },
     lambda_invocation(name, block): {
       local resource = blockType.resource('aws_lambda_invocation', name),
-      _: resource._({
+      _: resource._(block, {
         function_name: build.template(block.function_name),
         input: build.template(block.input),
         qualifier: build.template(std.get(block, 'qualifier', null)),
@@ -31820,7 +31825,7 @@ local provider(configuration) = {
     },
     lambda_layer_version(name, block): {
       local resource = blockType.resource('aws_lambda_layer_version', name),
-      _: resource._({
+      _: resource._(block, {
         compatible_architecture: build.template(std.get(block, 'compatible_architecture', null)),
         compatible_runtime: build.template(std.get(block, 'compatible_runtime', null)),
         layer_name: build.template(block.layer_name),
@@ -31845,7 +31850,7 @@ local provider(configuration) = {
     },
     launch_configuration(name, block): {
       local resource = blockType.resource('aws_launch_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -31869,7 +31874,7 @@ local provider(configuration) = {
     },
     launch_template(name, block): {
       local resource = blockType.resource('aws_launch_template', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       block_device_mappings: resource.field('block_device_mappings'),
@@ -31912,7 +31917,7 @@ local provider(configuration) = {
     },
     lb(name, block): {
       local resource = blockType.resource('aws_lb', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       access_logs: resource.field('access_logs'),
       arn: resource.field('arn'),
@@ -31949,7 +31954,7 @@ local provider(configuration) = {
     },
     lb_hosted_zone_id(name, block): {
       local resource = blockType.resource('aws_lb_hosted_zone_id', name),
-      _: resource._({
+      _: resource._(block, {
         load_balancer_type: build.template(std.get(block, 'load_balancer_type', null)),
         region: build.template(std.get(block, 'region', null)),
       }),
@@ -31959,7 +31964,7 @@ local provider(configuration) = {
     },
     lb_listener(name, block): {
       local resource = blockType.resource('aws_lb_listener', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       alpn_policy: resource.field('alpn_policy'),
       arn: resource.field('arn'),
@@ -31975,7 +31980,7 @@ local provider(configuration) = {
     },
     lb_listener_rule(name, block): {
       local resource = blockType.resource('aws_lb_listener_rule', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       listener_arn: resource.field('listener_arn'),
@@ -31984,7 +31989,7 @@ local provider(configuration) = {
     },
     lb_target_group(name, block): {
       local resource = blockType.resource('aws_lb_target_group', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       arn_suffix: resource.field('arn_suffix'),
@@ -32011,7 +32016,7 @@ local provider(configuration) = {
     },
     lb_trust_store(name, block): {
       local resource = blockType.resource('aws_lb_trust_store', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       id: resource.field('id'),
@@ -32019,7 +32024,7 @@ local provider(configuration) = {
     },
     lbs(name, block): {
       local resource = blockType.resource('aws_lbs', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       arns: resource.field('arns'),
@@ -32028,7 +32033,7 @@ local provider(configuration) = {
     },
     lex_bot(name, block): {
       local resource = blockType.resource('aws_lex_bot', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         version: build.template(std.get(block, 'version', null)),
       }),
@@ -32052,7 +32057,7 @@ local provider(configuration) = {
     },
     lex_bot_alias(name, block): {
       local resource = blockType.resource('aws_lex_bot_alias', name),
-      _: resource._({
+      _: resource._(block, {
         bot_name: build.template(block.bot_name),
         name: build.template(block.name),
       }),
@@ -32068,7 +32073,7 @@ local provider(configuration) = {
     },
     lex_intent(name, block): {
       local resource = blockType.resource('aws_lex_intent', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         version: build.template(std.get(block, 'version', null)),
       }),
@@ -32084,7 +32089,7 @@ local provider(configuration) = {
     },
     lex_slot_type(name, block): {
       local resource = blockType.resource('aws_lex_slot_type', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         version: build.template(std.get(block, 'version', null)),
       }),
@@ -32100,14 +32105,14 @@ local provider(configuration) = {
     },
     licensemanager_grants(name, block): {
       local resource = blockType.resource('aws_licensemanager_grants', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
     },
     licensemanager_received_license(name, block): {
       local resource = blockType.resource('aws_licensemanager_received_license', name),
-      _: resource._({
+      _: resource._(block, {
         license_arn: build.template(block.license_arn),
       }),
       beneficiary: resource.field('beneficiary'),
@@ -32129,14 +32134,14 @@ local provider(configuration) = {
     },
     licensemanager_received_licenses(name, block): {
       local resource = blockType.resource('aws_licensemanager_received_licenses', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
     },
     location_geofence_collection(name, block): {
       local resource = blockType.resource('aws_location_geofence_collection', name),
-      _: resource._({
+      _: resource._(block, {
         collection_name: build.template(block.collection_name),
       }),
       collection_arn: resource.field('collection_arn'),
@@ -32150,7 +32155,7 @@ local provider(configuration) = {
     },
     location_map(name, block): {
       local resource = blockType.resource('aws_location_map', name),
-      _: resource._({
+      _: resource._(block, {
         map_name: build.template(block.map_name),
       }),
       configuration: resource.field('configuration'),
@@ -32164,7 +32169,7 @@ local provider(configuration) = {
     },
     location_place_index(name, block): {
       local resource = blockType.resource('aws_location_place_index', name),
-      _: resource._({
+      _: resource._(block, {
         index_name: build.template(block.index_name),
       }),
       create_time: resource.field('create_time'),
@@ -32179,7 +32184,7 @@ local provider(configuration) = {
     },
     location_route_calculator(name, block): {
       local resource = blockType.resource('aws_location_route_calculator', name),
-      _: resource._({
+      _: resource._(block, {
         calculator_name: build.template(block.calculator_name),
       }),
       calculator_arn: resource.field('calculator_arn'),
@@ -32193,7 +32198,7 @@ local provider(configuration) = {
     },
     location_tracker(name, block): {
       local resource = blockType.resource('aws_location_tracker', name),
-      _: resource._({
+      _: resource._(block, {
         tracker_name: build.template(block.tracker_name),
       }),
       create_time: resource.field('create_time'),
@@ -32208,7 +32213,7 @@ local provider(configuration) = {
     },
     location_tracker_association(name, block): {
       local resource = blockType.resource('aws_location_tracker_association', name),
-      _: resource._({
+      _: resource._(block, {
         consumer_arn: build.template(block.consumer_arn),
         tracker_name: build.template(block.tracker_name),
       }),
@@ -32218,7 +32223,7 @@ local provider(configuration) = {
     },
     location_tracker_associations(name, block): {
       local resource = blockType.resource('aws_location_tracker_associations', name),
-      _: resource._({
+      _: resource._(block, {
         tracker_name: build.template(block.tracker_name),
       }),
       consumer_arns: resource.field('consumer_arns'),
@@ -32227,7 +32232,7 @@ local provider(configuration) = {
     },
     media_convert_queue(name, block): {
       local resource = blockType.resource('aws_media_convert_queue', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -32238,7 +32243,7 @@ local provider(configuration) = {
     },
     medialive_input(name, block): {
       local resource = blockType.resource('aws_medialive_input', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -32260,7 +32265,7 @@ local provider(configuration) = {
     },
     memorydb_acl(name, block): {
       local resource = blockType.resource('aws_memorydb_acl', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32272,7 +32277,7 @@ local provider(configuration) = {
     },
     memorydb_cluster(name, block): {
       local resource = blockType.resource('aws_memorydb_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       acl_name: resource.field('acl_name'),
@@ -32304,7 +32309,7 @@ local provider(configuration) = {
     },
     memorydb_parameter_group(name, block): {
       local resource = blockType.resource('aws_memorydb_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32317,7 +32322,7 @@ local provider(configuration) = {
     },
     memorydb_snapshot(name, block): {
       local resource = blockType.resource('aws_memorydb_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32331,7 +32336,7 @@ local provider(configuration) = {
     },
     memorydb_subnet_group(name, block): {
       local resource = blockType.resource('aws_memorydb_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32344,7 +32349,7 @@ local provider(configuration) = {
     },
     memorydb_user(name, block): {
       local resource = blockType.resource('aws_memorydb_user', name),
-      _: resource._({
+      _: resource._(block, {
         user_name: build.template(block.user_name),
       }),
       access_string: resource.field('access_string'),
@@ -32357,7 +32362,7 @@ local provider(configuration) = {
     },
     mq_broker(name, block): {
       local resource = blockType.resource('aws_mq_broker', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       authentication_strategy: resource.field('authentication_strategy'),
@@ -32384,7 +32389,7 @@ local provider(configuration) = {
     },
     mq_broker_engine_types(name, block): {
       local resource = blockType.resource('aws_mq_broker_engine_types', name),
-      _: resource._({
+      _: resource._(block, {
         engine_type: build.template(std.get(block, 'engine_type', null)),
       }),
       broker_engine_types: resource.field('broker_engine_types'),
@@ -32393,7 +32398,7 @@ local provider(configuration) = {
     },
     mq_broker_instance_type_offerings(name, block): {
       local resource = blockType.resource('aws_mq_broker_instance_type_offerings', name),
-      _: resource._({
+      _: resource._(block, {
         engine_type: build.template(std.get(block, 'engine_type', null)),
         host_instance_type: build.template(std.get(block, 'host_instance_type', null)),
         storage_type: build.template(std.get(block, 'storage_type', null)),
@@ -32406,7 +32411,7 @@ local provider(configuration) = {
     },
     msk_bootstrap_brokers(name, block): {
       local resource = blockType.resource('aws_msk_bootstrap_brokers', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_arn: build.template(block.cluster_arn),
       }),
       bootstrap_brokers: resource.field('bootstrap_brokers'),
@@ -32424,7 +32429,7 @@ local provider(configuration) = {
     },
     msk_broker_nodes(name, block): {
       local resource = blockType.resource('aws_msk_broker_nodes', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_arn: build.template(block.cluster_arn),
       }),
       cluster_arn: resource.field('cluster_arn'),
@@ -32433,7 +32438,7 @@ local provider(configuration) = {
     },
     msk_cluster(name, block): {
       local resource = blockType.resource('aws_msk_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
       }),
       arn: resource.field('arn'),
@@ -32456,7 +32461,7 @@ local provider(configuration) = {
     },
     msk_configuration(name, block): {
       local resource = blockType.resource('aws_msk_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32469,7 +32474,7 @@ local provider(configuration) = {
     },
     msk_kafka_version(name, block): {
       local resource = blockType.resource('aws_msk_kafka_version', name),
-      _: resource._({
+      _: resource._(block, {
         preferred_versions: build.template(std.get(block, 'preferred_versions', null)),
       }),
       id: resource.field('id'),
@@ -32479,7 +32484,7 @@ local provider(configuration) = {
     },
     msk_vpc_connection(name, block): {
       local resource = blockType.resource('aws_msk_vpc_connection', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -32493,7 +32498,7 @@ local provider(configuration) = {
     },
     mskconnect_connector(name, block): {
       local resource = blockType.resource('aws_mskconnect_connector', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32505,7 +32510,7 @@ local provider(configuration) = {
     },
     mskconnect_custom_plugin(name, block): {
       local resource = blockType.resource('aws_mskconnect_custom_plugin', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32518,7 +32523,7 @@ local provider(configuration) = {
     },
     mskconnect_worker_configuration(name, block): {
       local resource = blockType.resource('aws_mskconnect_worker_configuration', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -32531,7 +32536,7 @@ local provider(configuration) = {
     },
     nat_gateway(name, block): {
       local resource = blockType.resource('aws_nat_gateway', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       allocation_id: resource.field('allocation_id'),
       association_id: resource.field('association_id'),
@@ -32550,7 +32555,7 @@ local provider(configuration) = {
     },
     nat_gateways(name, block): {
       local resource = blockType.resource('aws_nat_gateways', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_id: build.template(std.get(block, 'vpc_id', null)),
       }),
       id: resource.field('id'),
@@ -32560,7 +32565,7 @@ local provider(configuration) = {
     },
     neptune_engine_version(name, block): {
       local resource = blockType.resource('aws_neptune_engine_version', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(std.get(block, 'engine', null)),
         preferred_versions: build.template(std.get(block, 'preferred_versions', null)),
       }),
@@ -32579,7 +32584,7 @@ local provider(configuration) = {
     },
     neptune_orderable_db_instance(name, block): {
       local resource = blockType.resource('aws_neptune_orderable_db_instance', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(std.get(block, 'engine', null)),
         license_model: build.template(std.get(block, 'license_model', null)),
         preferred_instance_classes: build.template(std.get(block, 'preferred_instance_classes', null)),
@@ -32609,7 +32614,7 @@ local provider(configuration) = {
     },
     network_acls(name, block): {
       local resource = blockType.resource('aws_network_acls', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_id: build.template(std.get(block, 'vpc_id', null)),
       }),
       id: resource.field('id'),
@@ -32619,7 +32624,7 @@ local provider(configuration) = {
     },
     network_interface(name, block): {
       local resource = blockType.resource('aws_network_interface', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       association: resource.field('association'),
@@ -32643,7 +32648,7 @@ local provider(configuration) = {
     },
     network_interfaces(name, block): {
       local resource = blockType.resource('aws_network_interfaces', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -32651,7 +32656,7 @@ local provider(configuration) = {
     },
     networkfirewall_firewall(name, block): {
       local resource = blockType.resource('aws_networkfirewall_firewall', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       delete_protection: resource.field('delete_protection'),
@@ -32670,7 +32675,7 @@ local provider(configuration) = {
     },
     networkfirewall_firewall_policy(name, block): {
       local resource = blockType.resource('aws_networkfirewall_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(std.get(block, 'arn', null)),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -32684,7 +32689,7 @@ local provider(configuration) = {
     },
     networkfirewall_resource_policy(name, block): {
       local resource = blockType.resource('aws_networkfirewall_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         resource_arn: build.template(block.resource_arn),
       }),
       id: resource.field('id'),
@@ -32693,7 +32698,7 @@ local provider(configuration) = {
     },
     networkmanager_connection(name, block): {
       local resource = blockType.resource('aws_networkmanager_connection', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
         global_network_id: build.template(block.global_network_id),
       }),
@@ -32710,7 +32715,7 @@ local provider(configuration) = {
     },
     networkmanager_connections(name, block): {
       local resource = blockType.resource('aws_networkmanager_connections', name),
-      _: resource._({
+      _: resource._(block, {
         device_id: build.template(std.get(block, 'device_id', null)),
         global_network_id: build.template(block.global_network_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -32723,7 +32728,7 @@ local provider(configuration) = {
     },
     networkmanager_core_network_policy_document(name, block): {
       local resource = blockType.resource('aws_networkmanager_core_network_policy_document', name),
-      _: resource._({
+      _: resource._(block, {
         version: build.template(std.get(block, 'version', null)),
       }),
       id: resource.field('id'),
@@ -32732,7 +32737,7 @@ local provider(configuration) = {
     },
     networkmanager_device(name, block): {
       local resource = blockType.resource('aws_networkmanager_device', name),
-      _: resource._({
+      _: resource._(block, {
         device_id: build.template(block.device_id),
         global_network_id: build.template(block.global_network_id),
       }),
@@ -32752,7 +32757,7 @@ local provider(configuration) = {
     },
     networkmanager_devices(name, block): {
       local resource = blockType.resource('aws_networkmanager_devices', name),
-      _: resource._({
+      _: resource._(block, {
         global_network_id: build.template(block.global_network_id),
         site_id: build.template(std.get(block, 'site_id', null)),
         tags: build.template(std.get(block, 'tags', null)),
@@ -32765,7 +32770,7 @@ local provider(configuration) = {
     },
     networkmanager_global_network(name, block): {
       local resource = blockType.resource('aws_networkmanager_global_network', name),
-      _: resource._({
+      _: resource._(block, {
         global_network_id: build.template(block.global_network_id),
       }),
       arn: resource.field('arn'),
@@ -32776,7 +32781,7 @@ local provider(configuration) = {
     },
     networkmanager_global_networks(name, block): {
       local resource = blockType.resource('aws_networkmanager_global_networks', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       id: resource.field('id'),
@@ -32785,7 +32790,7 @@ local provider(configuration) = {
     },
     networkmanager_link(name, block): {
       local resource = blockType.resource('aws_networkmanager_link', name),
-      _: resource._({
+      _: resource._(block, {
         global_network_id: build.template(block.global_network_id),
         link_id: build.template(block.link_id),
       }),
@@ -32802,7 +32807,7 @@ local provider(configuration) = {
     },
     networkmanager_links(name, block): {
       local resource = blockType.resource('aws_networkmanager_links', name),
-      _: resource._({
+      _: resource._(block, {
         global_network_id: build.template(block.global_network_id),
         provider_name: build.template(std.get(block, 'provider_name', null)),
         site_id: build.template(std.get(block, 'site_id', null)),
@@ -32819,7 +32824,7 @@ local provider(configuration) = {
     },
     networkmanager_site(name, block): {
       local resource = blockType.resource('aws_networkmanager_site', name),
-      _: resource._({
+      _: resource._(block, {
         global_network_id: build.template(block.global_network_id),
         site_id: build.template(block.site_id),
       }),
@@ -32833,7 +32838,7 @@ local provider(configuration) = {
     },
     networkmanager_sites(name, block): {
       local resource = blockType.resource('aws_networkmanager_sites', name),
-      _: resource._({
+      _: resource._(block, {
         global_network_id: build.template(block.global_network_id),
         tags: build.template(std.get(block, 'tags', null)),
       }),
@@ -32844,7 +32849,7 @@ local provider(configuration) = {
     },
     oam_link(name, block): {
       local resource = blockType.resource('aws_oam_link', name),
-      _: resource._({
+      _: resource._(block, {
         link_identifier: build.template(block.link_identifier),
       }),
       arn: resource.field('arn'),
@@ -32860,14 +32865,14 @@ local provider(configuration) = {
     },
     oam_links(name, block): {
       local resource = blockType.resource('aws_oam_links', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
     },
     oam_sink(name, block): {
       local resource = blockType.resource('aws_oam_sink', name),
-      _: resource._({
+      _: resource._(block, {
         sink_identifier: build.template(block.sink_identifier),
       }),
       arn: resource.field('arn'),
@@ -32879,14 +32884,14 @@ local provider(configuration) = {
     },
     oam_sinks(name, block): {
       local resource = blockType.resource('aws_oam_sinks', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
     },
     opensearch_domain(name, block): {
       local resource = blockType.resource('aws_opensearch_domain', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
       }),
       access_policies: resource.field('access_policies'),
@@ -32921,7 +32926,7 @@ local provider(configuration) = {
     },
     opensearchserverless_access_policy(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         type: build.template(block.type),
       }),
@@ -32934,7 +32939,7 @@ local provider(configuration) = {
     },
     opensearchserverless_collection(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_collection', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       collection_endpoint: resource.field('collection_endpoint'),
@@ -32953,7 +32958,7 @@ local provider(configuration) = {
     },
     opensearchserverless_lifecycle_policy(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_lifecycle_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         type: build.template(block.type),
       }),
@@ -32968,7 +32973,7 @@ local provider(configuration) = {
     },
     opensearchserverless_security_config(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_security_config', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       config_version: resource.field('config_version'),
@@ -32980,7 +32985,7 @@ local provider(configuration) = {
     },
     opensearchserverless_security_policy(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_security_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         type: build.template(block.type),
       }),
@@ -32995,7 +33000,7 @@ local provider(configuration) = {
     },
     opensearchserverless_vpc_endpoint(name, block): {
       local resource = blockType.resource('aws_opensearchserverless_vpc_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_endpoint_id: build.template(block.vpc_endpoint_id),
       }),
       created_date: resource.field('created_date'),
@@ -33008,7 +33013,7 @@ local provider(configuration) = {
     },
     organizations_delegated_administrators(name, block): {
       local resource = blockType.resource('aws_organizations_delegated_administrators', name),
-      _: resource._({
+      _: resource._(block, {
         service_principal: build.template(std.get(block, 'service_principal', null)),
       }),
       delegated_administrators: resource.field('delegated_administrators'),
@@ -33017,7 +33022,7 @@ local provider(configuration) = {
     },
     organizations_delegated_services(name, block): {
       local resource = blockType.resource('aws_organizations_delegated_services', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
       }),
       account_id: resource.field('account_id'),
@@ -33026,7 +33031,7 @@ local provider(configuration) = {
     },
     organizations_organization(name, block): {
       local resource = blockType.resource('aws_organizations_organization', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       accounts: resource.field('accounts'),
       arn: resource.field('arn'),
@@ -33043,7 +33048,7 @@ local provider(configuration) = {
     },
     organizations_organizational_unit(name, block): {
       local resource = blockType.resource('aws_organizations_organizational_unit', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent_id: build.template(block.parent_id),
       }),
@@ -33054,7 +33059,7 @@ local provider(configuration) = {
     },
     organizations_organizational_unit_child_accounts(name, block): {
       local resource = blockType.resource('aws_organizations_organizational_unit_child_accounts', name),
-      _: resource._({
+      _: resource._(block, {
         parent_id: build.template(block.parent_id),
       }),
       accounts: resource.field('accounts'),
@@ -33063,7 +33068,7 @@ local provider(configuration) = {
     },
     organizations_organizational_unit_descendant_accounts(name, block): {
       local resource = blockType.resource('aws_organizations_organizational_unit_descendant_accounts', name),
-      _: resource._({
+      _: resource._(block, {
         parent_id: build.template(block.parent_id),
       }),
       accounts: resource.field('accounts'),
@@ -33072,7 +33077,7 @@ local provider(configuration) = {
     },
     organizations_organizational_unit_descendant_organizational_units(name, block): {
       local resource = blockType.resource('aws_organizations_organizational_unit_descendant_organizational_units', name),
-      _: resource._({
+      _: resource._(block, {
         parent_id: build.template(block.parent_id),
       }),
       children: resource.field('children'),
@@ -33081,7 +33086,7 @@ local provider(configuration) = {
     },
     organizations_organizational_units(name, block): {
       local resource = blockType.resource('aws_organizations_organizational_units', name),
-      _: resource._({
+      _: resource._(block, {
         parent_id: build.template(block.parent_id),
       }),
       children: resource.field('children'),
@@ -33090,7 +33095,7 @@ local provider(configuration) = {
     },
     organizations_policies(name, block): {
       local resource = blockType.resource('aws_organizations_policies', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(block.filter),
       }),
       filter: resource.field('filter'),
@@ -33099,7 +33104,7 @@ local provider(configuration) = {
     },
     organizations_policies_for_target(name, block): {
       local resource = blockType.resource('aws_organizations_policies_for_target', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(block.filter),
         target_id: build.template(block.target_id),
       }),
@@ -33110,7 +33115,7 @@ local provider(configuration) = {
     },
     organizations_policy(name, block): {
       local resource = blockType.resource('aws_organizations_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_id: build.template(block.policy_id),
       }),
       arn: resource.field('arn'),
@@ -33124,7 +33129,7 @@ local provider(configuration) = {
     },
     organizations_resource_tags(name, block): {
       local resource = blockType.resource('aws_organizations_resource_tags', name),
-      _: resource._({
+      _: resource._(block, {
         resource_id: build.template(block.resource_id),
       }),
       id: resource.field('id'),
@@ -33133,7 +33138,7 @@ local provider(configuration) = {
     },
     outposts_asset(name, block): {
       local resource = blockType.resource('aws_outposts_asset', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         asset_id: build.template(block.asset_id),
       }),
@@ -33147,7 +33152,7 @@ local provider(configuration) = {
     },
     outposts_assets(name, block): {
       local resource = blockType.resource('aws_outposts_assets', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         host_id_filter: build.template(std.get(block, 'host_id_filter', null)),
         status_id_filter: build.template(std.get(block, 'status_id_filter', null)),
@@ -33160,7 +33165,7 @@ local provider(configuration) = {
     },
     outposts_outpost(name, block): {
       local resource = blockType.resource('aws_outposts_outpost', name),
-      _: resource._({
+      _: resource._(block, {
         owner_id: build.template(std.get(block, 'owner_id', null)),
       }),
       arn: resource.field('arn'),
@@ -33178,7 +33183,7 @@ local provider(configuration) = {
     },
     outposts_outpost_instance_type(name, block): {
       local resource = blockType.resource('aws_outposts_outpost_instance_type', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
         preferred_instance_types: build.template(std.get(block, 'preferred_instance_types', null)),
       }),
@@ -33189,7 +33194,7 @@ local provider(configuration) = {
     },
     outposts_outpost_instance_types(name, block): {
       local resource = blockType.resource('aws_outposts_outpost_instance_types', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -33198,7 +33203,7 @@ local provider(configuration) = {
     },
     outposts_outposts(name, block): {
       local resource = blockType.resource('aws_outposts_outposts', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       availability_zone: resource.field('availability_zone'),
@@ -33210,7 +33215,7 @@ local provider(configuration) = {
     },
     outposts_site(name, block): {
       local resource = blockType.resource('aws_outposts_site', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       account_id: resource.field('account_id'),
       description: resource.field('description'),
@@ -33219,14 +33224,14 @@ local provider(configuration) = {
     },
     outposts_sites(name, block): {
       local resource = blockType.resource('aws_outposts_sites', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
     },
     partition(name, block): {
       local resource = blockType.resource('aws_partition', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       dns_suffix: resource.field('dns_suffix'),
       id: resource.field('id'),
@@ -33235,7 +33240,7 @@ local provider(configuration) = {
     },
     polly_voices(name, block): {
       local resource = blockType.resource('aws_polly_voices', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(std.get(block, 'engine', null)),
         include_additional_language_codes: build.template(std.get(block, 'include_additional_language_codes', null)),
         language_code: build.template(std.get(block, 'language_code', null)),
@@ -33247,7 +33252,7 @@ local provider(configuration) = {
     },
     prefix_list(name, block): {
       local resource = blockType.resource('aws_prefix_list', name),
-      _: resource._({
+      _: resource._(block, {
         prefix_list_id: build.template(std.get(block, 'prefix_list_id', null)),
       }),
       cidr_blocks: resource.field('cidr_blocks'),
@@ -33257,7 +33262,7 @@ local provider(configuration) = {
     },
     pricing_product(name, block): {
       local resource = blockType.resource('aws_pricing_product', name),
-      _: resource._({
+      _: resource._(block, {
         service_code: build.template(block.service_code),
       }),
       id: resource.field('id'),
@@ -33266,13 +33271,13 @@ local provider(configuration) = {
     },
     prometheus_default_scraper_configuration(name, block): {
       local resource = blockType.resource('aws_prometheus_default_scraper_configuration', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       configuration: resource.field('configuration'),
     },
     prometheus_workspace(name, block): {
       local resource = blockType.resource('aws_prometheus_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         workspace_id: build.template(block.workspace_id),
       }),
       alias: resource.field('alias'),
@@ -33287,7 +33292,7 @@ local provider(configuration) = {
     },
     prometheus_workspaces(name, block): {
       local resource = blockType.resource('aws_prometheus_workspaces', name),
-      _: resource._({
+      _: resource._(block, {
         alias_prefix: build.template(std.get(block, 'alias_prefix', null)),
       }),
       alias_prefix: resource.field('alias_prefix'),
@@ -33298,7 +33303,7 @@ local provider(configuration) = {
     },
     qldb_ledger(name, block): {
       local resource = blockType.resource('aws_qldb_ledger', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -33311,7 +33316,7 @@ local provider(configuration) = {
     },
     quicksight_analysis(name, block): {
       local resource = blockType.resource('aws_quicksight_analysis', name),
-      _: resource._({
+      _: resource._(block, {
         analysis_id: build.template(block.analysis_id),
       }),
       analysis_id: resource.field('analysis_id'),
@@ -33330,7 +33335,7 @@ local provider(configuration) = {
     },
     quicksight_data_set(name, block): {
       local resource = blockType.resource('aws_quicksight_data_set', name),
-      _: resource._({
+      _: resource._(block, {
         data_set_id: build.template(block.data_set_id),
       }),
       arn: resource.field('arn'),
@@ -33353,7 +33358,7 @@ local provider(configuration) = {
     },
     quicksight_group(name, block): {
       local resource = blockType.resource('aws_quicksight_group', name),
-      _: resource._({
+      _: resource._(block, {
         group_name: build.template(block.group_name),
         namespace: build.template(std.get(block, 'namespace', null)),
       }),
@@ -33367,7 +33372,7 @@ local provider(configuration) = {
     },
     quicksight_theme(name, block): {
       local resource = blockType.resource('aws_quicksight_theme', name),
-      _: resource._({
+      _: resource._(block, {
         theme_id: build.template(block.theme_id),
       }),
       arn: resource.field('arn'),
@@ -33387,7 +33392,7 @@ local provider(configuration) = {
     },
     quicksight_user(name, block): {
       local resource = blockType.resource('aws_quicksight_user', name),
-      _: resource._({
+      _: resource._(block, {
         namespace: build.template(std.get(block, 'namespace', null)),
         user_name: build.template(block.user_name),
       }),
@@ -33404,7 +33409,7 @@ local provider(configuration) = {
     },
     ram_resource_share(name, block): {
       local resource = blockType.resource('aws_ram_resource_share', name),
-      _: resource._({
+      _: resource._(block, {
         resource_owner: build.template(block.resource_owner),
         resource_share_status: build.template(std.get(block, 'resource_share_status', null)),
       }),
@@ -33420,7 +33425,7 @@ local provider(configuration) = {
     },
     rds_certificate(name, block): {
       local resource = blockType.resource('aws_rds_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         latest_valid_till: build.template(std.get(block, 'latest_valid_till', null)),
       }),
       arn: resource.field('arn'),
@@ -33435,7 +33440,7 @@ local provider(configuration) = {
     },
     rds_cluster(name, block): {
       local resource = blockType.resource('aws_rds_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(block.cluster_identifier),
       }),
       arn: resource.field('arn'),
@@ -33474,7 +33479,7 @@ local provider(configuration) = {
     },
     rds_cluster_parameter_group(name, block): {
       local resource = blockType.resource('aws_rds_cluster_parameter_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -33484,7 +33489,7 @@ local provider(configuration) = {
     },
     rds_clusters(name, block): {
       local resource = blockType.resource('aws_rds_clusters', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       cluster_arns: resource.field('cluster_arns'),
       cluster_identifiers: resource.field('cluster_identifiers'),
@@ -33492,7 +33497,7 @@ local provider(configuration) = {
     },
     rds_engine_version(name, block): {
       local resource = blockType.resource('aws_rds_engine_version', name),
-      _: resource._({
+      _: resource._(block, {
         default_only: build.template(std.get(block, 'default_only', null)),
         engine: build.template(block.engine),
         has_major_target: build.template(std.get(block, 'has_major_target', null)),
@@ -33536,7 +33541,7 @@ local provider(configuration) = {
     },
     rds_orderable_db_instance(name, block): {
       local resource = blockType.resource('aws_rds_orderable_db_instance', name),
-      _: resource._({
+      _: resource._(block, {
         engine: build.template(block.engine),
         engine_latest_version: build.template(std.get(block, 'engine_latest_version', null)),
         preferred_engine_versions: build.template(std.get(block, 'preferred_engine_versions', null)),
@@ -33578,7 +33583,7 @@ local provider(configuration) = {
     },
     rds_reserved_instance_offering(name, block): {
       local resource = blockType.resource('aws_rds_reserved_instance_offering', name),
-      _: resource._({
+      _: resource._(block, {
         db_instance_class: build.template(block.db_instance_class),
         duration: build.template(block.duration),
         multi_az: build.template(block.multi_az),
@@ -33597,7 +33602,7 @@ local provider(configuration) = {
     },
     redshift_cluster(name, block): {
       local resource = blockType.resource('aws_redshift_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_identifier: build.template(block.cluster_identifier),
       }),
       allow_version_upgrade: resource.field('allow_version_upgrade'),
@@ -33644,7 +33649,7 @@ local provider(configuration) = {
     },
     redshift_cluster_credentials(name, block): {
       local resource = blockType.resource('aws_redshift_cluster_credentials', name),
-      _: resource._({
+      _: resource._(block, {
         auto_create: build.template(std.get(block, 'auto_create', null)),
         cluster_identifier: build.template(block.cluster_identifier),
         db_groups: build.template(std.get(block, 'db_groups', null)),
@@ -33664,13 +33669,13 @@ local provider(configuration) = {
     },
     redshift_data_shares(name, block): {
       local resource = blockType.resource('aws_redshift_data_shares', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     redshift_orderable_cluster(name, block): {
       local resource = blockType.resource('aws_redshift_orderable_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         preferred_node_types: build.template(std.get(block, 'preferred_node_types', null)),
       }),
       availability_zones: resource.field('availability_zones'),
@@ -33682,7 +33687,7 @@ local provider(configuration) = {
     },
     redshift_producer_data_shares(name, block): {
       local resource = blockType.resource('aws_redshift_producer_data_shares', name),
-      _: resource._({
+      _: resource._(block, {
         producer_arn: build.template(block.producer_arn),
         status: build.template(std.get(block, 'status', null)),
       }),
@@ -33692,7 +33697,7 @@ local provider(configuration) = {
     },
     redshift_service_account(name, block): {
       local resource = blockType.resource('aws_redshift_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
       }),
       arn: resource.field('arn'),
@@ -33701,7 +33706,7 @@ local provider(configuration) = {
     },
     redshift_subnet_group(name, block): {
       local resource = blockType.resource('aws_redshift_subnet_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -33713,7 +33718,7 @@ local provider(configuration) = {
     },
     redshiftserverless_credentials(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_credentials', name),
-      _: resource._({
+      _: resource._(block, {
         db_name: build.template(std.get(block, 'db_name', null)),
         duration_seconds: build.template(std.get(block, 'duration_seconds', null)),
         workgroup_name: build.template(block.workgroup_name),
@@ -33728,7 +33733,7 @@ local provider(configuration) = {
     },
     redshiftserverless_namespace(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         namespace_name: build.template(block.namespace_name),
       }),
       admin_username: resource.field('admin_username'),
@@ -33744,7 +33749,7 @@ local provider(configuration) = {
     },
     redshiftserverless_workgroup(name, block): {
       local resource = blockType.resource('aws_redshiftserverless_workgroup', name),
-      _: resource._({
+      _: resource._(block, {
         workgroup_name: build.template(block.workgroup_name),
       }),
       arn: resource.field('arn'),
@@ -33760,7 +33765,7 @@ local provider(configuration) = {
     },
     region(name, block): {
       local resource = blockType.resource('aws_region', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       description: resource.field('description'),
       endpoint: resource.field('endpoint'),
@@ -33769,7 +33774,7 @@ local provider(configuration) = {
     },
     regions(name, block): {
       local resource = blockType.resource('aws_regions', name),
-      _: resource._({
+      _: resource._(block, {
         all_regions: build.template(std.get(block, 'all_regions', null)),
       }),
       all_regions: resource.field('all_regions'),
@@ -33778,7 +33783,7 @@ local provider(configuration) = {
     },
     resourceexplorer2_search(name, block): {
       local resource = blockType.resource('aws_resourceexplorer2_search', name),
-      _: resource._({
+      _: resource._(block, {
         query_string: build.template(block.query_string),
       }),
       id: resource.field('id'),
@@ -33789,7 +33794,7 @@ local provider(configuration) = {
     },
     resourcegroupstaggingapi_resources(name, block): {
       local resource = blockType.resource('aws_resourcegroupstaggingapi_resources', name),
-      _: resource._({
+      _: resource._(block, {
         exclude_compliant_resources: build.template(std.get(block, 'exclude_compliant_resources', null)),
         include_compliance_details: build.template(std.get(block, 'include_compliance_details', null)),
         resource_arn_list: build.template(std.get(block, 'resource_arn_list', null)),
@@ -33804,7 +33809,7 @@ local provider(configuration) = {
     },
     route(name, block): {
       local resource = blockType.resource('aws_route', name),
-      _: resource._({
+      _: resource._(block, {
         route_table_id: build.template(block.route_table_id),
       }),
       carrier_gateway_id: resource.field('carrier_gateway_id'),
@@ -33825,7 +33830,7 @@ local provider(configuration) = {
     },
     route53_delegation_set(name, block): {
       local resource = blockType.resource('aws_route53_delegation_set', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -33835,7 +33840,7 @@ local provider(configuration) = {
     },
     route53_resolver_endpoint(name, block): {
       local resource = blockType.resource('aws_route53_resolver_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         resolver_endpoint_id: build.template(std.get(block, 'resolver_endpoint_id', null)),
       }),
       arn: resource.field('arn'),
@@ -33851,7 +33856,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_config(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_config', name),
-      _: resource._({
+      _: resource._(block, {
         resource_id: build.template(block.resource_id),
       }),
       firewall_fail_open: resource.field('firewall_fail_open'),
@@ -33861,7 +33866,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_domain_list(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_domain_list', name),
-      _: resource._({
+      _: resource._(block, {
         firewall_domain_list_id: build.template(block.firewall_domain_list_id),
       }),
       arn: resource.field('arn'),
@@ -33878,7 +33883,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_rule_group(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         firewall_rule_group_id: build.template(block.firewall_rule_group_id),
       }),
       arn: resource.field('arn'),
@@ -33896,7 +33901,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_rule_group_association(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_rule_group_association', name),
-      _: resource._({
+      _: resource._(block, {
         firewall_rule_group_association_id: build.template(block.firewall_rule_group_association_id),
       }),
       arn: resource.field('arn'),
@@ -33916,7 +33921,7 @@ local provider(configuration) = {
     },
     route53_resolver_firewall_rules(name, block): {
       local resource = blockType.resource('aws_route53_resolver_firewall_rules', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(std.get(block, 'action', null)),
         firewall_rule_group_id: build.template(block.firewall_rule_group_id),
         priority: build.template(std.get(block, 'priority', null)),
@@ -33929,7 +33934,7 @@ local provider(configuration) = {
     },
     route53_resolver_query_log_config(name, block): {
       local resource = blockType.resource('aws_route53_resolver_query_log_config', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         resolver_query_log_config_id: build.template(std.get(block, 'resolver_query_log_config_id', null)),
       }),
@@ -33944,7 +33949,7 @@ local provider(configuration) = {
     },
     route53_resolver_rule(name, block): {
       local resource = blockType.resource('aws_route53_resolver_rule', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       domain_name: resource.field('domain_name'),
@@ -33959,7 +33964,7 @@ local provider(configuration) = {
     },
     route53_resolver_rules(name, block): {
       local resource = blockType.resource('aws_route53_resolver_rules', name),
-      _: resource._({
+      _: resource._(block, {
         name_regex: build.template(std.get(block, 'name_regex', null)),
         owner_id: build.template(std.get(block, 'owner_id', null)),
         resolver_endpoint_id: build.template(std.get(block, 'resolver_endpoint_id', null)),
@@ -33976,7 +33981,7 @@ local provider(configuration) = {
     },
     route53_traffic_policy_document(name, block): {
       local resource = blockType.resource('aws_route53_traffic_policy_document', name),
-      _: resource._({
+      _: resource._(block, {
         record_type: build.template(std.get(block, 'record_type', null)),
         start_endpoint: build.template(std.get(block, 'start_endpoint', null)),
         start_rule: build.template(std.get(block, 'start_rule', null)),
@@ -33991,7 +33996,7 @@ local provider(configuration) = {
     },
     route53_zone(name, block): {
       local resource = blockType.resource('aws_route53_zone', name),
-      _: resource._({
+      _: resource._(block, {
         private_zone: build.template(std.get(block, 'private_zone', null)),
       }),
       arn: resource.field('arn'),
@@ -34011,20 +34016,20 @@ local provider(configuration) = {
     },
     route53_zones(name, block): {
       local resource = blockType.resource('aws_route53_zones', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
     },
     route53profiles_profiles(name, block): {
       local resource = blockType.resource('aws_route53profiles_profiles', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       profiles: resource.field('profiles'),
     },
     route_table(name, block): {
       local resource = blockType.resource('aws_route_table', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       associations: resource.field('associations'),
@@ -34039,7 +34044,7 @@ local provider(configuration) = {
     },
     route_tables(name, block): {
       local resource = blockType.resource('aws_route_tables', name),
-      _: resource._({
+      _: resource._(block, {
         vpc_id: build.template(std.get(block, 'vpc_id', null)),
       }),
       id: resource.field('id'),
@@ -34049,7 +34054,7 @@ local provider(configuration) = {
     },
     s3_account_public_access_block(name, block): {
       local resource = blockType.resource('aws_s3_account_public_access_block', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(std.get(block, 'account_id', null)),
       }),
       account_id: resource.field('account_id'),
@@ -34061,7 +34066,7 @@ local provider(configuration) = {
     },
     s3_bucket(name, block): {
       local resource = blockType.resource('aws_s3_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
       }),
       arn: resource.field('arn'),
@@ -34076,7 +34081,7 @@ local provider(configuration) = {
     },
     s3_bucket_object(name, block): {
       local resource = blockType.resource('aws_s3_bucket_object', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         key: build.template(block.key),
         range: build.template(std.get(block, 'range', null)),
@@ -34111,7 +34116,7 @@ local provider(configuration) = {
     },
     s3_bucket_objects(name, block): {
       local resource = blockType.resource('aws_s3_bucket_objects', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         delimiter: build.template(std.get(block, 'delimiter', null)),
         encoding_type: build.template(std.get(block, 'encoding_type', null)),
@@ -34134,7 +34139,7 @@ local provider(configuration) = {
     },
     s3_bucket_policy(name, block): {
       local resource = blockType.resource('aws_s3_bucket_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
       }),
       bucket: resource.field('bucket'),
@@ -34143,7 +34148,7 @@ local provider(configuration) = {
     },
     s3_directory_buckets(name, block): {
       local resource = blockType.resource('aws_s3_directory_buckets', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       buckets: resource.field('buckets'),
@@ -34151,7 +34156,7 @@ local provider(configuration) = {
     },
     s3_object(name, block): {
       local resource = blockType.resource('aws_s3_object', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         checksum_mode: build.template(std.get(block, 'checksum_mode', null)),
         key: build.template(block.key),
@@ -34192,7 +34197,7 @@ local provider(configuration) = {
     },
     s3_objects(name, block): {
       local resource = blockType.resource('aws_s3_objects', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         delimiter: build.template(std.get(block, 'delimiter', null)),
         encoding_type: build.template(std.get(block, 'encoding_type', null)),
@@ -34218,7 +34223,7 @@ local provider(configuration) = {
     },
     s3control_multi_region_access_point(name, block): {
       local resource = blockType.resource('aws_s3control_multi_region_access_point', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       account_id: resource.field('account_id'),
@@ -34234,7 +34239,7 @@ local provider(configuration) = {
     },
     sagemaker_prebuilt_ecr_image(name, block): {
       local resource = blockType.resource('aws_sagemaker_prebuilt_ecr_image', name),
-      _: resource._({
+      _: resource._(block, {
         dns_suffix: build.template(std.get(block, 'dns_suffix', null)),
         image_tag: build.template(std.get(block, 'image_tag', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -34250,7 +34255,7 @@ local provider(configuration) = {
     },
     secretsmanager_random_password(name, block): {
       local resource = blockType.resource('aws_secretsmanager_random_password', name),
-      _: resource._({
+      _: resource._(block, {
         exclude_characters: build.template(std.get(block, 'exclude_characters', null)),
         exclude_lowercase: build.template(std.get(block, 'exclude_lowercase', null)),
         exclude_numbers: build.template(std.get(block, 'exclude_numbers', null)),
@@ -34273,7 +34278,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       created_date: resource.field('created_date'),
@@ -34287,7 +34292,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret_rotation(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret_rotation', name),
-      _: resource._({
+      _: resource._(block, {
         secret_id: build.template(block.secret_id),
       }),
       id: resource.field('id'),
@@ -34298,7 +34303,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret_version(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret_version', name),
-      _: resource._({
+      _: resource._(block, {
         secret_id: build.template(block.secret_id),
         version_stage: build.template(std.get(block, 'version_stage', null)),
       }),
@@ -34314,7 +34319,7 @@ local provider(configuration) = {
     },
     secretsmanager_secret_versions(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secret_versions', name),
-      _: resource._({
+      _: resource._(block, {
         include_deprecated: build.template(std.get(block, 'include_deprecated', null)),
         secret_id: build.template(block.secret_id),
       }),
@@ -34326,7 +34331,7 @@ local provider(configuration) = {
     },
     secretsmanager_secrets(name, block): {
       local resource = blockType.resource('aws_secretsmanager_secrets', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
@@ -34334,7 +34339,7 @@ local provider(configuration) = {
     },
     security_group(name, block): {
       local resource = blockType.resource('aws_security_group', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       description: resource.field('description'),
@@ -34345,7 +34350,7 @@ local provider(configuration) = {
     },
     security_groups(name, block): {
       local resource = blockType.resource('aws_security_groups', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
@@ -34355,7 +34360,7 @@ local provider(configuration) = {
     },
     securityhub_standards_control_associations(name, block): {
       local resource = blockType.resource('aws_securityhub_standards_control_associations', name),
-      _: resource._({
+      _: resource._(block, {
         security_control_id: build.template(block.security_control_id),
       }),
       id: resource.field('id'),
@@ -34364,7 +34369,7 @@ local provider(configuration) = {
     },
     serverlessapplicationrepository_application(name, block): {
       local resource = blockType.resource('aws_serverlessapplicationrepository_application', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
       }),
       application_id: resource.field('application_id'),
@@ -34377,7 +34382,7 @@ local provider(configuration) = {
     },
     service(name, block): {
       local resource = blockType.resource('aws_service', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       dns_name: resource.field('dns_name'),
       id: resource.field('id'),
@@ -34390,7 +34395,7 @@ local provider(configuration) = {
     },
     service_discovery_dns_namespace(name, block): {
       local resource = blockType.resource('aws_service_discovery_dns_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         type: build.template(block.type),
       }),
@@ -34404,7 +34409,7 @@ local provider(configuration) = {
     },
     service_discovery_http_namespace(name, block): {
       local resource = blockType.resource('aws_service_discovery_http_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -34416,7 +34421,7 @@ local provider(configuration) = {
     },
     service_discovery_service(name, block): {
       local resource = blockType.resource('aws_service_discovery_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         namespace_id: build.template(block.namespace_id),
         tags: build.template(std.get(block, 'tags', null)),
@@ -34434,7 +34439,7 @@ local provider(configuration) = {
     },
     service_principal(name, block): {
       local resource = blockType.resource('aws_service_principal', name),
-      _: resource._({
+      _: resource._(block, {
         service_name: build.template(block.service_name),
       }),
       id: resource.field('id'),
@@ -34445,7 +34450,7 @@ local provider(configuration) = {
     },
     servicecatalog_constraint(name, block): {
       local resource = blockType.resource('aws_servicecatalog_constraint', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         id: build.template(block.id),
       }),
@@ -34461,7 +34466,7 @@ local provider(configuration) = {
     },
     servicecatalog_launch_paths(name, block): {
       local resource = blockType.resource('aws_servicecatalog_launch_paths', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         product_id: build.template(block.product_id),
       }),
@@ -34472,7 +34477,7 @@ local provider(configuration) = {
     },
     servicecatalog_portfolio(name, block): {
       local resource = blockType.resource('aws_servicecatalog_portfolio', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         id: build.template(block.id),
       }),
@@ -34487,7 +34492,7 @@ local provider(configuration) = {
     },
     servicecatalog_portfolio_constraints(name, block): {
       local resource = blockType.resource('aws_servicecatalog_portfolio_constraints', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         portfolio_id: build.template(block.portfolio_id),
         product_id: build.template(std.get(block, 'product_id', null)),
@@ -34500,7 +34505,7 @@ local provider(configuration) = {
     },
     servicecatalog_product(name, block): {
       local resource = blockType.resource('aws_servicecatalog_product', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         id: build.template(block.id),
       }),
@@ -34522,7 +34527,7 @@ local provider(configuration) = {
     },
     servicecatalog_provisioning_artifacts(name, block): {
       local resource = blockType.resource('aws_servicecatalog_provisioning_artifacts', name),
-      _: resource._({
+      _: resource._(block, {
         accept_language: build.template(std.get(block, 'accept_language', null)),
         product_id: build.template(block.product_id),
       }),
@@ -34533,7 +34538,7 @@ local provider(configuration) = {
     },
     servicecatalogappregistry_application(name, block): {
       local resource = blockType.resource('aws_servicecatalogappregistry_application', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       application_tag: resource.field('application_tag'),
@@ -34544,7 +34549,7 @@ local provider(configuration) = {
     },
     servicequotas_service(name, block): {
       local resource = blockType.resource('aws_servicequotas_service', name),
-      _: resource._({
+      _: resource._(block, {
         service_name: build.template(block.service_name),
       }),
       id: resource.field('id'),
@@ -34553,7 +34558,7 @@ local provider(configuration) = {
     },
     servicequotas_service_quota(name, block): {
       local resource = blockType.resource('aws_servicequotas_service_quota', name),
-      _: resource._({
+      _: resource._(block, {
         service_code: build.template(block.service_code),
       }),
       adjustable: resource.field('adjustable'),
@@ -34570,7 +34575,7 @@ local provider(configuration) = {
     },
     servicequotas_templates(name, block): {
       local resource = blockType.resource('aws_servicequotas_templates', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(block.region),
       }),
       id: resource.field('id'),
@@ -34578,7 +34583,7 @@ local provider(configuration) = {
     },
     ses_active_receipt_rule_set(name, block): {
       local resource = blockType.resource('aws_ses_active_receipt_rule_set', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       id: resource.field('id'),
@@ -34586,7 +34591,7 @@ local provider(configuration) = {
     },
     ses_domain_identity(name, block): {
       local resource = blockType.resource('aws_ses_domain_identity', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
       }),
       arn: resource.field('arn'),
@@ -34596,7 +34601,7 @@ local provider(configuration) = {
     },
     ses_email_identity(name, block): {
       local resource = blockType.resource('aws_ses_email_identity', name),
-      _: resource._({
+      _: resource._(block, {
         email: build.template(block.email),
       }),
       arn: resource.field('arn'),
@@ -34605,7 +34610,7 @@ local provider(configuration) = {
     },
     sesv2_configuration_set(name, block): {
       local resource = blockType.resource('aws_sesv2_configuration_set', name),
-      _: resource._({
+      _: resource._(block, {
         configuration_set_name: build.template(block.configuration_set_name),
       }),
       arn: resource.field('arn'),
@@ -34621,7 +34626,7 @@ local provider(configuration) = {
     },
     sesv2_dedicated_ip_pool(name, block): {
       local resource = blockType.resource('aws_sesv2_dedicated_ip_pool', name),
-      _: resource._({
+      _: resource._(block, {
         pool_name: build.template(block.pool_name),
       }),
       arn: resource.field('arn'),
@@ -34633,7 +34638,7 @@ local provider(configuration) = {
     },
     sesv2_email_identity(name, block): {
       local resource = blockType.resource('aws_sesv2_email_identity', name),
-      _: resource._({
+      _: resource._(block, {
         email_identity: build.template(block.email_identity),
       }),
       arn: resource.field('arn'),
@@ -34647,7 +34652,7 @@ local provider(configuration) = {
     },
     sesv2_email_identity_mail_from_attributes(name, block): {
       local resource = blockType.resource('aws_sesv2_email_identity_mail_from_attributes', name),
-      _: resource._({
+      _: resource._(block, {
         email_identity: build.template(block.email_identity),
       }),
       behavior_on_mx_failure: resource.field('behavior_on_mx_failure'),
@@ -34657,7 +34662,7 @@ local provider(configuration) = {
     },
     sfn_activity(name, block): {
       local resource = blockType.resource('aws_sfn_activity', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       creation_date: resource.field('creation_date'),
@@ -34666,7 +34671,7 @@ local provider(configuration) = {
     },
     sfn_alias(name, block): {
       local resource = blockType.resource('aws_sfn_alias', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         statemachine_arn: build.template(block.statemachine_arn),
@@ -34681,7 +34686,7 @@ local provider(configuration) = {
     },
     sfn_state_machine(name, block): {
       local resource = blockType.resource('aws_sfn_state_machine', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -34696,7 +34701,7 @@ local provider(configuration) = {
     },
     sfn_state_machine_versions(name, block): {
       local resource = blockType.resource('aws_sfn_state_machine_versions', name),
-      _: resource._({
+      _: resource._(block, {
         statemachine_arn: build.template(block.statemachine_arn),
       }),
       id: resource.field('id'),
@@ -34705,7 +34710,7 @@ local provider(configuration) = {
     },
     shield_protection(name, block): {
       local resource = blockType.resource('aws_shield_protection', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       name: resource.field('name'),
@@ -34715,7 +34720,7 @@ local provider(configuration) = {
     },
     signer_signing_job(name, block): {
       local resource = blockType.resource('aws_signer_signing_job', name),
-      _: resource._({
+      _: resource._(block, {
         job_id: build.template(block.job_id),
       }),
       completed_at: resource.field('completed_at'),
@@ -34738,7 +34743,7 @@ local provider(configuration) = {
     },
     signer_signing_profile(name, block): {
       local resource = blockType.resource('aws_signer_signing_profile', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -34755,7 +34760,7 @@ local provider(configuration) = {
     },
     sns_topic(name, block): {
       local resource = blockType.resource('aws_sns_topic', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -34765,14 +34770,14 @@ local provider(configuration) = {
     },
     spot_datafeed_subscription(name, block): {
       local resource = blockType.resource('aws_spot_datafeed_subscription', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       bucket: resource.field('bucket'),
       prefix: resource.field('prefix'),
     },
     sqs_queue(name, block): {
       local resource = blockType.resource('aws_sqs_queue', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -34783,7 +34788,7 @@ local provider(configuration) = {
     },
     sqs_queues(name, block): {
       local resource = blockType.resource('aws_sqs_queues', name),
-      _: resource._({
+      _: resource._(block, {
         queue_name_prefix: build.template(std.get(block, 'queue_name_prefix', null)),
       }),
       id: resource.field('id'),
@@ -34792,7 +34797,7 @@ local provider(configuration) = {
     },
     ssm_document(name, block): {
       local resource = blockType.resource('aws_ssm_document', name),
-      _: resource._({
+      _: resource._(block, {
         document_format: build.template(std.get(block, 'document_format', null)),
         document_version: build.template(std.get(block, 'document_version', null)),
         name: build.template(block.name),
@@ -34807,21 +34812,21 @@ local provider(configuration) = {
     },
     ssm_instances(name, block): {
       local resource = blockType.resource('aws_ssm_instances', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
     },
     ssm_maintenance_windows(name, block): {
       local resource = blockType.resource('aws_ssm_maintenance_windows', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
     },
     ssm_parameter(name, block): {
       local resource = blockType.resource('aws_ssm_parameter', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         with_decryption: build.template(std.get(block, 'with_decryption', null)),
       }),
@@ -34836,7 +34841,7 @@ local provider(configuration) = {
     },
     ssm_parameters_by_path(name, block): {
       local resource = blockType.resource('aws_ssm_parameters_by_path', name),
-      _: resource._({
+      _: resource._(block, {
         path: build.template(block.path),
         recursive: build.template(std.get(block, 'recursive', null)),
         with_decryption: build.template(std.get(block, 'with_decryption', null)),
@@ -34852,7 +34857,7 @@ local provider(configuration) = {
     },
     ssm_patch_baseline(name, block): {
       local resource = blockType.resource('aws_ssm_patch_baseline', name),
-      _: resource._({
+      _: resource._(block, {
         default_baseline: build.template(std.get(block, 'default_baseline', null)),
         name_prefix: build.template(std.get(block, 'name_prefix', null)),
         operating_system: build.template(std.get(block, 'operating_system', null)),
@@ -34877,7 +34882,7 @@ local provider(configuration) = {
     },
     ssm_patch_baselines(name, block): {
       local resource = blockType.resource('aws_ssm_patch_baselines', name),
-      _: resource._({
+      _: resource._(block, {
         default_baselines: build.template(std.get(block, 'default_baselines', null)),
       }),
       baseline_identities: resource.field('baseline_identities'),
@@ -34885,7 +34890,7 @@ local provider(configuration) = {
     },
     ssmcontacts_contact(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_contact', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       alias: resource.field('alias'),
@@ -34897,7 +34902,7 @@ local provider(configuration) = {
     },
     ssmcontacts_contact_channel(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_contact_channel', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       activation_status: resource.field('activation_status'),
@@ -34910,7 +34915,7 @@ local provider(configuration) = {
     },
     ssmcontacts_plan(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_plan', name),
-      _: resource._({
+      _: resource._(block, {
         contact_id: build.template(block.contact_id),
       }),
       contact_id: resource.field('contact_id'),
@@ -34919,7 +34924,7 @@ local provider(configuration) = {
     },
     ssmcontacts_rotation(name, block): {
       local resource = blockType.resource('aws_ssmcontacts_rotation', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       arn: resource.field('arn'),
@@ -34933,7 +34938,7 @@ local provider(configuration) = {
     },
     ssmincidents_replication_set(name, block): {
       local resource = blockType.resource('aws_ssmincidents_replication_set', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       created_by: resource.field('created_by'),
@@ -34946,7 +34951,7 @@ local provider(configuration) = {
     },
     ssmincidents_response_plan(name, block): {
       local resource = blockType.resource('aws_ssmincidents_response_plan', name),
-      _: resource._({
+      _: resource._(block, {
         arn: build.template(block.arn),
       }),
       action: resource.field('action'),
@@ -34962,7 +34967,7 @@ local provider(configuration) = {
     },
     ssoadmin_application(name, block): {
       local resource = blockType.resource('aws_ssoadmin_application', name),
-      _: resource._({
+      _: resource._(block, {
         application_arn: build.template(block.application_arn),
       }),
       application_account: resource.field('application_account'),
@@ -34976,7 +34981,7 @@ local provider(configuration) = {
     },
     ssoadmin_application_assignments(name, block): {
       local resource = blockType.resource('aws_ssoadmin_application_assignments', name),
-      _: resource._({
+      _: resource._(block, {
         application_arn: build.template(block.application_arn),
       }),
       application_arn: resource.field('application_arn'),
@@ -34984,13 +34989,13 @@ local provider(configuration) = {
     },
     ssoadmin_application_providers(name, block): {
       local resource = blockType.resource('aws_ssoadmin_application_providers', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     ssoadmin_instances(name, block): {
       local resource = blockType.resource('aws_ssoadmin_instances', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arns: resource.field('arns'),
       id: resource.field('id'),
@@ -34998,7 +35003,7 @@ local provider(configuration) = {
     },
     ssoadmin_permission_set(name, block): {
       local resource = blockType.resource('aws_ssoadmin_permission_set', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
       }),
       arn: resource.field('arn'),
@@ -35013,7 +35018,7 @@ local provider(configuration) = {
     },
     ssoadmin_permission_sets(name, block): {
       local resource = blockType.resource('aws_ssoadmin_permission_sets', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
       }),
       arns: resource.field('arns'),
@@ -35022,7 +35027,7 @@ local provider(configuration) = {
     },
     ssoadmin_principal_application_assignments(name, block): {
       local resource = blockType.resource('aws_ssoadmin_principal_application_assignments', name),
-      _: resource._({
+      _: resource._(block, {
         instance_arn: build.template(block.instance_arn),
         principal_id: build.template(block.principal_id),
         principal_type: build.template(block.principal_type),
@@ -35034,7 +35039,7 @@ local provider(configuration) = {
     },
     storagegateway_local_disk(name, block): {
       local resource = blockType.resource('aws_storagegateway_local_disk', name),
-      _: resource._({
+      _: resource._(block, {
         gateway_arn: build.template(block.gateway_arn),
       }),
       disk_id: resource.field('disk_id'),
@@ -35045,7 +35050,7 @@ local provider(configuration) = {
     },
     subnet(name, block): {
       local resource = blockType.resource('aws_subnet', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       assign_ipv6_address_on_creation: resource.field('assign_ipv6_address_on_creation'),
@@ -35074,7 +35079,7 @@ local provider(configuration) = {
     },
     subnets(name, block): {
       local resource = blockType.resource('aws_subnets', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -35082,7 +35087,7 @@ local provider(configuration) = {
     },
     synthetics_runtime_version(name, block): {
       local resource = blockType.resource('aws_synthetics_runtime_version', name),
-      _: resource._({
+      _: resource._(block, {
         latest: build.template(std.get(block, 'latest', null)),
         prefix: build.template(block.prefix),
         version: build.template(std.get(block, 'version', null)),
@@ -35098,13 +35103,13 @@ local provider(configuration) = {
     },
     synthetics_runtime_versions(name, block): {
       local resource = blockType.resource('aws_synthetics_runtime_versions', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
     },
     timestreamwrite_database(name, block): {
       local resource = blockType.resource('aws_timestreamwrite_database', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       arn: resource.field('arn'),
@@ -35116,7 +35121,7 @@ local provider(configuration) = {
     },
     timestreamwrite_table(name, block): {
       local resource = blockType.resource('aws_timestreamwrite_table', name),
-      _: resource._({
+      _: resource._(block, {
         database_name: build.template(block.database_name),
         name: build.template(block.name),
       }),
@@ -35132,7 +35137,7 @@ local provider(configuration) = {
     },
     transfer_connector(name, block): {
       local resource = blockType.resource('aws_transfer_connector', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       access_role: resource.field('access_role'),
@@ -35148,7 +35153,7 @@ local provider(configuration) = {
     },
     transfer_server(name, block): {
       local resource = blockType.resource('aws_transfer_server', name),
-      _: resource._({
+      _: resource._(block, {
         server_id: build.template(block.server_id),
       }),
       arn: resource.field('arn'),
@@ -35169,7 +35174,7 @@ local provider(configuration) = {
     },
     verifiedpermissions_policy_store(name, block): {
       local resource = blockType.resource('aws_verifiedpermissions_policy_store', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       arn: resource.field('arn'),
@@ -35181,7 +35186,7 @@ local provider(configuration) = {
     },
     vpc(name, block): {
       local resource = blockType.resource('aws_vpc', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       cidr_block: resource.field('cidr_block'),
@@ -35202,7 +35207,7 @@ local provider(configuration) = {
     },
     vpc_dhcp_options(name, block): {
       local resource = blockType.resource('aws_vpc_dhcp_options', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       dhcp_options_id: resource.field('dhcp_options_id'),
@@ -35218,7 +35223,7 @@ local provider(configuration) = {
     },
     vpc_endpoint(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       cidr_blocks: resource.field('cidr_blocks'),
@@ -35243,7 +35248,7 @@ local provider(configuration) = {
     },
     vpc_endpoint_service(name, block): {
       local resource = blockType.resource('aws_vpc_endpoint_service', name),
-      _: resource._({
+      _: resource._(block, {
         service: build.template(std.get(block, 'service', null)),
       }),
       acceptance_required: resource.field('acceptance_required'),
@@ -35265,7 +35270,7 @@ local provider(configuration) = {
     },
     vpc_ipam_pool(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_pool', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(std.get(block, 'id', null)),
         ipam_pool_id: build.template(std.get(block, 'ipam_pool_id', null)),
       }),
@@ -35291,7 +35296,7 @@ local provider(configuration) = {
     },
     vpc_ipam_pool_cidrs(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_pool_cidrs', name),
-      _: resource._({
+      _: resource._(block, {
         ipam_pool_id: build.template(block.ipam_pool_id),
       }),
       id: resource.field('id'),
@@ -35300,14 +35305,14 @@ local provider(configuration) = {
     },
     vpc_ipam_pools(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_pools', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ipam_pools: resource.field('ipam_pools'),
     },
     vpc_ipam_preview_next_cidr(name, block): {
       local resource = blockType.resource('aws_vpc_ipam_preview_next_cidr', name),
-      _: resource._({
+      _: resource._(block, {
         disallowed_cidrs: build.template(std.get(block, 'disallowed_cidrs', null)),
         ipam_pool_id: build.template(block.ipam_pool_id),
         netmask_length: build.template(std.get(block, 'netmask_length', null)),
@@ -35320,7 +35325,7 @@ local provider(configuration) = {
     },
     vpc_peering_connection(name, block): {
       local resource = blockType.resource('aws_vpc_peering_connection', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       accepter: resource.field('accepter'),
       cidr_block: resource.field('cidr_block'),
@@ -35342,7 +35347,7 @@ local provider(configuration) = {
     },
     vpc_peering_connections(name, block): {
       local resource = blockType.resource('aws_vpc_peering_connections', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -35350,7 +35355,7 @@ local provider(configuration) = {
     },
     vpc_security_group_rule(name, block): {
       local resource = blockType.resource('aws_vpc_security_group_rule', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       cidr_ipv4: resource.field('cidr_ipv4'),
@@ -35369,7 +35374,7 @@ local provider(configuration) = {
     },
     vpc_security_group_rules(name, block): {
       local resource = blockType.resource('aws_vpc_security_group_rules', name),
-      _: resource._({
+      _: resource._(block, {
         tags: build.template(std.get(block, 'tags', null)),
       }),
       id: resource.field('id'),
@@ -35378,7 +35383,7 @@ local provider(configuration) = {
     },
     vpclattice_auth_policy(name, block): {
       local resource = blockType.resource('aws_vpclattice_auth_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy: build.template(std.get(block, 'policy', null)),
         resource_identifier: build.template(block.resource_identifier),
         state: build.template(std.get(block, 'state', null)),
@@ -35390,7 +35395,7 @@ local provider(configuration) = {
     },
     vpclattice_listener(name, block): {
       local resource = blockType.resource('aws_vpclattice_listener', name),
-      _: resource._({
+      _: resource._(block, {
         listener_identifier: build.template(block.listener_identifier),
         service_identifier: build.template(block.service_identifier),
       }),
@@ -35411,7 +35416,7 @@ local provider(configuration) = {
     },
     vpclattice_resource_policy(name, block): {
       local resource = blockType.resource('aws_vpclattice_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         resource_arn: build.template(block.resource_arn),
       }),
       id: resource.field('id'),
@@ -35420,7 +35425,7 @@ local provider(configuration) = {
     },
     vpclattice_service(name, block): {
       local resource = blockType.resource('aws_vpclattice_service', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       arn: resource.field('arn'),
       auth_type: resource.field('auth_type'),
@@ -35435,7 +35440,7 @@ local provider(configuration) = {
     },
     vpclattice_service_network(name, block): {
       local resource = blockType.resource('aws_vpclattice_service_network', name),
-      _: resource._({
+      _: resource._(block, {
         service_network_identifier: build.template(block.service_network_identifier),
       }),
       arn: resource.field('arn'),
@@ -35451,7 +35456,7 @@ local provider(configuration) = {
     },
     vpcs(name, block): {
       local resource = blockType.resource('aws_vpcs', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       ids: resource.field('ids'),
@@ -35459,7 +35464,7 @@ local provider(configuration) = {
     },
     vpn_gateway(name, block): {
       local resource = blockType.resource('aws_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       amazon_side_asn: resource.field('amazon_side_asn'),
       arn: resource.field('arn'),
@@ -35471,7 +35476,7 @@ local provider(configuration) = {
     },
     waf_ipset(name, block): {
       local resource = blockType.resource('aws_waf_ipset', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35479,7 +35484,7 @@ local provider(configuration) = {
     },
     waf_rate_based_rule(name, block): {
       local resource = blockType.resource('aws_waf_rate_based_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35487,7 +35492,7 @@ local provider(configuration) = {
     },
     waf_rule(name, block): {
       local resource = blockType.resource('aws_waf_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35495,7 +35500,7 @@ local provider(configuration) = {
     },
     waf_subscribed_rule_group(name, block): {
       local resource = blockType.resource('aws_waf_subscribed_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(std.get(block, 'metric_name', null)),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -35505,7 +35510,7 @@ local provider(configuration) = {
     },
     waf_web_acl(name, block): {
       local resource = blockType.resource('aws_waf_web_acl', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35513,7 +35518,7 @@ local provider(configuration) = {
     },
     wafregional_ipset(name, block): {
       local resource = blockType.resource('aws_wafregional_ipset', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35521,7 +35526,7 @@ local provider(configuration) = {
     },
     wafregional_rate_based_rule(name, block): {
       local resource = blockType.resource('aws_wafregional_rate_based_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35529,7 +35534,7 @@ local provider(configuration) = {
     },
     wafregional_rule(name, block): {
       local resource = blockType.resource('aws_wafregional_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35537,7 +35542,7 @@ local provider(configuration) = {
     },
     wafregional_subscribed_rule_group(name, block): {
       local resource = blockType.resource('aws_wafregional_subscribed_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         metric_name: build.template(std.get(block, 'metric_name', null)),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -35547,7 +35552,7 @@ local provider(configuration) = {
     },
     wafregional_web_acl(name, block): {
       local resource = blockType.resource('aws_wafregional_web_acl', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -35555,7 +35560,7 @@ local provider(configuration) = {
     },
     wafv2_ip_set(name, block): {
       local resource = blockType.resource('aws_wafv2_ip_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         scope: build.template(block.scope),
       }),
@@ -35569,7 +35574,7 @@ local provider(configuration) = {
     },
     wafv2_regex_pattern_set(name, block): {
       local resource = blockType.resource('aws_wafv2_regex_pattern_set', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         scope: build.template(block.scope),
       }),
@@ -35582,7 +35587,7 @@ local provider(configuration) = {
     },
     wafv2_rule_group(name, block): {
       local resource = blockType.resource('aws_wafv2_rule_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         scope: build.template(block.scope),
       }),
@@ -35594,7 +35599,7 @@ local provider(configuration) = {
     },
     wafv2_web_acl(name, block): {
       local resource = blockType.resource('aws_wafv2_web_acl', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         scope: build.template(block.scope),
       }),
@@ -35606,7 +35611,7 @@ local provider(configuration) = {
     },
     workspaces_bundle(name, block): {
       local resource = blockType.resource('aws_workspaces_bundle', name),
-      _: resource._({
+      _: resource._(block, {
         bundle_id: build.template(std.get(block, 'bundle_id', null)),
         name: build.template(std.get(block, 'name', null)),
         owner: build.template(std.get(block, 'owner', null)),
@@ -35622,7 +35627,7 @@ local provider(configuration) = {
     },
     workspaces_directory(name, block): {
       local resource = blockType.resource('aws_workspaces_directory', name),
-      _: resource._({
+      _: resource._(block, {
         directory_id: build.template(block.directory_id),
       }),
       alias: resource.field('alias'),
@@ -35645,7 +35650,7 @@ local provider(configuration) = {
     },
     workspaces_image(name, block): {
       local resource = blockType.resource('aws_workspaces_image', name),
-      _: resource._({
+      _: resource._(block, {
         image_id: build.template(block.image_id),
       }),
       description: resource.field('description'),
@@ -35658,7 +35663,7 @@ local provider(configuration) = {
     },
     workspaces_workspace(name, block): {
       local resource = blockType.resource('aws_workspaces_workspace', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       bundle_id: resource.field('bundle_id'),
       computer_name: resource.field('computer_name'),

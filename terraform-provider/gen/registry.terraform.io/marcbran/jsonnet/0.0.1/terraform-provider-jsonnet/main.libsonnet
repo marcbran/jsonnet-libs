@@ -15,7 +15,12 @@ local providerTemplate(provider, requirements, configuration) = {
     resource(type, name): {
       local resourceType = std.substr(type, std.length(provider) + 1, std.length(type)),
       local resourcePath = blockTypePath + [type, name],
-      _(block): {
+      _(rawBlock, block): {
+        local metaBlock = {
+          depends_on: build.template(std.get(rawBlock, 'depends_on', null)),
+          count: build.template(std.get(rawBlock, 'count', null)),
+          for_each: build.template(std.get(rawBlock, 'for_each', null)),
+        },
         providerRequirements: providerRequirements,
         providerConfiguration: providerConfiguration,
         provider: provider,
@@ -26,7 +31,7 @@ local providerTemplate(provider, requirements, configuration) = {
         block: {
           [blockType]: {
             [type]: {
-              [name]: std.prune(block + providerReference),
+              [name]: std.prune(metaBlock + block + providerReference),
             },
           },
         },

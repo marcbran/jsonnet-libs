@@ -15,7 +15,12 @@ local providerTemplate(provider, requirements, configuration) = {
     resource(type, name): {
       local resourceType = std.substr(type, std.length(provider) + 1, std.length(type)),
       local resourcePath = blockTypePath + [type, name],
-      _(block): {
+      _(rawBlock, block): {
+        local metaBlock = {
+          depends_on: build.template(std.get(rawBlock, 'depends_on', null)),
+          count: build.template(std.get(rawBlock, 'count', null)),
+          for_each: build.template(std.get(rawBlock, 'for_each', null)),
+        },
         providerRequirements: providerRequirements,
         providerConfiguration: providerConfiguration,
         provider: provider,
@@ -26,7 +31,7 @@ local providerTemplate(provider, requirements, configuration) = {
         block: {
           [blockType]: {
             [type]: {
-              [name]: std.prune(block + providerReference),
+              [name]: std.prune(metaBlock + block + providerReference),
             },
           },
         },
@@ -59,7 +64,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('resource'),
     access_context_manager_access_level(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_level', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         parent: build.template(block.parent),
@@ -73,7 +78,7 @@ local provider(configuration) = {
     },
     access_context_manager_access_level_condition(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_level_condition', name),
-      _: resource._({
+      _: resource._(block, {
         access_level: build.template(block.access_level),
         ip_subnetworks: build.template(std.get(block, 'ip_subnetworks', null)),
         members: build.template(std.get(block, 'members', null)),
@@ -91,7 +96,7 @@ local provider(configuration) = {
     },
     access_context_manager_access_levels(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_levels', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
       }),
       id: resource.field('id'),
@@ -99,7 +104,7 @@ local provider(configuration) = {
     },
     access_context_manager_access_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_policy', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
         scopes: build.template(std.get(block, 'scopes', null)),
         title: build.template(block.title),
@@ -114,7 +119,7 @@ local provider(configuration) = {
     },
     access_context_manager_access_policy_iam_binding(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_policy_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -127,7 +132,7 @@ local provider(configuration) = {
     },
     access_context_manager_access_policy_iam_member(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_policy_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -140,7 +145,7 @@ local provider(configuration) = {
     },
     access_context_manager_access_policy_iam_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_policy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -151,7 +156,7 @@ local provider(configuration) = {
     },
     access_context_manager_authorized_orgs_desc(name, block): {
       local resource = blockType.resource('google_access_context_manager_authorized_orgs_desc', name),
-      _: resource._({
+      _: resource._(block, {
         asset_type: build.template(std.get(block, 'asset_type', null)),
         authorization_direction: build.template(std.get(block, 'authorization_direction', null)),
         authorization_type: build.template(std.get(block, 'authorization_type', null)),
@@ -171,7 +176,7 @@ local provider(configuration) = {
     },
     access_context_manager_egress_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_egress_policy', name),
-      _: resource._({
+      _: resource._(block, {
         egress_policy_name: build.template(block.egress_policy_name),
         resource: build.template(block.resource),
       }),
@@ -181,7 +186,7 @@ local provider(configuration) = {
     },
     access_context_manager_gcp_user_access_binding(name, block): {
       local resource = blockType.resource('google_access_context_manager_gcp_user_access_binding', name),
-      _: resource._({
+      _: resource._(block, {
         access_levels: build.template(block.access_levels),
         group_key: build.template(block.group_key),
         organization_id: build.template(block.organization_id),
@@ -194,7 +199,7 @@ local provider(configuration) = {
     },
     access_context_manager_ingress_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_ingress_policy', name),
-      _: resource._({
+      _: resource._(block, {
         ingress_policy_name: build.template(block.ingress_policy_name),
         resource: build.template(block.resource),
       }),
@@ -204,7 +209,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeter(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeter', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         parent: build.template(block.parent),
@@ -224,7 +229,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeter_dry_run_egress_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeter_dry_run_egress_policy', name),
-      _: resource._({
+      _: resource._(block, {
         perimeter: build.template(block.perimeter),
       }),
       id: resource.field('id'),
@@ -232,7 +237,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeter_dry_run_ingress_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeter_dry_run_ingress_policy', name),
-      _: resource._({
+      _: resource._(block, {
         perimeter: build.template(block.perimeter),
       }),
       id: resource.field('id'),
@@ -240,7 +245,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeter_dry_run_resource(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeter_dry_run_resource', name),
-      _: resource._({
+      _: resource._(block, {
         perimeter_name: build.template(block.perimeter_name),
         resource: build.template(block.resource),
       }),
@@ -250,7 +255,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeter_egress_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeter_egress_policy', name),
-      _: resource._({
+      _: resource._(block, {
         perimeter: build.template(block.perimeter),
       }),
       id: resource.field('id'),
@@ -258,7 +263,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeter_ingress_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeter_ingress_policy', name),
-      _: resource._({
+      _: resource._(block, {
         perimeter: build.template(block.perimeter),
       }),
       id: resource.field('id'),
@@ -266,7 +271,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeter_resource(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeter_resource', name),
-      _: resource._({
+      _: resource._(block, {
         perimeter_name: build.template(block.perimeter_name),
         resource: build.template(block.resource),
       }),
@@ -276,7 +281,7 @@ local provider(configuration) = {
     },
     access_context_manager_service_perimeters(name, block): {
       local resource = blockType.resource('google_access_context_manager_service_perimeters', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
       }),
       id: resource.field('id'),
@@ -284,7 +289,7 @@ local provider(configuration) = {
     },
     active_directory_domain(name, block): {
       local resource = blockType.resource('google_active_directory_domain', name),
-      _: resource._({
+      _: resource._(block, {
         admin: build.template(std.get(block, 'admin', null)),
         authorized_networks: build.template(std.get(block, 'authorized_networks', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
@@ -309,7 +314,7 @@ local provider(configuration) = {
     },
     active_directory_domain_trust(name, block): {
       local resource = blockType.resource('google_active_directory_domain_trust', name),
-      _: resource._({
+      _: resource._(block, {
         domain: build.template(block.domain),
         selective_authentication: build.template(std.get(block, 'selective_authentication', null)),
         target_dns_ip_addresses: build.template(block.target_dns_ip_addresses),
@@ -330,7 +335,7 @@ local provider(configuration) = {
     },
     alloydb_backup(name, block): {
       local resource = blockType.resource('google_alloydb_backup', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         backup_id: build.template(block.backup_id),
         cluster_name: build.template(block.cluster_name),
@@ -368,7 +373,7 @@ local provider(configuration) = {
     },
     alloydb_cluster(name, block): {
       local resource = blockType.resource('google_alloydb_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         cluster_id: build.template(block.cluster_id),
         cluster_type: build.template(std.get(block, 'cluster_type', null)),
@@ -405,7 +410,7 @@ local provider(configuration) = {
     },
     alloydb_instance(name, block): {
       local resource = blockType.resource('google_alloydb_instance', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         cluster: build.template(block.cluster),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -439,7 +444,7 @@ local provider(configuration) = {
     },
     alloydb_user(name, block): {
       local resource = blockType.resource('google_alloydb_user', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         database_roles: build.template(std.get(block, 'database_roles', null)),
         password: build.template(std.get(block, 'password', null)),
@@ -456,7 +461,7 @@ local provider(configuration) = {
     },
     apigee_addons_config(name, block): {
       local resource = blockType.resource('google_apigee_addons_config', name),
-      _: resource._({
+      _: resource._(block, {
         org: build.template(block.org),
       }),
       id: resource.field('id'),
@@ -464,7 +469,7 @@ local provider(configuration) = {
     },
     apigee_api(name, block): {
       local resource = blockType.resource('google_apigee_api', name),
-      _: resource._({
+      _: resource._(block, {
         config_bundle: build.template(block.config_bundle),
         detect_md5hash: build.template(std.get(block, 'detect_md5hash', null)),
         name: build.template(block.name),
@@ -482,7 +487,7 @@ local provider(configuration) = {
     },
     apigee_app_group(name, block): {
       local resource = blockType.resource('google_apigee_app_group', name),
-      _: resource._({
+      _: resource._(block, {
         channel_id: build.template(std.get(block, 'channel_id', null)),
         channel_uri: build.template(std.get(block, 'channel_uri', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -504,7 +509,7 @@ local provider(configuration) = {
     },
     apigee_developer(name, block): {
       local resource = blockType.resource('google_apigee_developer', name),
-      _: resource._({
+      _: resource._(block, {
         email: build.template(block.email),
         first_name: build.template(block.first_name),
         last_name: build.template(block.last_name),
@@ -524,7 +529,7 @@ local provider(configuration) = {
     },
     apigee_endpoint_attachment(name, block): {
       local resource = blockType.resource('google_apigee_endpoint_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         endpoint_attachment_id: build.template(block.endpoint_attachment_id),
         location: build.template(block.location),
         org_id: build.template(block.org_id),
@@ -541,7 +546,7 @@ local provider(configuration) = {
     },
     apigee_env_keystore(name, block): {
       local resource = blockType.resource('google_apigee_env_keystore', name),
-      _: resource._({
+      _: resource._(block, {
         env_id: build.template(block.env_id),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -552,7 +557,7 @@ local provider(configuration) = {
     },
     apigee_env_references(name, block): {
       local resource = blockType.resource('google_apigee_env_references', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         env_id: build.template(block.env_id),
         name: build.template(block.name),
@@ -568,7 +573,7 @@ local provider(configuration) = {
     },
     apigee_envgroup(name, block): {
       local resource = blockType.resource('google_apigee_envgroup', name),
-      _: resource._({
+      _: resource._(block, {
         hostnames: build.template(std.get(block, 'hostnames', null)),
         name: build.template(block.name),
         org_id: build.template(block.org_id),
@@ -580,7 +585,7 @@ local provider(configuration) = {
     },
     apigee_envgroup_attachment(name, block): {
       local resource = blockType.resource('google_apigee_envgroup_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         envgroup_id: build.template(block.envgroup_id),
         environment: build.template(block.environment),
       }),
@@ -591,7 +596,7 @@ local provider(configuration) = {
     },
     apigee_environment(name, block): {
       local resource = blockType.resource('google_apigee_environment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         forward_proxy_uri: build.template(std.get(block, 'forward_proxy_uri', null)),
@@ -610,7 +615,7 @@ local provider(configuration) = {
     },
     apigee_environment_iam_binding(name, block): {
       local resource = blockType.resource('google_apigee_environment_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         env_id: build.template(block.env_id),
         members: build.template(block.members),
         org_id: build.template(block.org_id),
@@ -625,7 +630,7 @@ local provider(configuration) = {
     },
     apigee_environment_iam_member(name, block): {
       local resource = blockType.resource('google_apigee_environment_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         env_id: build.template(block.env_id),
         member: build.template(block.member),
         org_id: build.template(block.org_id),
@@ -640,7 +645,7 @@ local provider(configuration) = {
     },
     apigee_environment_iam_policy(name, block): {
       local resource = blockType.resource('google_apigee_environment_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         env_id: build.template(block.env_id),
         org_id: build.template(block.org_id),
         policy_data: build.template(block.policy_data),
@@ -653,7 +658,7 @@ local provider(configuration) = {
     },
     apigee_environment_keyvaluemaps(name, block): {
       local resource = blockType.resource('google_apigee_environment_keyvaluemaps', name),
-      _: resource._({
+      _: resource._(block, {
         env_id: build.template(block.env_id),
         name: build.template(block.name),
       }),
@@ -663,7 +668,7 @@ local provider(configuration) = {
     },
     apigee_environment_keyvaluemaps_entries(name, block): {
       local resource = blockType.resource('google_apigee_environment_keyvaluemaps_entries', name),
-      _: resource._({
+      _: resource._(block, {
         env_keyvaluemap_id: build.template(block.env_keyvaluemap_id),
         name: build.template(block.name),
         value: build.template(block.value),
@@ -675,7 +680,7 @@ local provider(configuration) = {
     },
     apigee_flowhook(name, block): {
       local resource = blockType.resource('google_apigee_flowhook', name),
-      _: resource._({
+      _: resource._(block, {
         continue_on_error: build.template(std.get(block, 'continue_on_error', null)),
         description: build.template(std.get(block, 'description', null)),
         environment: build.template(block.environment),
@@ -693,7 +698,7 @@ local provider(configuration) = {
     },
     apigee_instance(name, block): {
       local resource = blockType.resource('google_apigee_instance', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disk_encryption_key_name: build.template(std.get(block, 'disk_encryption_key_name', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -718,7 +723,7 @@ local provider(configuration) = {
     },
     apigee_instance_attachment(name, block): {
       local resource = blockType.resource('google_apigee_instance_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         environment: build.template(block.environment),
         instance_id: build.template(block.instance_id),
       }),
@@ -729,7 +734,7 @@ local provider(configuration) = {
     },
     apigee_keystores_aliases_key_cert_file(name, block): {
       local resource = blockType.resource('google_apigee_keystores_aliases_key_cert_file', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(block.alias),
         cert: build.template(block.cert),
         environment: build.template(block.environment),
@@ -750,7 +755,7 @@ local provider(configuration) = {
     },
     apigee_keystores_aliases_pkcs12(name, block): {
       local resource = blockType.resource('google_apigee_keystores_aliases_pkcs12', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(block.alias),
         environment: build.template(block.environment),
         file: build.template(block.file),
@@ -771,7 +776,7 @@ local provider(configuration) = {
     },
     apigee_keystores_aliases_self_signed_cert(name, block): {
       local resource = blockType.resource('google_apigee_keystores_aliases_self_signed_cert', name),
-      _: resource._({
+      _: resource._(block, {
         alias: build.template(block.alias),
         cert_validity_in_days: build.template(std.get(block, 'cert_validity_in_days', null)),
         environment: build.template(block.environment),
@@ -793,7 +798,7 @@ local provider(configuration) = {
     },
     apigee_nat_address(name, block): {
       local resource = blockType.resource('google_apigee_nat_address', name),
-      _: resource._({
+      _: resource._(block, {
         activate: build.template(std.get(block, 'activate', null)),
         instance_id: build.template(block.instance_id),
         name: build.template(block.name),
@@ -807,7 +812,7 @@ local provider(configuration) = {
     },
     apigee_organization(name, block): {
       local resource = blockType.resource('google_apigee_organization', name),
-      _: resource._({
+      _: resource._(block, {
         analytics_region: build.template(std.get(block, 'analytics_region', null)),
         api_consumer_data_encryption_key_name: build.template(std.get(block, 'api_consumer_data_encryption_key_name', null)),
         api_consumer_data_location: build.template(std.get(block, 'api_consumer_data_location', null)),
@@ -842,7 +847,7 @@ local provider(configuration) = {
     },
     apigee_sharedflow(name, block): {
       local resource = blockType.resource('google_apigee_sharedflow', name),
-      _: resource._({
+      _: resource._(block, {
         config_bundle: build.template(block.config_bundle),
         detect_md5hash: build.template(std.get(block, 'detect_md5hash', null)),
         name: build.template(block.name),
@@ -860,7 +865,7 @@ local provider(configuration) = {
     },
     apigee_sharedflow_deployment(name, block): {
       local resource = blockType.resource('google_apigee_sharedflow_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         environment: build.template(block.environment),
         org_id: build.template(block.org_id),
         revision: build.template(block.revision),
@@ -876,7 +881,7 @@ local provider(configuration) = {
     },
     apigee_sync_authorization(name, block): {
       local resource = blockType.resource('google_apigee_sync_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         identities: build.template(block.identities),
         name: build.template(block.name),
       }),
@@ -887,7 +892,7 @@ local provider(configuration) = {
     },
     apigee_target_server(name, block): {
       local resource = blockType.resource('google_apigee_target_server', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         env_id: build.template(block.env_id),
         host: build.template(block.host),
@@ -906,7 +911,7 @@ local provider(configuration) = {
     },
     apikeys_key(name, block): {
       local resource = blockType.resource('google_apikeys_key', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(block.name),
       }),
@@ -919,7 +924,7 @@ local provider(configuration) = {
     },
     app_engine_application(name, block): {
       local resource = blockType.resource('google_app_engine_application', name),
-      _: resource._({
+      _: resource._(block, {
         location_id: build.template(block.location_id),
       }),
       app_id: resource.field('app_id'),
@@ -938,14 +943,14 @@ local provider(configuration) = {
     },
     app_engine_application_url_dispatch_rules(name, block): {
       local resource = blockType.resource('google_app_engine_application_url_dispatch_rules', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       project: resource.field('project'),
     },
     app_engine_domain_mapping(name, block): {
       local resource = blockType.resource('google_app_engine_domain_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         domain_name: build.template(block.domain_name),
         override_strategy: build.template(std.get(block, 'override_strategy', null)),
       }),
@@ -958,7 +963,7 @@ local provider(configuration) = {
     },
     app_engine_firewall_rule(name, block): {
       local resource = blockType.resource('google_app_engine_firewall_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         priority: build.template(std.get(block, 'priority', null)),
@@ -973,7 +978,7 @@ local provider(configuration) = {
     },
     app_engine_flexible_app_version(name, block): {
       local resource = blockType.resource('google_app_engine_flexible_app_version', name),
-      _: resource._({
+      _: resource._(block, {
         beta_settings: build.template(std.get(block, 'beta_settings', null)),
         default_expiration: build.template(std.get(block, 'default_expiration', null)),
         delete_service_on_destroy: build.template(std.get(block, 'delete_service_on_destroy', null)),
@@ -1011,7 +1016,7 @@ local provider(configuration) = {
     },
     app_engine_service_network_settings(name, block): {
       local resource = blockType.resource('google_app_engine_service_network_settings', name),
-      _: resource._({
+      _: resource._(block, {
         service: build.template(block.service),
       }),
       id: resource.field('id'),
@@ -1020,7 +1025,7 @@ local provider(configuration) = {
     },
     app_engine_service_split_traffic(name, block): {
       local resource = blockType.resource('google_app_engine_service_split_traffic', name),
-      _: resource._({
+      _: resource._(block, {
         migrate_traffic: build.template(std.get(block, 'migrate_traffic', null)),
         service: build.template(block.service),
       }),
@@ -1031,7 +1036,7 @@ local provider(configuration) = {
     },
     app_engine_standard_app_version(name, block): {
       local resource = blockType.resource('google_app_engine_standard_app_version', name),
-      _: resource._({
+      _: resource._(block, {
         app_engine_apis: build.template(std.get(block, 'app_engine_apis', null)),
         delete_service_on_destroy: build.template(std.get(block, 'delete_service_on_destroy', null)),
         env_variables: build.template(std.get(block, 'env_variables', null)),
@@ -1061,7 +1066,7 @@ local provider(configuration) = {
     },
     apphub_application(name, block): {
       local resource = blockType.resource('google_apphub_application', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -1081,7 +1086,7 @@ local provider(configuration) = {
     },
     apphub_service(name, block): {
       local resource = blockType.resource('google_apphub_service', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         description: build.template(std.get(block, 'description', null)),
         discovered_service: build.template(block.discovered_service),
@@ -1107,7 +1112,7 @@ local provider(configuration) = {
     },
     apphub_service_project_attachment(name, block): {
       local resource = blockType.resource('google_apphub_service_project_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         service_project: build.template(std.get(block, 'service_project', null)),
         service_project_attachment_id: build.template(block.service_project_attachment_id),
       }),
@@ -1122,7 +1127,7 @@ local provider(configuration) = {
     },
     apphub_workload(name, block): {
       local resource = blockType.resource('google_apphub_workload', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         description: build.template(std.get(block, 'description', null)),
         discovered_workload: build.template(block.discovered_workload),
@@ -1148,7 +1153,7 @@ local provider(configuration) = {
     },
     artifact_registry_repository(name, block): {
       local resource = blockType.resource('google_artifact_registry_repository', name),
-      _: resource._({
+      _: resource._(block, {
         cleanup_policy_dry_run: build.template(std.get(block, 'cleanup_policy_dry_run', null)),
         description: build.template(std.get(block, 'description', null)),
         format: build.template(block.format),
@@ -1175,7 +1180,7 @@ local provider(configuration) = {
     },
     artifact_registry_repository_iam_binding(name, block): {
       local resource = blockType.resource('google_artifact_registry_repository_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         repository: build.template(block.repository),
         role: build.template(block.role),
@@ -1190,7 +1195,7 @@ local provider(configuration) = {
     },
     artifact_registry_repository_iam_member(name, block): {
       local resource = blockType.resource('google_artifact_registry_repository_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         repository: build.template(block.repository),
         role: build.template(block.role),
@@ -1205,7 +1210,7 @@ local provider(configuration) = {
     },
     artifact_registry_repository_iam_policy(name, block): {
       local resource = blockType.resource('google_artifact_registry_repository_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         repository: build.template(block.repository),
       }),
@@ -1218,7 +1223,7 @@ local provider(configuration) = {
     },
     assured_workloads_workload(name, block): {
       local resource = blockType.resource('google_assured_workloads_workload', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account: build.template(std.get(block, 'billing_account', null)),
         compliance_regime: build.template(block.compliance_regime),
         display_name: build.template(block.display_name),
@@ -1255,7 +1260,7 @@ local provider(configuration) = {
     },
     beyondcorp_app_connection(name, block): {
       local resource = blockType.resource('google_beyondcorp_app_connection', name),
-      _: resource._({
+      _: resource._(block, {
         connectors: build.template(std.get(block, 'connectors', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -1276,7 +1281,7 @@ local provider(configuration) = {
     },
     beyondcorp_app_connector(name, block): {
       local resource = blockType.resource('google_beyondcorp_app_connector', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -1294,7 +1299,7 @@ local provider(configuration) = {
     },
     beyondcorp_app_gateway(name, block): {
       local resource = blockType.resource('google_beyondcorp_app_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         host_type: build.template(std.get(block, 'host_type', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -1318,7 +1323,7 @@ local provider(configuration) = {
     },
     biglake_catalog(name, block): {
       local resource = blockType.resource('google_biglake_catalog', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
       }),
@@ -1333,7 +1338,7 @@ local provider(configuration) = {
     },
     biglake_database(name, block): {
       local resource = blockType.resource('google_biglake_database', name),
-      _: resource._({
+      _: resource._(block, {
         catalog: build.template(block.catalog),
         name: build.template(block.name),
         type: build.template(block.type),
@@ -1349,7 +1354,7 @@ local provider(configuration) = {
     },
     biglake_table(name, block): {
       local resource = blockType.resource('google_biglake_table', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(std.get(block, 'database', null)),
         name: build.template(block.name),
         type: build.template(std.get(block, 'type', null)),
@@ -1366,7 +1371,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_data_exchange(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_data_exchange', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -1389,7 +1394,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_data_exchange_iam_binding(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_data_exchange_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -1404,7 +1409,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_data_exchange_iam_member(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_data_exchange_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -1419,7 +1424,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_data_exchange_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_data_exchange_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -1432,7 +1437,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_listing(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_listing', name),
-      _: resource._({
+      _: resource._(block, {
         categories: build.template(std.get(block, 'categories', null)),
         data_exchange_id: build.template(block.data_exchange_id),
         description: build.template(std.get(block, 'description', null)),
@@ -1460,7 +1465,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_listing_iam_binding(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_listing_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         listing_id: build.template(block.listing_id),
         members: build.template(block.members),
@@ -1477,7 +1482,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_listing_iam_member(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_listing_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         listing_id: build.template(block.listing_id),
         member: build.template(block.member),
@@ -1494,7 +1499,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_listing_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_listing_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         listing_id: build.template(block.listing_id),
         policy_data: build.template(block.policy_data),
@@ -1509,7 +1514,7 @@ local provider(configuration) = {
     },
     bigquery_bi_reservation(name, block): {
       local resource = blockType.resource('google_bigquery_bi_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         size: build.template(std.get(block, 'size', null)),
       }),
@@ -1522,7 +1527,7 @@ local provider(configuration) = {
     },
     bigquery_capacity_commitment(name, block): {
       local resource = blockType.resource('google_bigquery_capacity_commitment', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_commitment_id: build.template(std.get(block, 'capacity_commitment_id', null)),
         edition: build.template(std.get(block, 'edition', null)),
         enforce_single_admin_project_per_org: build.template(std.get(block, 'enforce_single_admin_project_per_org', null)),
@@ -1547,7 +1552,7 @@ local provider(configuration) = {
     },
     bigquery_connection(name, block): {
       local resource = blockType.resource('google_bigquery_connection', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         friendly_name: build.template(std.get(block, 'friendly_name', null)),
         kms_key_name: build.template(std.get(block, 'kms_key_name', null)),
@@ -1565,7 +1570,7 @@ local provider(configuration) = {
     },
     bigquery_connection_iam_binding(name, block): {
       local resource = blockType.resource('google_bigquery_connection_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -1580,7 +1585,7 @@ local provider(configuration) = {
     },
     bigquery_connection_iam_member(name, block): {
       local resource = blockType.resource('google_bigquery_connection_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -1595,7 +1600,7 @@ local provider(configuration) = {
     },
     bigquery_connection_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_connection_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -1608,7 +1613,7 @@ local provider(configuration) = {
     },
     bigquery_data_transfer_config(name, block): {
       local resource = blockType.resource('google_bigquery_data_transfer_config', name),
-      _: resource._({
+      _: resource._(block, {
         data_refresh_window_days: build.template(std.get(block, 'data_refresh_window_days', null)),
         data_source_id: build.template(block.data_source_id),
         destination_dataset_id: build.template(std.get(block, 'destination_dataset_id', null)),
@@ -1636,7 +1641,7 @@ local provider(configuration) = {
     },
     bigquery_datapolicy_data_policy(name, block): {
       local resource = blockType.resource('google_bigquery_datapolicy_data_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_policy_id: build.template(block.data_policy_id),
         data_policy_type: build.template(block.data_policy_type),
         location: build.template(block.location),
@@ -1652,7 +1657,7 @@ local provider(configuration) = {
     },
     bigquery_datapolicy_data_policy_iam_binding(name, block): {
       local resource = blockType.resource('google_bigquery_datapolicy_data_policy_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         data_policy_id: build.template(block.data_policy_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -1667,7 +1672,7 @@ local provider(configuration) = {
     },
     bigquery_datapolicy_data_policy_iam_member(name, block): {
       local resource = blockType.resource('google_bigquery_datapolicy_data_policy_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         data_policy_id: build.template(block.data_policy_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -1682,7 +1687,7 @@ local provider(configuration) = {
     },
     bigquery_datapolicy_data_policy_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_datapolicy_data_policy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_policy_id: build.template(block.data_policy_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -1695,7 +1700,7 @@ local provider(configuration) = {
     },
     bigquery_dataset(name, block): {
       local resource = blockType.resource('google_bigquery_dataset', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         default_partition_expiration_ms: build.template(std.get(block, 'default_partition_expiration_ms', null)),
         default_table_expiration_ms: build.template(std.get(block, 'default_table_expiration_ms', null)),
@@ -1730,7 +1735,7 @@ local provider(configuration) = {
     },
     bigquery_dataset_access(name, block): {
       local resource = blockType.resource('google_bigquery_dataset_access', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         domain: build.template(std.get(block, 'domain', null)),
         group_by_email: build.template(std.get(block, 'group_by_email', null)),
@@ -1752,7 +1757,7 @@ local provider(configuration) = {
     },
     bigquery_dataset_iam_binding(name, block): {
       local resource = blockType.resource('google_bigquery_dataset_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -1766,7 +1771,7 @@ local provider(configuration) = {
     },
     bigquery_dataset_iam_member(name, block): {
       local resource = blockType.resource('google_bigquery_dataset_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -1780,7 +1785,7 @@ local provider(configuration) = {
     },
     bigquery_dataset_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_dataset_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -1792,7 +1797,7 @@ local provider(configuration) = {
     },
     bigquery_job(name, block): {
       local resource = blockType.resource('google_bigquery_job', name),
-      _: resource._({
+      _: resource._(block, {
         job_id: build.template(block.job_id),
         job_timeout_ms: build.template(std.get(block, 'job_timeout_ms', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -1812,7 +1817,7 @@ local provider(configuration) = {
     },
     bigquery_reservation(name, block): {
       local resource = blockType.resource('google_bigquery_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         concurrency: build.template(std.get(block, 'concurrency', null)),
         ignore_idle_slots: build.template(std.get(block, 'ignore_idle_slots', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -1830,7 +1835,7 @@ local provider(configuration) = {
     },
     bigquery_reservation_assignment(name, block): {
       local resource = blockType.resource('google_bigquery_reservation_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         assignee: build.template(block.assignee),
         job_type: build.template(block.job_type),
         reservation: build.template(block.reservation),
@@ -1846,7 +1851,7 @@ local provider(configuration) = {
     },
     bigquery_routine(name, block): {
       local resource = blockType.resource('google_bigquery_routine', name),
-      _: resource._({
+      _: resource._(block, {
         data_governance_type: build.template(std.get(block, 'data_governance_type', null)),
         dataset_id: build.template(block.dataset_id),
         definition_body: build.template(block.definition_body),
@@ -1877,7 +1882,7 @@ local provider(configuration) = {
     },
     bigquery_table(name, block): {
       local resource = blockType.resource('google_bigquery_table', name),
-      _: resource._({
+      _: resource._(block, {
         clustering: build.template(std.get(block, 'clustering', null)),
         dataset_id: build.template(block.dataset_id),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
@@ -1917,7 +1922,7 @@ local provider(configuration) = {
     },
     bigquery_table_iam_binding(name, block): {
       local resource = blockType.resource('google_bigquery_table_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -1933,7 +1938,7 @@ local provider(configuration) = {
     },
     bigquery_table_iam_member(name, block): {
       local resource = blockType.resource('google_bigquery_table_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -1949,7 +1954,7 @@ local provider(configuration) = {
     },
     bigquery_table_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_table_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         policy_data: build.template(block.policy_data),
         table_id: build.template(block.table_id),
@@ -1963,7 +1968,7 @@ local provider(configuration) = {
     },
     bigtable_app_profile(name, block): {
       local resource = blockType.resource('google_bigtable_app_profile', name),
-      _: resource._({
+      _: resource._(block, {
         app_profile_id: build.template(block.app_profile_id),
         description: build.template(std.get(block, 'description', null)),
         ignore_warnings: build.template(std.get(block, 'ignore_warnings', null)),
@@ -1983,7 +1988,7 @@ local provider(configuration) = {
     },
     bigtable_authorized_view(name, block): {
       local resource = blockType.resource('google_bigtable_authorized_view', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         name: build.template(block.name),
         table_name: build.template(block.table_name),
@@ -1997,7 +2002,7 @@ local provider(configuration) = {
     },
     bigtable_gc_policy(name, block): {
       local resource = blockType.resource('google_bigtable_gc_policy', name),
-      _: resource._({
+      _: resource._(block, {
         column_family: build.template(block.column_family),
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         gc_rules: build.template(std.get(block, 'gc_rules', null)),
@@ -2018,7 +2023,7 @@ local provider(configuration) = {
     },
     bigtable_instance(name, block): {
       local resource = blockType.resource('google_bigtable_instance', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         instance_type: build.template(std.get(block, 'instance_type', null)),
@@ -2038,7 +2043,7 @@ local provider(configuration) = {
     },
     bigtable_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_bigtable_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -2052,7 +2057,7 @@ local provider(configuration) = {
     },
     bigtable_instance_iam_member(name, block): {
       local resource = blockType.resource('google_bigtable_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -2066,7 +2071,7 @@ local provider(configuration) = {
     },
     bigtable_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_bigtable_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         policy_data: build.template(block.policy_data),
       }),
@@ -2078,7 +2083,7 @@ local provider(configuration) = {
     },
     bigtable_table(name, block): {
       local resource = blockType.resource('google_bigtable_table', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         name: build.template(block.name),
         split_keys: build.template(std.get(block, 'split_keys', null)),
@@ -2093,7 +2098,7 @@ local provider(configuration) = {
     },
     bigtable_table_iam_binding(name, block): {
       local resource = blockType.resource('google_bigtable_table_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -2109,7 +2114,7 @@ local provider(configuration) = {
     },
     bigtable_table_iam_member(name, block): {
       local resource = blockType.resource('google_bigtable_table_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -2125,7 +2130,7 @@ local provider(configuration) = {
     },
     bigtable_table_iam_policy(name, block): {
       local resource = blockType.resource('google_bigtable_table_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         policy_data: build.template(block.policy_data),
         table: build.template(block.table),
@@ -2139,7 +2144,7 @@ local provider(configuration) = {
     },
     billing_account_iam_binding(name, block): {
       local resource = blockType.resource('google_billing_account_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account_id: build.template(block.billing_account_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -2152,7 +2157,7 @@ local provider(configuration) = {
     },
     billing_account_iam_member(name, block): {
       local resource = blockType.resource('google_billing_account_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account_id: build.template(block.billing_account_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -2165,7 +2170,7 @@ local provider(configuration) = {
     },
     billing_account_iam_policy(name, block): {
       local resource = blockType.resource('google_billing_account_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account_id: build.template(block.billing_account_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -2176,7 +2181,7 @@ local provider(configuration) = {
     },
     billing_budget(name, block): {
       local resource = blockType.resource('google_billing_budget', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account: build.template(block.billing_account),
         display_name: build.template(std.get(block, 'display_name', null)),
         ownership_scope: build.template(std.get(block, 'ownership_scope', null)),
@@ -2189,7 +2194,7 @@ local provider(configuration) = {
     },
     billing_project_info(name, block): {
       local resource = blockType.resource('google_billing_project_info', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account: build.template(block.billing_account),
       }),
       billing_account: resource.field('billing_account'),
@@ -2198,7 +2203,7 @@ local provider(configuration) = {
     },
     billing_subaccount(name, block): {
       local resource = blockType.resource('google_billing_subaccount', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         display_name: build.template(block.display_name),
         master_billing_account: build.template(block.master_billing_account),
@@ -2213,7 +2218,7 @@ local provider(configuration) = {
     },
     binary_authorization_attestor(name, block): {
       local resource = blockType.resource('google_binary_authorization_attestor', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -2224,7 +2229,7 @@ local provider(configuration) = {
     },
     binary_authorization_attestor_iam_binding(name, block): {
       local resource = blockType.resource('google_binary_authorization_attestor_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         attestor: build.template(block.attestor),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -2238,7 +2243,7 @@ local provider(configuration) = {
     },
     binary_authorization_attestor_iam_member(name, block): {
       local resource = blockType.resource('google_binary_authorization_attestor_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         attestor: build.template(block.attestor),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -2252,7 +2257,7 @@ local provider(configuration) = {
     },
     binary_authorization_attestor_iam_policy(name, block): {
       local resource = blockType.resource('google_binary_authorization_attestor_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         attestor: build.template(block.attestor),
         policy_data: build.template(block.policy_data),
       }),
@@ -2264,7 +2269,7 @@ local provider(configuration) = {
     },
     binary_authorization_policy(name, block): {
       local resource = blockType.resource('google_binary_authorization_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
       }),
       description: resource.field('description'),
@@ -2274,7 +2279,7 @@ local provider(configuration) = {
     },
     blockchain_node_engine_blockchain_nodes(name, block): {
       local resource = blockType.resource('google_blockchain_node_engine_blockchain_nodes', name),
-      _: resource._({
+      _: resource._(block, {
         blockchain_node_id: build.template(block.blockchain_node_id),
         blockchain_type: build.template(std.get(block, 'blockchain_type', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -2295,7 +2300,7 @@ local provider(configuration) = {
     },
     certificate_manager_certificate(name, block): {
       local resource = blockType.resource('google_certificate_manager_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -2315,7 +2320,7 @@ local provider(configuration) = {
     },
     certificate_manager_certificate_issuance_config(name, block): {
       local resource = blockType.resource('google_certificate_manager_certificate_issuance_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         key_algorithm: build.template(block.key_algorithm),
         labels: build.template(std.get(block, 'labels', null)),
@@ -2340,7 +2345,7 @@ local provider(configuration) = {
     },
     certificate_manager_certificate_map(name, block): {
       local resource = blockType.resource('google_certificate_manager_certificate_map', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -2358,7 +2363,7 @@ local provider(configuration) = {
     },
     certificate_manager_certificate_map_entry(name, block): {
       local resource = blockType.resource('google_certificate_manager_certificate_map_entry', name),
-      _: resource._({
+      _: resource._(block, {
         certificates: build.template(block.certificates),
         description: build.template(std.get(block, 'description', null)),
         hostname: build.template(std.get(block, 'hostname', null)),
@@ -2384,7 +2389,7 @@ local provider(configuration) = {
     },
     certificate_manager_dns_authorization(name, block): {
       local resource = blockType.resource('google_certificate_manager_dns_authorization', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         domain: build.template(block.domain),
         labels: build.template(std.get(block, 'labels', null)),
@@ -2405,7 +2410,7 @@ local provider(configuration) = {
     },
     certificate_manager_trust_config(name, block): {
       local resource = blockType.resource('google_certificate_manager_trust_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -2424,7 +2429,7 @@ local provider(configuration) = {
     },
     cloud_asset_folder_feed(name, block): {
       local resource = blockType.resource('google_cloud_asset_folder_feed', name),
-      _: resource._({
+      _: resource._(block, {
         asset_names: build.template(std.get(block, 'asset_names', null)),
         asset_types: build.template(std.get(block, 'asset_types', null)),
         billing_project: build.template(block.billing_project),
@@ -2444,7 +2449,7 @@ local provider(configuration) = {
     },
     cloud_asset_organization_feed(name, block): {
       local resource = blockType.resource('google_cloud_asset_organization_feed', name),
-      _: resource._({
+      _: resource._(block, {
         asset_names: build.template(std.get(block, 'asset_names', null)),
         asset_types: build.template(std.get(block, 'asset_types', null)),
         billing_project: build.template(block.billing_project),
@@ -2463,7 +2468,7 @@ local provider(configuration) = {
     },
     cloud_asset_project_feed(name, block): {
       local resource = blockType.resource('google_cloud_asset_project_feed', name),
-      _: resource._({
+      _: resource._(block, {
         asset_names: build.template(std.get(block, 'asset_names', null)),
         asset_types: build.template(std.get(block, 'asset_types', null)),
         billing_project: build.template(std.get(block, 'billing_project', null)),
@@ -2481,7 +2486,7 @@ local provider(configuration) = {
     },
     cloud_identity_group(name, block): {
       local resource = blockType.resource('google_cloud_identity_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         initial_group_config: build.template(std.get(block, 'initial_group_config', null)),
@@ -2501,7 +2506,7 @@ local provider(configuration) = {
     },
     cloud_identity_group_membership(name, block): {
       local resource = blockType.resource('google_cloud_identity_group_membership', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(block.group),
       }),
       create_time: resource.field('create_time'),
@@ -2513,7 +2518,7 @@ local provider(configuration) = {
     },
     cloud_ids_endpoint(name, block): {
       local resource = blockType.resource('google_cloud_ids_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -2536,7 +2541,7 @@ local provider(configuration) = {
     },
     cloud_quotas_quota_preference(name, block): {
       local resource = blockType.resource('google_cloud_quotas_quota_preference', name),
-      _: resource._({
+      _: resource._(block, {
         contact_email: build.template(std.get(block, 'contact_email', null)),
         ignore_safety_checks: build.template(std.get(block, 'ignore_safety_checks', null)),
         justification: build.template(std.get(block, 'justification', null)),
@@ -2557,7 +2562,7 @@ local provider(configuration) = {
     },
     cloud_run_domain_mapping(name, block): {
       local resource = blockType.resource('google_cloud_run_domain_mapping', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
       }),
@@ -2569,7 +2574,7 @@ local provider(configuration) = {
     },
     cloud_run_service(name, block): {
       local resource = blockType.resource('google_cloud_run_service', name),
-      _: resource._({
+      _: resource._(block, {
         autogenerate_revision_name: build.template(std.get(block, 'autogenerate_revision_name', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -2583,7 +2588,7 @@ local provider(configuration) = {
     },
     cloud_run_service_iam_binding(name, block): {
       local resource = blockType.resource('google_cloud_run_service_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         service: build.template(block.service),
@@ -2598,7 +2603,7 @@ local provider(configuration) = {
     },
     cloud_run_service_iam_member(name, block): {
       local resource = blockType.resource('google_cloud_run_service_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         service: build.template(block.service),
@@ -2613,7 +2618,7 @@ local provider(configuration) = {
     },
     cloud_run_service_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_run_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         service: build.template(block.service),
       }),
@@ -2626,7 +2631,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_job(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_job', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         client: build.template(std.get(block, 'client', null)),
         client_version: build.template(std.get(block, 'client_version', null)),
@@ -2666,7 +2671,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_job_iam_binding(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_job_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -2681,7 +2686,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_job_iam_member(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_job_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -2696,7 +2701,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_job_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_job_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -2709,7 +2714,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_service(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_service', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         client: build.template(std.get(block, 'client', null)),
         client_version: build.template(std.get(block, 'client_version', null)),
@@ -2758,7 +2763,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_service_iam_binding(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_service_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -2773,7 +2778,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_service_iam_member(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_service_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -2788,7 +2793,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_service_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -2801,7 +2806,7 @@ local provider(configuration) = {
     },
     cloud_scheduler_job(name, block): {
       local resource = blockType.resource('google_cloud_scheduler_job', name),
-      _: resource._({
+      _: resource._(block, {
         attempt_deadline: build.template(std.get(block, 'attempt_deadline', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -2821,7 +2826,7 @@ local provider(configuration) = {
     },
     cloud_tasks_queue(name, block): {
       local resource = blockType.resource('google_cloud_tasks_queue', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -2832,7 +2837,7 @@ local provider(configuration) = {
     },
     cloud_tasks_queue_iam_binding(name, block): {
       local resource = blockType.resource('google_cloud_tasks_queue_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -2847,7 +2852,7 @@ local provider(configuration) = {
     },
     cloud_tasks_queue_iam_member(name, block): {
       local resource = blockType.resource('google_cloud_tasks_queue_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -2862,7 +2867,7 @@ local provider(configuration) = {
     },
     cloud_tasks_queue_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_tasks_queue_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -2875,7 +2880,7 @@ local provider(configuration) = {
     },
     cloudbuild_bitbucket_server_config(name, block): {
       local resource = blockType.resource('google_cloudbuild_bitbucket_server_config', name),
-      _: resource._({
+      _: resource._(block, {
         api_key: build.template(block.api_key),
         config_id: build.template(block.config_id),
         host_uri: build.template(block.host_uri),
@@ -2898,7 +2903,7 @@ local provider(configuration) = {
     },
     cloudbuild_trigger(name, block): {
       local resource = blockType.resource('google_cloudbuild_trigger', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         filename: build.template(std.get(block, 'filename', null)),
@@ -2930,7 +2935,7 @@ local provider(configuration) = {
     },
     cloudbuild_worker_pool(name, block): {
       local resource = blockType.resource('google_cloudbuild_worker_pool', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         location: build.template(block.location),
@@ -2951,7 +2956,7 @@ local provider(configuration) = {
     },
     cloudbuildv2_connection(name, block): {
       local resource = blockType.resource('google_cloudbuildv2_connection', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         location: build.template(block.location),
@@ -2972,7 +2977,7 @@ local provider(configuration) = {
     },
     cloudbuildv2_connection_iam_binding(name, block): {
       local resource = blockType.resource('google_cloudbuildv2_connection_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -2987,7 +2992,7 @@ local provider(configuration) = {
     },
     cloudbuildv2_connection_iam_member(name, block): {
       local resource = blockType.resource('google_cloudbuildv2_connection_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3002,7 +3007,7 @@ local provider(configuration) = {
     },
     cloudbuildv2_connection_iam_policy(name, block): {
       local resource = blockType.resource('google_cloudbuildv2_connection_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -3015,7 +3020,7 @@ local provider(configuration) = {
     },
     cloudbuildv2_repository(name, block): {
       local resource = blockType.resource('google_cloudbuildv2_repository', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         name: build.template(block.name),
         parent_connection: build.template(block.parent_connection),
@@ -3035,7 +3040,7 @@ local provider(configuration) = {
     },
     clouddeploy_automation(name, block): {
       local resource = blockType.resource('google_clouddeploy_automation', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         delivery_pipeline: build.template(block.delivery_pipeline),
         description: build.template(std.get(block, 'description', null)),
@@ -3065,7 +3070,7 @@ local provider(configuration) = {
     },
     clouddeploy_custom_target_type(name, block): {
       local resource = blockType.resource('google_clouddeploy_custom_target_type', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -3090,7 +3095,7 @@ local provider(configuration) = {
     },
     clouddeploy_custom_target_type_iam_binding(name, block): {
       local resource = blockType.resource('google_clouddeploy_custom_target_type_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3105,7 +3110,7 @@ local provider(configuration) = {
     },
     clouddeploy_custom_target_type_iam_member(name, block): {
       local resource = blockType.resource('google_clouddeploy_custom_target_type_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3120,7 +3125,7 @@ local provider(configuration) = {
     },
     clouddeploy_custom_target_type_iam_policy(name, block): {
       local resource = blockType.resource('google_clouddeploy_custom_target_type_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -3133,7 +3138,7 @@ local provider(configuration) = {
     },
     clouddeploy_delivery_pipeline(name, block): {
       local resource = blockType.resource('google_clouddeploy_delivery_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -3160,7 +3165,7 @@ local provider(configuration) = {
     },
     clouddeploy_delivery_pipeline_iam_binding(name, block): {
       local resource = blockType.resource('google_clouddeploy_delivery_pipeline_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3175,7 +3180,7 @@ local provider(configuration) = {
     },
     clouddeploy_delivery_pipeline_iam_member(name, block): {
       local resource = blockType.resource('google_clouddeploy_delivery_pipeline_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3190,7 +3195,7 @@ local provider(configuration) = {
     },
     clouddeploy_delivery_pipeline_iam_policy(name, block): {
       local resource = blockType.resource('google_clouddeploy_delivery_pipeline_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -3203,7 +3208,7 @@ local provider(configuration) = {
     },
     clouddeploy_target(name, block): {
       local resource = blockType.resource('google_clouddeploy_target', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         deploy_parameters: build.template(std.get(block, 'deploy_parameters', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -3232,7 +3237,7 @@ local provider(configuration) = {
     },
     clouddeploy_target_iam_binding(name, block): {
       local resource = blockType.resource('google_clouddeploy_target_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3247,7 +3252,7 @@ local provider(configuration) = {
     },
     clouddeploy_target_iam_member(name, block): {
       local resource = blockType.resource('google_clouddeploy_target_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3262,7 +3267,7 @@ local provider(configuration) = {
     },
     clouddeploy_target_iam_policy(name, block): {
       local resource = blockType.resource('google_clouddeploy_target_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -3275,7 +3280,7 @@ local provider(configuration) = {
     },
     clouddomains_registration(name, block): {
       local resource = blockType.resource('google_clouddomains_registration', name),
-      _: resource._({
+      _: resource._(block, {
         contact_notices: build.template(std.get(block, 'contact_notices', null)),
         domain_name: build.template(block.domain_name),
         domain_notices: build.template(std.get(block, 'domain_notices', null)),
@@ -3301,7 +3306,7 @@ local provider(configuration) = {
     },
     cloudfunctions2_function(name, block): {
       local resource = blockType.resource('google_cloudfunctions2_function', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         kms_key_name: build.template(std.get(block, 'kms_key_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -3324,7 +3329,7 @@ local provider(configuration) = {
     },
     cloudfunctions2_function_iam_binding(name, block): {
       local resource = blockType.resource('google_cloudfunctions2_function_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -3339,7 +3344,7 @@ local provider(configuration) = {
     },
     cloudfunctions2_function_iam_member(name, block): {
       local resource = blockType.resource('google_cloudfunctions2_function_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -3354,7 +3359,7 @@ local provider(configuration) = {
     },
     cloudfunctions2_function_iam_policy(name, block): {
       local resource = blockType.resource('google_cloudfunctions2_function_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
         policy_data: build.template(block.policy_data),
       }),
@@ -3367,7 +3372,7 @@ local provider(configuration) = {
     },
     cloudfunctions_function(name, block): {
       local resource = blockType.resource('google_cloudfunctions_function', name),
-      _: resource._({
+      _: resource._(block, {
         available_memory_mb: build.template(std.get(block, 'available_memory_mb', null)),
         build_environment_variables: build.template(std.get(block, 'build_environment_variables', null)),
         build_worker_pool: build.template(std.get(block, 'build_worker_pool', null)),
@@ -3422,7 +3427,7 @@ local provider(configuration) = {
     },
     cloudfunctions_function_iam_binding(name, block): {
       local resource = blockType.resource('google_cloudfunctions_function_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -3437,7 +3442,7 @@ local provider(configuration) = {
     },
     cloudfunctions_function_iam_member(name, block): {
       local resource = blockType.resource('google_cloudfunctions_function_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -3452,7 +3457,7 @@ local provider(configuration) = {
     },
     cloudfunctions_function_iam_policy(name, block): {
       local resource = blockType.resource('google_cloudfunctions_function_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
         policy_data: build.template(block.policy_data),
       }),
@@ -3465,7 +3470,7 @@ local provider(configuration) = {
     },
     composer_environment(name, block): {
       local resource = blockType.resource('google_composer_environment', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
       }),
@@ -3479,7 +3484,7 @@ local provider(configuration) = {
     },
     compute_address(name, block): {
       local resource = blockType.resource('google_compute_address', name),
-      _: resource._({
+      _: resource._(block, {
         address_type: build.template(std.get(block, 'address_type', null)),
         description: build.template(std.get(block, 'description', null)),
         ip_version: build.template(std.get(block, 'ip_version', null)),
@@ -3512,7 +3517,7 @@ local provider(configuration) = {
     },
     compute_attached_disk(name, block): {
       local resource = blockType.resource('google_compute_attached_disk', name),
-      _: resource._({
+      _: resource._(block, {
         disk: build.template(block.disk),
         instance: build.template(block.instance),
         interface: build.template(std.get(block, 'interface', null)),
@@ -3529,7 +3534,7 @@ local provider(configuration) = {
     },
     compute_autoscaler(name, block): {
       local resource = blockType.resource('google_compute_autoscaler', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         target: build.template(block.target),
@@ -3545,7 +3550,7 @@ local provider(configuration) = {
     },
     compute_backend_bucket(name, block): {
       local resource = blockType.resource('google_compute_backend_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_name: build.template(block.bucket_name),
         compression_mode: build.template(std.get(block, 'compression_mode', null)),
         custom_response_headers: build.template(std.get(block, 'custom_response_headers', null)),
@@ -3568,7 +3573,7 @@ local provider(configuration) = {
     },
     compute_backend_bucket_signed_url_key(name, block): {
       local resource = blockType.resource('google_compute_backend_bucket_signed_url_key', name),
-      _: resource._({
+      _: resource._(block, {
         backend_bucket: build.template(block.backend_bucket),
         key_value: build.template(block.key_value),
         name: build.template(block.name),
@@ -3581,7 +3586,7 @@ local provider(configuration) = {
     },
     compute_backend_service(name, block): {
       local resource = blockType.resource('google_compute_backend_service', name),
-      _: resource._({
+      _: resource._(block, {
         affinity_cookie_ttl_sec: build.template(std.get(block, 'affinity_cookie_ttl_sec', null)),
         compression_mode: build.template(std.get(block, 'compression_mode', null)),
         connection_draining_timeout_sec: build.template(std.get(block, 'connection_draining_timeout_sec', null)),
@@ -3626,7 +3631,7 @@ local provider(configuration) = {
     },
     compute_backend_service_signed_url_key(name, block): {
       local resource = blockType.resource('google_compute_backend_service_signed_url_key', name),
-      _: resource._({
+      _: resource._(block, {
         backend_service: build.template(block.backend_service),
         key_value: build.template(block.key_value),
         name: build.template(block.name),
@@ -3639,7 +3644,7 @@ local provider(configuration) = {
     },
     compute_disk(name, block): {
       local resource = blockType.resource('google_compute_disk', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         image: build.template(std.get(block, 'image', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -3682,7 +3687,7 @@ local provider(configuration) = {
     },
     compute_disk_async_replication(name, block): {
       local resource = blockType.resource('google_compute_disk_async_replication', name),
-      _: resource._({
+      _: resource._(block, {
         primary_disk: build.template(block.primary_disk),
       }),
       id: resource.field('id'),
@@ -3690,7 +3695,7 @@ local provider(configuration) = {
     },
     compute_disk_iam_binding(name, block): {
       local resource = blockType.resource('google_compute_disk_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3705,7 +3710,7 @@ local provider(configuration) = {
     },
     compute_disk_iam_member(name, block): {
       local resource = blockType.resource('google_compute_disk_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -3720,7 +3725,7 @@ local provider(configuration) = {
     },
     compute_disk_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_disk_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -3733,7 +3738,7 @@ local provider(configuration) = {
     },
     compute_disk_resource_policy_attachment(name, block): {
       local resource = blockType.resource('google_compute_disk_resource_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         disk: build.template(block.disk),
         name: build.template(block.name),
       }),
@@ -3745,7 +3750,7 @@ local provider(configuration) = {
     },
     compute_external_vpn_gateway(name, block): {
       local resource = blockType.resource('google_compute_external_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -3764,7 +3769,7 @@ local provider(configuration) = {
     },
     compute_firewall(name, block): {
       local resource = blockType.resource('google_compute_firewall', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         name: build.template(block.name),
@@ -3796,7 +3801,7 @@ local provider(configuration) = {
     },
     compute_firewall_policy(name, block): {
       local resource = blockType.resource('google_compute_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         parent: build.template(block.parent),
         short_name: build.template(block.short_name),
@@ -3815,7 +3820,7 @@ local provider(configuration) = {
     },
     compute_firewall_policy_association(name, block): {
       local resource = blockType.resource('google_compute_firewall_policy_association', name),
-      _: resource._({
+      _: resource._(block, {
         attachment_target: build.template(block.attachment_target),
         firewall_policy: build.template(block.firewall_policy),
         name: build.template(block.name),
@@ -3828,7 +3833,7 @@ local provider(configuration) = {
     },
     compute_firewall_policy_rule(name, block): {
       local resource = blockType.resource('google_compute_firewall_policy_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         direction: build.template(block.direction),
@@ -3858,7 +3863,7 @@ local provider(configuration) = {
     },
     compute_forwarding_rule(name, block): {
       local resource = blockType.resource('google_compute_forwarding_rule', name),
-      _: resource._({
+      _: resource._(block, {
         all_ports: build.template(std.get(block, 'all_ports', null)),
         allow_global_access: build.template(std.get(block, 'allow_global_access', null)),
         allow_psc_global_access: build.template(std.get(block, 'allow_psc_global_access', null)),
@@ -3913,7 +3918,7 @@ local provider(configuration) = {
     },
     compute_global_address(name, block): {
       local resource = blockType.resource('google_compute_global_address', name),
-      _: resource._({
+      _: resource._(block, {
         address_type: build.template(std.get(block, 'address_type', null)),
         description: build.template(std.get(block, 'description', null)),
         ip_version: build.template(std.get(block, 'ip_version', null)),
@@ -3941,7 +3946,7 @@ local provider(configuration) = {
     },
     compute_global_forwarding_rule(name, block): {
       local resource = blockType.resource('google_compute_global_forwarding_rule', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ip_version: build.template(std.get(block, 'ip_version', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -3977,7 +3982,7 @@ local provider(configuration) = {
     },
     compute_global_network_endpoint(name, block): {
       local resource = blockType.resource('google_compute_global_network_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         fqdn: build.template(std.get(block, 'fqdn', null)),
         global_network_endpoint_group: build.template(block.global_network_endpoint_group),
         ip_address: build.template(std.get(block, 'ip_address', null)),
@@ -3992,7 +3997,7 @@ local provider(configuration) = {
     },
     compute_global_network_endpoint_group(name, block): {
       local resource = blockType.resource('google_compute_global_network_endpoint_group', name),
-      _: resource._({
+      _: resource._(block, {
         default_port: build.template(std.get(block, 'default_port', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -4008,7 +4013,7 @@ local provider(configuration) = {
     },
     compute_ha_vpn_gateway(name, block): {
       local resource = blockType.resource('google_compute_ha_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         gateway_ip_version: build.template(std.get(block, 'gateway_ip_version', null)),
         name: build.template(block.name),
@@ -4027,7 +4032,7 @@ local provider(configuration) = {
     },
     compute_health_check(name, block): {
       local resource = blockType.resource('google_compute_health_check', name),
-      _: resource._({
+      _: resource._(block, {
         check_interval_sec: build.template(std.get(block, 'check_interval_sec', null)),
         description: build.template(std.get(block, 'description', null)),
         healthy_threshold: build.template(std.get(block, 'healthy_threshold', null)),
@@ -4051,7 +4056,7 @@ local provider(configuration) = {
     },
     compute_http_health_check(name, block): {
       local resource = blockType.resource('google_compute_http_health_check', name),
-      _: resource._({
+      _: resource._(block, {
         check_interval_sec: build.template(std.get(block, 'check_interval_sec', null)),
         description: build.template(std.get(block, 'description', null)),
         healthy_threshold: build.template(std.get(block, 'healthy_threshold', null)),
@@ -4078,7 +4083,7 @@ local provider(configuration) = {
     },
     compute_https_health_check(name, block): {
       local resource = blockType.resource('google_compute_https_health_check', name),
-      _: resource._({
+      _: resource._(block, {
         check_interval_sec: build.template(std.get(block, 'check_interval_sec', null)),
         description: build.template(std.get(block, 'description', null)),
         healthy_threshold: build.template(std.get(block, 'healthy_threshold', null)),
@@ -4105,7 +4110,7 @@ local provider(configuration) = {
     },
     compute_image(name, block): {
       local resource = blockType.resource('google_compute_image', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         family: build.template(std.get(block, 'family', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -4135,7 +4140,7 @@ local provider(configuration) = {
     },
     compute_image_iam_binding(name, block): {
       local resource = blockType.resource('google_compute_image_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         image: build.template(block.image),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -4149,7 +4154,7 @@ local provider(configuration) = {
     },
     compute_image_iam_member(name, block): {
       local resource = blockType.resource('google_compute_image_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         image: build.template(block.image),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -4163,7 +4168,7 @@ local provider(configuration) = {
     },
     compute_image_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_image_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         image: build.template(block.image),
         policy_data: build.template(block.policy_data),
       }),
@@ -4175,7 +4180,7 @@ local provider(configuration) = {
     },
     compute_instance(name, block): {
       local resource = blockType.resource('google_compute_instance', name),
-      _: resource._({
+      _: resource._(block, {
         allow_stopping_for_update: build.template(std.get(block, 'allow_stopping_for_update', null)),
         can_ip_forward: build.template(std.get(block, 'can_ip_forward', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
@@ -4224,7 +4229,7 @@ local provider(configuration) = {
     },
     compute_instance_from_template(name, block): {
       local resource = blockType.resource('google_compute_instance_from_template', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         source_instance_template: build.template(block.source_instance_template),
       }),
@@ -4261,7 +4266,7 @@ local provider(configuration) = {
     },
     compute_instance_group(name, block): {
       local resource = blockType.resource('google_compute_instance_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -4277,7 +4282,7 @@ local provider(configuration) = {
     },
     compute_instance_group_manager(name, block): {
       local resource = blockType.resource('google_compute_instance_group_manager', name),
-      _: resource._({
+      _: resource._(block, {
         base_instance_name: build.template(block.base_instance_name),
         description: build.template(std.get(block, 'description', null)),
         list_managed_instances_results: build.template(std.get(block, 'list_managed_instances_results', null)),
@@ -4306,7 +4311,7 @@ local provider(configuration) = {
     },
     compute_instance_group_membership(name, block): {
       local resource = blockType.resource('google_compute_instance_group_membership', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         instance_group: build.template(block.instance_group),
         zone: build.template(std.get(block, 'zone', null)),
@@ -4319,7 +4324,7 @@ local provider(configuration) = {
     },
     compute_instance_group_named_port(name, block): {
       local resource = blockType.resource('google_compute_instance_group_named_port', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(block.group),
         name: build.template(block.name),
         port: build.template(block.port),
@@ -4333,7 +4338,7 @@ local provider(configuration) = {
     },
     compute_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_compute_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -4348,7 +4353,7 @@ local provider(configuration) = {
     },
     compute_instance_iam_member(name, block): {
       local resource = blockType.resource('google_compute_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -4363,7 +4368,7 @@ local provider(configuration) = {
     },
     compute_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         policy_data: build.template(block.policy_data),
       }),
@@ -4376,7 +4381,7 @@ local provider(configuration) = {
     },
     compute_instance_settings(name, block): {
       local resource = blockType.resource('google_compute_instance_settings', name),
-      _: resource._({
+      _: resource._(block, {
         zone: build.template(block.zone),
       }),
       fingerprint: resource.field('fingerprint'),
@@ -4386,7 +4391,7 @@ local provider(configuration) = {
     },
     compute_instance_template(name, block): {
       local resource = blockType.resource('google_compute_instance_template', name),
-      _: resource._({
+      _: resource._(block, {
         can_ip_forward: build.template(std.get(block, 'can_ip_forward', null)),
         description: build.template(std.get(block, 'description', null)),
         instance_description: build.template(std.get(block, 'instance_description', null)),
@@ -4427,7 +4432,7 @@ local provider(configuration) = {
     },
     compute_interconnect(name, block): {
       local resource = blockType.resource('google_compute_interconnect', name),
-      _: resource._({
+      _: resource._(block, {
         admin_enabled: build.template(std.get(block, 'admin_enabled', null)),
         customer_name: build.template(std.get(block, 'customer_name', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -4475,7 +4480,7 @@ local provider(configuration) = {
     },
     compute_interconnect_attachment(name, block): {
       local resource = blockType.resource('google_compute_interconnect_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         admin_enabled: build.template(std.get(block, 'admin_enabled', null)),
         candidate_subnets: build.template(std.get(block, 'candidate_subnets', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -4518,7 +4523,7 @@ local provider(configuration) = {
     },
     compute_managed_ssl_certificate(name, block): {
       local resource = blockType.resource('google_compute_managed_ssl_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(std.get(block, 'name', null)),
         type: build.template(std.get(block, 'type', null)),
@@ -4536,7 +4541,7 @@ local provider(configuration) = {
     },
     compute_network(name, block): {
       local resource = blockType.resource('google_compute_network', name),
-      _: resource._({
+      _: resource._(block, {
         auto_create_subnetworks: build.template(std.get(block, 'auto_create_subnetworks', null)),
         delete_default_routes_on_create: build.template(std.get(block, 'delete_default_routes_on_create', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -4561,7 +4566,7 @@ local provider(configuration) = {
     },
     compute_network_attachment(name, block): {
       local resource = blockType.resource('google_compute_network_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         connection_preference: build.template(block.connection_preference),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -4588,7 +4593,7 @@ local provider(configuration) = {
     },
     compute_network_endpoint(name, block): {
       local resource = blockType.resource('google_compute_network_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(std.get(block, 'instance', null)),
         ip_address: build.template(block.ip_address),
         network_endpoint_group: build.template(block.network_endpoint_group),
@@ -4604,7 +4609,7 @@ local provider(configuration) = {
     },
     compute_network_endpoint_group(name, block): {
       local resource = blockType.resource('google_compute_network_endpoint_group', name),
-      _: resource._({
+      _: resource._(block, {
         default_port: build.template(std.get(block, 'default_port', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -4626,7 +4631,7 @@ local provider(configuration) = {
     },
     compute_network_endpoints(name, block): {
       local resource = blockType.resource('google_compute_network_endpoints', name),
-      _: resource._({
+      _: resource._(block, {
         network_endpoint_group: build.template(block.network_endpoint_group),
       }),
       id: resource.field('id'),
@@ -4636,7 +4641,7 @@ local provider(configuration) = {
     },
     compute_network_firewall_policy(name, block): {
       local resource = blockType.resource('google_compute_network_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -4653,7 +4658,7 @@ local provider(configuration) = {
     },
     compute_network_firewall_policy_association(name, block): {
       local resource = blockType.resource('google_compute_network_firewall_policy_association', name),
-      _: resource._({
+      _: resource._(block, {
         attachment_target: build.template(block.attachment_target),
         firewall_policy: build.template(block.firewall_policy),
         name: build.template(block.name),
@@ -4667,7 +4672,7 @@ local provider(configuration) = {
     },
     compute_network_firewall_policy_rule(name, block): {
       local resource = blockType.resource('google_compute_network_firewall_policy_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         direction: build.template(block.direction),
@@ -4699,7 +4704,7 @@ local provider(configuration) = {
     },
     compute_network_peering(name, block): {
       local resource = blockType.resource('google_compute_network_peering', name),
-      _: resource._({
+      _: resource._(block, {
         export_custom_routes: build.template(std.get(block, 'export_custom_routes', null)),
         export_subnet_routes_with_public_ip: build.template(std.get(block, 'export_subnet_routes_with_public_ip', null)),
         import_custom_routes: build.template(std.get(block, 'import_custom_routes', null)),
@@ -4723,7 +4728,7 @@ local provider(configuration) = {
     },
     compute_network_peering_routes_config(name, block): {
       local resource = blockType.resource('google_compute_network_peering_routes_config', name),
-      _: resource._({
+      _: resource._(block, {
         export_custom_routes: build.template(block.export_custom_routes),
         import_custom_routes: build.template(block.import_custom_routes),
         network: build.template(block.network),
@@ -4738,7 +4743,7 @@ local provider(configuration) = {
     },
     compute_node_group(name, block): {
       local resource = blockType.resource('google_compute_node_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         initial_size: build.template(std.get(block, 'initial_size', null)),
         maintenance_policy: build.template(std.get(block, 'maintenance_policy', null)),
@@ -4759,7 +4764,7 @@ local provider(configuration) = {
     },
     compute_node_template(name, block): {
       local resource = blockType.resource('google_compute_node_template', name),
-      _: resource._({
+      _: resource._(block, {
         cpu_overcommit_type: build.template(std.get(block, 'cpu_overcommit_type', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -4779,7 +4784,7 @@ local provider(configuration) = {
     },
     compute_packet_mirroring(name, block): {
       local resource = blockType.resource('google_compute_packet_mirroring', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -4792,7 +4797,7 @@ local provider(configuration) = {
     },
     compute_per_instance_config(name, block): {
       local resource = blockType.resource('google_compute_per_instance_config', name),
-      _: resource._({
+      _: resource._(block, {
         instance_group_manager: build.template(block.instance_group_manager),
         minimal_action: build.template(std.get(block, 'minimal_action', null)),
         most_disruptive_allowed_action: build.template(std.get(block, 'most_disruptive_allowed_action', null)),
@@ -4812,7 +4817,7 @@ local provider(configuration) = {
     },
     compute_project_cloud_armor_tier(name, block): {
       local resource = blockType.resource('google_compute_project_cloud_armor_tier', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_armor_tier: build.template(block.cloud_armor_tier),
       }),
       cloud_armor_tier: resource.field('cloud_armor_tier'),
@@ -4821,7 +4826,7 @@ local provider(configuration) = {
     },
     compute_project_default_network_tier(name, block): {
       local resource = blockType.resource('google_compute_project_default_network_tier', name),
-      _: resource._({
+      _: resource._(block, {
         network_tier: build.template(block.network_tier),
       }),
       id: resource.field('id'),
@@ -4830,7 +4835,7 @@ local provider(configuration) = {
     },
     compute_project_metadata(name, block): {
       local resource = blockType.resource('google_compute_project_metadata', name),
-      _: resource._({
+      _: resource._(block, {
         metadata: build.template(block.metadata),
       }),
       id: resource.field('id'),
@@ -4839,7 +4844,7 @@ local provider(configuration) = {
     },
     compute_project_metadata_item(name, block): {
       local resource = blockType.resource('google_compute_project_metadata_item', name),
-      _: resource._({
+      _: resource._(block, {
         key: build.template(block.key),
         value: build.template(block.value),
       }),
@@ -4850,7 +4855,7 @@ local provider(configuration) = {
     },
     compute_public_advertised_prefix(name, block): {
       local resource = blockType.resource('google_compute_public_advertised_prefix', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         dns_verification_ip: build.template(block.dns_verification_ip),
         ip_cidr_range: build.template(block.ip_cidr_range),
@@ -4867,7 +4872,7 @@ local provider(configuration) = {
     },
     compute_public_delegated_prefix(name, block): {
       local resource = blockType.resource('google_compute_public_delegated_prefix', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ip_cidr_range: build.template(block.ip_cidr_range),
         is_live_migration: build.template(std.get(block, 'is_live_migration', null)),
@@ -4887,7 +4892,7 @@ local provider(configuration) = {
     },
     compute_region_autoscaler(name, block): {
       local resource = blockType.resource('google_compute_region_autoscaler', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         target: build.template(block.target),
@@ -4903,7 +4908,7 @@ local provider(configuration) = {
     },
     compute_region_backend_service(name, block): {
       local resource = blockType.resource('google_compute_region_backend_service', name),
-      _: resource._({
+      _: resource._(block, {
         affinity_cookie_ttl_sec: build.template(std.get(block, 'affinity_cookie_ttl_sec', null)),
         connection_draining_timeout_sec: build.template(std.get(block, 'connection_draining_timeout_sec', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -4939,7 +4944,7 @@ local provider(configuration) = {
     },
     compute_region_commitment(name, block): {
       local resource = blockType.resource('google_compute_region_commitment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         plan: build.template(block.plan),
@@ -4964,7 +4969,7 @@ local provider(configuration) = {
     },
     compute_region_disk(name, block): {
       local resource = blockType.resource('google_compute_region_disk', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -4999,7 +5004,7 @@ local provider(configuration) = {
     },
     compute_region_disk_iam_binding(name, block): {
       local resource = blockType.resource('google_compute_region_disk_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -5014,7 +5019,7 @@ local provider(configuration) = {
     },
     compute_region_disk_iam_member(name, block): {
       local resource = blockType.resource('google_compute_region_disk_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -5029,7 +5034,7 @@ local provider(configuration) = {
     },
     compute_region_disk_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_region_disk_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -5042,7 +5047,7 @@ local provider(configuration) = {
     },
     compute_region_disk_resource_policy_attachment(name, block): {
       local resource = blockType.resource('google_compute_region_disk_resource_policy_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         disk: build.template(block.disk),
         name: build.template(block.name),
       }),
@@ -5054,7 +5059,7 @@ local provider(configuration) = {
     },
     compute_region_health_check(name, block): {
       local resource = blockType.resource('google_compute_region_health_check', name),
-      _: resource._({
+      _: resource._(block, {
         check_interval_sec: build.template(std.get(block, 'check_interval_sec', null)),
         description: build.template(std.get(block, 'description', null)),
         healthy_threshold: build.template(std.get(block, 'healthy_threshold', null)),
@@ -5077,7 +5082,7 @@ local provider(configuration) = {
     },
     compute_region_instance_group_manager(name, block): {
       local resource = blockType.resource('google_compute_region_instance_group_manager', name),
-      _: resource._({
+      _: resource._(block, {
         base_instance_name: build.template(block.base_instance_name),
         description: build.template(std.get(block, 'description', null)),
         list_managed_instances_results: build.template(std.get(block, 'list_managed_instances_results', null)),
@@ -5107,7 +5112,7 @@ local provider(configuration) = {
     },
     compute_region_instance_template(name, block): {
       local resource = blockType.resource('google_compute_region_instance_template', name),
-      _: resource._({
+      _: resource._(block, {
         can_ip_forward: build.template(std.get(block, 'can_ip_forward', null)),
         description: build.template(std.get(block, 'description', null)),
         instance_description: build.template(std.get(block, 'instance_description', null)),
@@ -5147,7 +5152,7 @@ local provider(configuration) = {
     },
     compute_region_network_endpoint(name, block): {
       local resource = blockType.resource('google_compute_region_network_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         fqdn: build.template(std.get(block, 'fqdn', null)),
         ip_address: build.template(std.get(block, 'ip_address', null)),
         port: build.template(block.port),
@@ -5163,7 +5168,7 @@ local provider(configuration) = {
     },
     compute_region_network_endpoint_group(name, block): {
       local resource = blockType.resource('google_compute_region_network_endpoint_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         network: build.template(std.get(block, 'network', null)),
@@ -5185,7 +5190,7 @@ local provider(configuration) = {
     },
     compute_region_network_firewall_policy(name, block): {
       local resource = blockType.resource('google_compute_region_network_firewall_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -5203,7 +5208,7 @@ local provider(configuration) = {
     },
     compute_region_network_firewall_policy_association(name, block): {
       local resource = blockType.resource('google_compute_region_network_firewall_policy_association', name),
-      _: resource._({
+      _: resource._(block, {
         attachment_target: build.template(block.attachment_target),
         firewall_policy: build.template(block.firewall_policy),
         name: build.template(block.name),
@@ -5218,7 +5223,7 @@ local provider(configuration) = {
     },
     compute_region_network_firewall_policy_rule(name, block): {
       local resource = blockType.resource('google_compute_region_network_firewall_policy_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         direction: build.template(block.direction),
@@ -5251,7 +5256,7 @@ local provider(configuration) = {
     },
     compute_region_per_instance_config(name, block): {
       local resource = blockType.resource('google_compute_region_per_instance_config', name),
-      _: resource._({
+      _: resource._(block, {
         minimal_action: build.template(std.get(block, 'minimal_action', null)),
         most_disruptive_allowed_action: build.template(std.get(block, 'most_disruptive_allowed_action', null)),
         name: build.template(block.name),
@@ -5271,7 +5276,7 @@ local provider(configuration) = {
     },
     compute_region_ssl_certificate(name, block): {
       local resource = blockType.resource('google_compute_region_ssl_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate: build.template(block.certificate),
         description: build.template(std.get(block, 'description', null)),
         private_key: build.template(block.private_key),
@@ -5291,7 +5296,7 @@ local provider(configuration) = {
     },
     compute_region_ssl_policy(name, block): {
       local resource = blockType.resource('google_compute_region_ssl_policy', name),
-      _: resource._({
+      _: resource._(block, {
         custom_features: build.template(std.get(block, 'custom_features', null)),
         description: build.template(std.get(block, 'description', null)),
         min_tls_version: build.template(std.get(block, 'min_tls_version', null)),
@@ -5313,7 +5318,7 @@ local provider(configuration) = {
     },
     compute_region_target_http_proxy(name, block): {
       local resource = blockType.resource('google_compute_region_target_http_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         http_keep_alive_timeout_sec: build.template(std.get(block, 'http_keep_alive_timeout_sec', null)),
         name: build.template(block.name),
@@ -5332,7 +5337,7 @@ local provider(configuration) = {
     },
     compute_region_target_https_proxy(name, block): {
       local resource = blockType.resource('google_compute_region_target_https_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_manager_certificates: build.template(std.get(block, 'certificate_manager_certificates', null)),
         description: build.template(std.get(block, 'description', null)),
         http_keep_alive_timeout_sec: build.template(std.get(block, 'http_keep_alive_timeout_sec', null)),
@@ -5359,7 +5364,7 @@ local provider(configuration) = {
     },
     compute_region_target_tcp_proxy(name, block): {
       local resource = blockType.resource('google_compute_region_target_tcp_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         backend_service: build.template(block.backend_service),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -5379,7 +5384,7 @@ local provider(configuration) = {
     },
     compute_region_url_map(name, block): {
       local resource = blockType.resource('google_compute_region_url_map', name),
-      _: resource._({
+      _: resource._(block, {
         default_service: build.template(std.get(block, 'default_service', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -5397,7 +5402,7 @@ local provider(configuration) = {
     },
     compute_reservation(name, block): {
       local resource = blockType.resource('google_compute_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         specific_reservation_required: build.template(std.get(block, 'specific_reservation_required', null)),
@@ -5416,7 +5421,7 @@ local provider(configuration) = {
     },
     compute_resize_request(name, block): {
       local resource = blockType.resource('google_compute_resize_request', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance_group_manager: build.template(block.instance_group_manager),
         name: build.template(block.name),
@@ -5436,7 +5441,7 @@ local provider(configuration) = {
     },
     compute_resource_policy(name, block): {
       local resource = blockType.resource('google_compute_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -5449,7 +5454,7 @@ local provider(configuration) = {
     },
     compute_route(name, block): {
       local resource = blockType.resource('google_compute_route', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         dest_range: build.template(block.dest_range),
         name: build.template(block.name),
@@ -5480,7 +5485,7 @@ local provider(configuration) = {
     },
     compute_router(name, block): {
       local resource = blockType.resource('google_compute_router', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         encrypted_interconnect_router: build.template(std.get(block, 'encrypted_interconnect_router', null)),
         name: build.template(block.name),
@@ -5498,7 +5503,7 @@ local provider(configuration) = {
     },
     compute_router_interface(name, block): {
       local resource = blockType.resource('google_compute_router_interface', name),
-      _: resource._({
+      _: resource._(block, {
         interconnect_attachment: build.template(std.get(block, 'interconnect_attachment', null)),
         name: build.template(block.name),
         private_ip_address: build.template(std.get(block, 'private_ip_address', null)),
@@ -5521,7 +5526,7 @@ local provider(configuration) = {
     },
     compute_router_nat(name, block): {
       local resource = blockType.resource('google_compute_router_nat', name),
-      _: resource._({
+      _: resource._(block, {
         icmp_idle_timeout_sec: build.template(std.get(block, 'icmp_idle_timeout_sec', null)),
         initial_nat_ips: build.template(std.get(block, 'initial_nat_ips', null)),
         max_ports_per_vm: build.template(std.get(block, 'max_ports_per_vm', null)),
@@ -5558,7 +5563,7 @@ local provider(configuration) = {
     },
     compute_router_nat_address(name, block): {
       local resource = blockType.resource('google_compute_router_nat_address', name),
-      _: resource._({
+      _: resource._(block, {
         drain_nat_ips: build.template(std.get(block, 'drain_nat_ips', null)),
         nat_ips: build.template(block.nat_ips),
         router: build.template(block.router),
@@ -5574,7 +5579,7 @@ local provider(configuration) = {
     },
     compute_router_peer(name, block): {
       local resource = blockType.resource('google_compute_router_peer', name),
-      _: resource._({
+      _: resource._(block, {
         advertise_mode: build.template(std.get(block, 'advertise_mode', null)),
         advertised_groups: build.template(std.get(block, 'advertised_groups', null)),
         advertised_route_priority: build.template(std.get(block, 'advertised_route_priority', null)),
@@ -5612,7 +5617,7 @@ local provider(configuration) = {
     },
     compute_security_policy(name, block): {
       local resource = blockType.resource('google_compute_security_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
       }),
@@ -5626,7 +5631,7 @@ local provider(configuration) = {
     },
     compute_security_policy_rule(name, block): {
       local resource = blockType.resource('google_compute_security_policy_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         preview: build.template(std.get(block, 'preview', null)),
@@ -5643,7 +5648,7 @@ local provider(configuration) = {
     },
     compute_service_attachment(name, block): {
       local resource = blockType.resource('google_compute_service_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         connection_preference: build.template(block.connection_preference),
         consumer_reject_lists: build.template(std.get(block, 'consumer_reject_lists', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -5672,7 +5677,7 @@ local provider(configuration) = {
     },
     compute_shared_vpc_host_project(name, block): {
       local resource = blockType.resource('google_compute_shared_vpc_host_project', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(block.project),
       }),
       id: resource.field('id'),
@@ -5680,7 +5685,7 @@ local provider(configuration) = {
     },
     compute_shared_vpc_service_project(name, block): {
       local resource = blockType.resource('google_compute_shared_vpc_service_project', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         host_project: build.template(block.host_project),
         service_project: build.template(block.service_project),
@@ -5692,7 +5697,7 @@ local provider(configuration) = {
     },
     compute_snapshot(name, block): {
       local resource = blockType.resource('google_compute_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         chain_name: build.template(std.get(block, 'chain_name', null)),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -5720,7 +5725,7 @@ local provider(configuration) = {
     },
     compute_snapshot_iam_binding(name, block): {
       local resource = blockType.resource('google_compute_snapshot_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -5734,7 +5739,7 @@ local provider(configuration) = {
     },
     compute_snapshot_iam_member(name, block): {
       local resource = blockType.resource('google_compute_snapshot_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -5748,7 +5753,7 @@ local provider(configuration) = {
     },
     compute_snapshot_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_snapshot_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -5760,7 +5765,7 @@ local provider(configuration) = {
     },
     compute_ssl_certificate(name, block): {
       local resource = blockType.resource('google_compute_ssl_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate: build.template(block.certificate),
         description: build.template(std.get(block, 'description', null)),
         private_key: build.template(block.private_key),
@@ -5779,7 +5784,7 @@ local provider(configuration) = {
     },
     compute_ssl_policy(name, block): {
       local resource = blockType.resource('google_compute_ssl_policy', name),
-      _: resource._({
+      _: resource._(block, {
         custom_features: build.template(std.get(block, 'custom_features', null)),
         description: build.template(std.get(block, 'description', null)),
         min_tls_version: build.template(std.get(block, 'min_tls_version', null)),
@@ -5800,7 +5805,7 @@ local provider(configuration) = {
     },
     compute_subnetwork(name, block): {
       local resource = blockType.resource('google_compute_subnetwork', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ipv6_access_type: build.template(std.get(block, 'ipv6_access_type', null)),
         name: build.template(block.name),
@@ -5834,7 +5839,7 @@ local provider(configuration) = {
     },
     compute_subnetwork_iam_binding(name, block): {
       local resource = blockType.resource('google_compute_subnetwork_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         subnetwork: build.template(block.subnetwork),
@@ -5849,7 +5854,7 @@ local provider(configuration) = {
     },
     compute_subnetwork_iam_member(name, block): {
       local resource = blockType.resource('google_compute_subnetwork_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         subnetwork: build.template(block.subnetwork),
@@ -5864,7 +5869,7 @@ local provider(configuration) = {
     },
     compute_subnetwork_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_subnetwork_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         subnetwork: build.template(block.subnetwork),
       }),
@@ -5877,7 +5882,7 @@ local provider(configuration) = {
     },
     compute_target_grpc_proxy(name, block): {
       local resource = blockType.resource('google_compute_target_grpc_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         url_map: build.template(std.get(block, 'url_map', null)),
@@ -5896,7 +5901,7 @@ local provider(configuration) = {
     },
     compute_target_http_proxy(name, block): {
       local resource = blockType.resource('google_compute_target_http_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         http_keep_alive_timeout_sec: build.template(std.get(block, 'http_keep_alive_timeout_sec', null)),
         name: build.template(block.name),
@@ -5915,7 +5920,7 @@ local provider(configuration) = {
     },
     compute_target_https_proxy(name, block): {
       local resource = blockType.resource('google_compute_target_https_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_manager_certificates: build.template(std.get(block, 'certificate_manager_certificates', null)),
         certificate_map: build.template(std.get(block, 'certificate_map', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -5947,7 +5952,7 @@ local provider(configuration) = {
     },
     compute_target_instance(name, block): {
       local resource = blockType.resource('google_compute_target_instance', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance: build.template(block.instance),
         name: build.template(block.name),
@@ -5965,7 +5970,7 @@ local provider(configuration) = {
     },
     compute_target_pool(name, block): {
       local resource = blockType.resource('google_compute_target_pool', name),
-      _: resource._({
+      _: resource._(block, {
         backup_pool: build.template(std.get(block, 'backup_pool', null)),
         description: build.template(std.get(block, 'description', null)),
         failover_ratio: build.template(std.get(block, 'failover_ratio', null)),
@@ -5987,7 +5992,7 @@ local provider(configuration) = {
     },
     compute_target_ssl_proxy(name, block): {
       local resource = blockType.resource('google_compute_target_ssl_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         backend_service: build.template(block.backend_service),
         certificate_map: build.template(std.get(block, 'certificate_map', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -6011,7 +6016,7 @@ local provider(configuration) = {
     },
     compute_target_tcp_proxy(name, block): {
       local resource = blockType.resource('google_compute_target_tcp_proxy', name),
-      _: resource._({
+      _: resource._(block, {
         backend_service: build.template(block.backend_service),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -6030,7 +6035,7 @@ local provider(configuration) = {
     },
     compute_url_map(name, block): {
       local resource = blockType.resource('google_compute_url_map', name),
-      _: resource._({
+      _: resource._(block, {
         default_service: build.template(std.get(block, 'default_service', null)),
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
@@ -6047,7 +6052,7 @@ local provider(configuration) = {
     },
     compute_vpn_gateway(name, block): {
       local resource = blockType.resource('google_compute_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         network: build.template(block.network),
@@ -6064,7 +6069,7 @@ local provider(configuration) = {
     },
     compute_vpn_tunnel(name, block): {
       local resource = blockType.resource('google_compute_vpn_tunnel', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ike_version: build.template(std.get(block, 'ike_version', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -6107,7 +6112,7 @@ local provider(configuration) = {
     },
     container_analysis_note(name, block): {
       local resource = blockType.resource('google_container_analysis_note', name),
-      _: resource._({
+      _: resource._(block, {
         expiration_time: build.template(std.get(block, 'expiration_time', null)),
         long_description: build.template(std.get(block, 'long_description', null)),
         name: build.template(block.name),
@@ -6127,7 +6132,7 @@ local provider(configuration) = {
     },
     container_analysis_note_iam_binding(name, block): {
       local resource = blockType.resource('google_container_analysis_note_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         note: build.template(block.note),
         role: build.template(block.role),
@@ -6141,7 +6146,7 @@ local provider(configuration) = {
     },
     container_analysis_note_iam_member(name, block): {
       local resource = blockType.resource('google_container_analysis_note_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         note: build.template(block.note),
         role: build.template(block.role),
@@ -6155,7 +6160,7 @@ local provider(configuration) = {
     },
     container_analysis_note_iam_policy(name, block): {
       local resource = blockType.resource('google_container_analysis_note_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         note: build.template(block.note),
         policy_data: build.template(block.policy_data),
       }),
@@ -6167,7 +6172,7 @@ local provider(configuration) = {
     },
     container_analysis_occurrence(name, block): {
       local resource = blockType.resource('google_container_analysis_occurrence', name),
-      _: resource._({
+      _: resource._(block, {
         note_name: build.template(block.note_name),
         remediation: build.template(std.get(block, 'remediation', null)),
         resource_uri: build.template(block.resource_uri),
@@ -6184,7 +6189,7 @@ local provider(configuration) = {
     },
     container_attached_cluster(name, block): {
       local resource = blockType.resource('google_container_attached_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -6215,7 +6220,7 @@ local provider(configuration) = {
     },
     container_aws_cluster(name, block): {
       local resource = blockType.resource('google_container_aws_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         aws_region: build.template(block.aws_region),
         description: build.template(std.get(block, 'description', null)),
@@ -6241,7 +6246,7 @@ local provider(configuration) = {
     },
     container_aws_node_pool(name, block): {
       local resource = blockType.resource('google_container_aws_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         cluster: build.template(block.cluster),
         location: build.template(block.location),
@@ -6267,7 +6272,7 @@ local provider(configuration) = {
     },
     container_azure_client(name, block): {
       local resource = blockType.resource('google_container_azure_client', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -6285,7 +6290,7 @@ local provider(configuration) = {
     },
     container_azure_cluster(name, block): {
       local resource = blockType.resource('google_container_azure_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         azure_region: build.template(block.azure_region),
         client: build.template(std.get(block, 'client', null)),
@@ -6315,7 +6320,7 @@ local provider(configuration) = {
     },
     container_azure_node_pool(name, block): {
       local resource = blockType.resource('google_container_azure_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         cluster: build.template(block.cluster),
         location: build.template(block.location),
@@ -6342,7 +6347,7 @@ local provider(configuration) = {
     },
     container_cluster(name, block): {
       local resource = blockType.resource('google_container_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         allow_net_admin: build.template(std.get(block, 'allow_net_admin', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -6404,7 +6409,7 @@ local provider(configuration) = {
     },
     container_node_pool(name, block): {
       local resource = blockType.resource('google_container_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
       }),
       cluster: resource.field('cluster'),
@@ -6424,7 +6429,7 @@ local provider(configuration) = {
     },
     container_registry(name, block): {
       local resource = blockType.resource('google_container_registry', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
       }),
       bucket_self_link: resource.field('bucket_self_link'),
@@ -6434,7 +6439,7 @@ local provider(configuration) = {
     },
     data_catalog_entry(name, block): {
       local resource = blockType.resource('google_data_catalog_entry', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         entry_group: build.template(block.entry_group),
@@ -6461,7 +6466,7 @@ local provider(configuration) = {
     },
     data_catalog_entry_group(name, block): {
       local resource = blockType.resource('google_data_catalog_entry_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         entry_group_id: build.template(block.entry_group_id),
@@ -6476,7 +6481,7 @@ local provider(configuration) = {
     },
     data_catalog_entry_group_iam_binding(name, block): {
       local resource = blockType.resource('google_data_catalog_entry_group_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group: build.template(block.entry_group),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -6491,7 +6496,7 @@ local provider(configuration) = {
     },
     data_catalog_entry_group_iam_member(name, block): {
       local resource = blockType.resource('google_data_catalog_entry_group_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group: build.template(block.entry_group),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -6506,7 +6511,7 @@ local provider(configuration) = {
     },
     data_catalog_entry_group_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_entry_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group: build.template(block.entry_group),
         policy_data: build.template(block.policy_data),
       }),
@@ -6519,7 +6524,7 @@ local provider(configuration) = {
     },
     data_catalog_policy_tag(name, block): {
       local resource = blockType.resource('google_data_catalog_policy_tag', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         parent_policy_tag: build.template(std.get(block, 'parent_policy_tag', null)),
@@ -6535,7 +6540,7 @@ local provider(configuration) = {
     },
     data_catalog_policy_tag_iam_binding(name, block): {
       local resource = blockType.resource('google_data_catalog_policy_tag_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         policy_tag: build.template(block.policy_tag),
         role: build.template(block.role),
@@ -6548,7 +6553,7 @@ local provider(configuration) = {
     },
     data_catalog_policy_tag_iam_member(name, block): {
       local resource = blockType.resource('google_data_catalog_policy_tag_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         policy_tag: build.template(block.policy_tag),
         role: build.template(block.role),
@@ -6561,7 +6566,7 @@ local provider(configuration) = {
     },
     data_catalog_policy_tag_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_policy_tag_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         policy_tag: build.template(block.policy_tag),
       }),
@@ -6572,7 +6577,7 @@ local provider(configuration) = {
     },
     data_catalog_tag(name, block): {
       local resource = blockType.resource('google_data_catalog_tag', name),
-      _: resource._({
+      _: resource._(block, {
         column: build.template(std.get(block, 'column', null)),
         parent: build.template(std.get(block, 'parent', null)),
         template: build.template(block.template),
@@ -6586,7 +6591,7 @@ local provider(configuration) = {
     },
     data_catalog_tag_template(name, block): {
       local resource = blockType.resource('google_data_catalog_tag_template', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         force_delete: build.template(std.get(block, 'force_delete', null)),
         tag_template_id: build.template(block.tag_template_id),
@@ -6601,7 +6606,7 @@ local provider(configuration) = {
     },
     data_catalog_tag_template_iam_binding(name, block): {
       local resource = blockType.resource('google_data_catalog_tag_template_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         tag_template: build.template(block.tag_template),
@@ -6616,7 +6621,7 @@ local provider(configuration) = {
     },
     data_catalog_tag_template_iam_member(name, block): {
       local resource = blockType.resource('google_data_catalog_tag_template_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         tag_template: build.template(block.tag_template),
@@ -6631,7 +6636,7 @@ local provider(configuration) = {
     },
     data_catalog_tag_template_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_tag_template_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         tag_template: build.template(block.tag_template),
       }),
@@ -6644,7 +6649,7 @@ local provider(configuration) = {
     },
     data_catalog_taxonomy(name, block): {
       local resource = blockType.resource('google_data_catalog_taxonomy', name),
-      _: resource._({
+      _: resource._(block, {
         activated_policy_types: build.template(std.get(block, 'activated_policy_types', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -6659,7 +6664,7 @@ local provider(configuration) = {
     },
     data_catalog_taxonomy_iam_binding(name, block): {
       local resource = blockType.resource('google_data_catalog_taxonomy_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         taxonomy: build.template(block.taxonomy),
@@ -6674,7 +6679,7 @@ local provider(configuration) = {
     },
     data_catalog_taxonomy_iam_member(name, block): {
       local resource = blockType.resource('google_data_catalog_taxonomy_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         taxonomy: build.template(block.taxonomy),
@@ -6689,7 +6694,7 @@ local provider(configuration) = {
     },
     data_catalog_taxonomy_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_taxonomy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         taxonomy: build.template(block.taxonomy),
       }),
@@ -6702,7 +6707,7 @@ local provider(configuration) = {
     },
     data_fusion_instance(name, block): {
       local resource = blockType.resource('google_data_fusion_instance', name),
-      _: resource._({
+      _: resource._(block, {
         dataproc_service_account: build.template(std.get(block, 'dataproc_service_account', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -6744,7 +6749,7 @@ local provider(configuration) = {
     },
     data_fusion_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_data_fusion_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -6759,7 +6764,7 @@ local provider(configuration) = {
     },
     data_fusion_instance_iam_member(name, block): {
       local resource = blockType.resource('google_data_fusion_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -6774,7 +6779,7 @@ local provider(configuration) = {
     },
     data_fusion_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_data_fusion_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -6787,7 +6792,7 @@ local provider(configuration) = {
     },
     data_loss_prevention_deidentify_template(name, block): {
       local resource = blockType.resource('google_data_loss_prevention_deidentify_template', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         parent: build.template(block.parent),
@@ -6803,7 +6808,7 @@ local provider(configuration) = {
     },
     data_loss_prevention_discovery_config(name, block): {
       local resource = blockType.resource('google_data_loss_prevention_discovery_config', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         inspect_templates: build.template(std.get(block, 'inspect_templates', null)),
         location: build.template(block.location),
@@ -6824,7 +6829,7 @@ local provider(configuration) = {
     },
     data_loss_prevention_inspect_template(name, block): {
       local resource = blockType.resource('google_data_loss_prevention_inspect_template', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         parent: build.template(block.parent),
@@ -6838,7 +6843,7 @@ local provider(configuration) = {
     },
     data_loss_prevention_job_trigger(name, block): {
       local resource = blockType.resource('google_data_loss_prevention_job_trigger', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         parent: build.template(block.parent),
@@ -6857,7 +6862,7 @@ local provider(configuration) = {
     },
     data_loss_prevention_stored_info_type(name, block): {
       local resource = blockType.resource('google_data_loss_prevention_stored_info_type', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         parent: build.template(block.parent),
@@ -6871,7 +6876,7 @@ local provider(configuration) = {
     },
     data_pipeline_pipeline(name, block): {
       local resource = blockType.resource('google_data_pipeline_pipeline', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(block.name),
         pipeline_sources: build.template(std.get(block, 'pipeline_sources', null)),
@@ -6894,7 +6899,7 @@ local provider(configuration) = {
     },
     database_migration_service_connection_profile(name, block): {
       local resource = blockType.resource('google_database_migration_service_connection_profile', name),
-      _: resource._({
+      _: resource._(block, {
         connection_profile_id: build.template(block.connection_profile_id),
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -6916,7 +6921,7 @@ local provider(configuration) = {
     },
     database_migration_service_migration_job(name, block): {
       local resource = blockType.resource('google_database_migration_service_migration_job', name),
-      _: resource._({
+      _: resource._(block, {
         destination: build.template(block.destination),
         display_name: build.template(std.get(block, 'display_name', null)),
         dump_path: build.template(std.get(block, 'dump_path', null)),
@@ -6948,7 +6953,7 @@ local provider(configuration) = {
     },
     database_migration_service_private_connection(name, block): {
       local resource = blockType.resource('google_database_migration_service_private_connection', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
         private_connection_id: build.template(block.private_connection_id),
@@ -6967,7 +6972,7 @@ local provider(configuration) = {
     },
     dataflow_job(name, block): {
       local resource = blockType.resource('google_dataflow_job', name),
-      _: resource._({
+      _: resource._(block, {
         enable_streaming_engine: build.template(std.get(block, 'enable_streaming_engine', null)),
         ip_configuration: build.template(std.get(block, 'ip_configuration', null)),
         kms_key_name: build.template(std.get(block, 'kms_key_name', null)),
@@ -7016,7 +7021,7 @@ local provider(configuration) = {
     },
     dataplex_aspect_type(name, block): {
       local resource = blockType.resource('google_dataplex_aspect_type', name),
-      _: resource._({
+      _: resource._(block, {
         aspect_type_id: build.template(std.get(block, 'aspect_type_id', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -7042,7 +7047,7 @@ local provider(configuration) = {
     },
     dataplex_aspect_type_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_aspect_type_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         aspect_type_id: build.template(block.aspect_type_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7057,7 +7062,7 @@ local provider(configuration) = {
     },
     dataplex_aspect_type_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_aspect_type_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         aspect_type_id: build.template(block.aspect_type_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7072,7 +7077,7 @@ local provider(configuration) = {
     },
     dataplex_aspect_type_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_aspect_type_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         aspect_type_id: build.template(block.aspect_type_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -7085,7 +7090,7 @@ local provider(configuration) = {
     },
     dataplex_asset(name, block): {
       local resource = blockType.resource('google_dataplex_asset', name),
-      _: resource._({
+      _: resource._(block, {
         dataplex_zone: build.template(block.dataplex_zone),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -7115,7 +7120,7 @@ local provider(configuration) = {
     },
     dataplex_asset_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_asset_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         asset: build.template(block.asset),
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
@@ -7134,7 +7139,7 @@ local provider(configuration) = {
     },
     dataplex_asset_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_asset_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         asset: build.template(block.asset),
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
@@ -7153,7 +7158,7 @@ local provider(configuration) = {
     },
     dataplex_asset_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_asset_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         asset: build.template(block.asset),
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
@@ -7170,7 +7175,7 @@ local provider(configuration) = {
     },
     dataplex_datascan(name, block): {
       local resource = blockType.resource('google_dataplex_datascan', name),
-      _: resource._({
+      _: resource._(block, {
         data_scan_id: build.template(block.data_scan_id),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -7196,7 +7201,7 @@ local provider(configuration) = {
     },
     dataplex_datascan_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_datascan_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         data_scan_id: build.template(block.data_scan_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7211,7 +7216,7 @@ local provider(configuration) = {
     },
     dataplex_datascan_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_datascan_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         data_scan_id: build.template(block.data_scan_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7226,7 +7231,7 @@ local provider(configuration) = {
     },
     dataplex_datascan_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_datascan_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_scan_id: build.template(block.data_scan_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -7239,7 +7244,7 @@ local provider(configuration) = {
     },
     dataplex_entry_group(name, block): {
       local resource = blockType.resource('google_dataplex_entry_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         entry_group_id: build.template(std.get(block, 'entry_group_id', null)),
@@ -7263,7 +7268,7 @@ local provider(configuration) = {
     },
     dataplex_entry_group_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_entry_group_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group_id: build.template(block.entry_group_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7278,7 +7283,7 @@ local provider(configuration) = {
     },
     dataplex_entry_group_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_entry_group_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group_id: build.template(block.entry_group_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7293,7 +7298,7 @@ local provider(configuration) = {
     },
     dataplex_entry_group_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_entry_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group_id: build.template(block.entry_group_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -7306,7 +7311,7 @@ local provider(configuration) = {
     },
     dataplex_entry_type(name, block): {
       local resource = blockType.resource('google_dataplex_entry_type', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         entry_type_id: build.template(std.get(block, 'entry_type_id', null)),
@@ -7335,7 +7340,7 @@ local provider(configuration) = {
     },
     dataplex_entry_type_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_entry_type_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         entry_type_id: build.template(block.entry_type_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7350,7 +7355,7 @@ local provider(configuration) = {
     },
     dataplex_entry_type_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_entry_type_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         entry_type_id: build.template(block.entry_type_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7365,7 +7370,7 @@ local provider(configuration) = {
     },
     dataplex_entry_type_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_entry_type_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         entry_type_id: build.template(block.entry_type_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -7378,7 +7383,7 @@ local provider(configuration) = {
     },
     dataplex_lake(name, block): {
       local resource = blockType.resource('google_dataplex_lake', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -7404,7 +7409,7 @@ local provider(configuration) = {
     },
     dataplex_lake_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_lake_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7419,7 +7424,7 @@ local provider(configuration) = {
     },
     dataplex_lake_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_lake_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7434,7 +7439,7 @@ local provider(configuration) = {
     },
     dataplex_lake_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_lake_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
         policy_data: build.template(block.policy_data),
       }),
@@ -7447,7 +7452,7 @@ local provider(configuration) = {
     },
     dataplex_task(name, block): {
       local resource = blockType.resource('google_dataplex_task', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -7474,7 +7479,7 @@ local provider(configuration) = {
     },
     dataplex_task_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_task_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7491,7 +7496,7 @@ local provider(configuration) = {
     },
     dataplex_task_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_task_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7508,7 +7513,7 @@ local provider(configuration) = {
     },
     dataplex_task_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_task_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
         policy_data: build.template(block.policy_data),
         task_id: build.template(block.task_id),
@@ -7523,7 +7528,7 @@ local provider(configuration) = {
     },
     dataplex_zone(name, block): {
       local resource = blockType.resource('google_dataplex_zone', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -7551,7 +7556,7 @@ local provider(configuration) = {
     },
     dataplex_zone_iam_binding(name, block): {
       local resource = blockType.resource('google_dataplex_zone_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
         members: build.template(block.members),
@@ -7568,7 +7573,7 @@ local provider(configuration) = {
     },
     dataplex_zone_iam_member(name, block): {
       local resource = blockType.resource('google_dataplex_zone_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
         member: build.template(block.member),
@@ -7585,7 +7590,7 @@ local provider(configuration) = {
     },
     dataplex_zone_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_zone_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
         policy_data: build.template(block.policy_data),
@@ -7600,7 +7605,7 @@ local provider(configuration) = {
     },
     dataproc_autoscaling_policy(name, block): {
       local resource = blockType.resource('google_dataproc_autoscaling_policy', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         policy_id: build.template(block.policy_id),
       }),
@@ -7612,7 +7617,7 @@ local provider(configuration) = {
     },
     dataproc_autoscaling_policy_iam_binding(name, block): {
       local resource = blockType.resource('google_dataproc_autoscaling_policy_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         policy_id: build.template(block.policy_id),
         role: build.template(block.role),
@@ -7627,7 +7632,7 @@ local provider(configuration) = {
     },
     dataproc_autoscaling_policy_iam_member(name, block): {
       local resource = blockType.resource('google_dataproc_autoscaling_policy_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         policy_id: build.template(block.policy_id),
         role: build.template(block.role),
@@ -7642,7 +7647,7 @@ local provider(configuration) = {
     },
     dataproc_autoscaling_policy_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_autoscaling_policy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         policy_id: build.template(block.policy_id),
       }),
@@ -7655,7 +7660,7 @@ local provider(configuration) = {
     },
     dataproc_batch(name, block): {
       local resource = blockType.resource('google_dataproc_batch', name),
-      _: resource._({
+      _: resource._(block, {
         batch_id: build.template(std.get(block, 'batch_id', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -7680,7 +7685,7 @@ local provider(configuration) = {
     },
     dataproc_cluster(name, block): {
       local resource = blockType.resource('google_dataproc_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         graceful_decommission_timeout: build.template(std.get(block, 'graceful_decommission_timeout', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -7697,7 +7702,7 @@ local provider(configuration) = {
     },
     dataproc_cluster_iam_binding(name, block): {
       local resource = blockType.resource('google_dataproc_cluster_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7712,7 +7717,7 @@ local provider(configuration) = {
     },
     dataproc_cluster_iam_member(name, block): {
       local resource = blockType.resource('google_dataproc_cluster_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7727,7 +7732,7 @@ local provider(configuration) = {
     },
     dataproc_cluster_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_cluster_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         policy_data: build.template(block.policy_data),
       }),
@@ -7740,7 +7745,7 @@ local provider(configuration) = {
     },
     dataproc_gdc_application_environment(name, block): {
       local resource = blockType.resource('google_dataproc_gdc_application_environment', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         application_environment_id: build.template(std.get(block, 'application_environment_id', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -7768,7 +7773,7 @@ local provider(configuration) = {
     },
     dataproc_gdc_service_instance(name, block): {
       local resource = blockType.resource('google_dataproc_gdc_service_instance', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -7796,7 +7801,7 @@ local provider(configuration) = {
     },
     dataproc_job(name, block): {
       local resource = blockType.resource('google_dataproc_job', name),
-      _: resource._({
+      _: resource._(block, {
         force_delete: build.template(std.get(block, 'force_delete', null)),
         labels: build.template(std.get(block, 'labels', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -7814,7 +7819,7 @@ local provider(configuration) = {
     },
     dataproc_job_iam_binding(name, block): {
       local resource = blockType.resource('google_dataproc_job_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         job_id: build.template(block.job_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7829,7 +7834,7 @@ local provider(configuration) = {
     },
     dataproc_job_iam_member(name, block): {
       local resource = blockType.resource('google_dataproc_job_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         job_id: build.template(block.job_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7844,7 +7849,7 @@ local provider(configuration) = {
     },
     dataproc_job_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_job_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         job_id: build.template(block.job_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -7857,7 +7862,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_federation(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_federation', name),
-      _: resource._({
+      _: resource._(block, {
         federation_id: build.template(block.federation_id),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -7879,7 +7884,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_federation_iam_binding(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_federation_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         federation_id: build.template(block.federation_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -7894,7 +7899,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_federation_iam_member(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_federation_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         federation_id: build.template(block.federation_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -7909,7 +7914,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_federation_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_federation_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         federation_id: build.template(block.federation_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -7922,7 +7927,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_service(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_service', name),
-      _: resource._({
+      _: resource._(block, {
         database_type: build.template(std.get(block, 'database_type', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -7952,7 +7957,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_service_iam_binding(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_service_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         service_id: build.template(block.service_id),
@@ -7967,7 +7972,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_service_iam_member(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_service_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         service_id: build.template(block.service_id),
@@ -7982,7 +7987,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_service_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         service_id: build.template(block.service_id),
       }),
@@ -7995,7 +8000,7 @@ local provider(configuration) = {
     },
     dataproc_workflow_template(name, block): {
       local resource = blockType.resource('google_dataproc_workflow_template', name),
-      _: resource._({
+      _: resource._(block, {
         dag_timeout: build.template(std.get(block, 'dag_timeout', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -8015,7 +8020,7 @@ local provider(configuration) = {
     },
     datastream_connection_profile(name, block): {
       local resource = blockType.resource('google_datastream_connection_profile', name),
-      _: resource._({
+      _: resource._(block, {
         connection_profile_id: build.template(block.connection_profile_id),
         create_without_validation: build.template(std.get(block, 'create_without_validation', null)),
         display_name: build.template(block.display_name),
@@ -8035,7 +8040,7 @@ local provider(configuration) = {
     },
     datastream_private_connection(name, block): {
       local resource = blockType.resource('google_datastream_private_connection', name),
-      _: resource._({
+      _: resource._(block, {
         create_without_validation: build.template(std.get(block, 'create_without_validation', null)),
         display_name: build.template(block.display_name),
         labels: build.template(std.get(block, 'labels', null)),
@@ -8057,7 +8062,7 @@ local provider(configuration) = {
     },
     datastream_stream(name, block): {
       local resource = blockType.resource('google_datastream_stream', name),
-      _: resource._({
+      _: resource._(block, {
         create_without_validation: build.template(std.get(block, 'create_without_validation', null)),
         customer_managed_encryption_key: build.template(std.get(block, 'customer_managed_encryption_key', null)),
         desired_state: build.template(std.get(block, 'desired_state', null)),
@@ -8082,7 +8087,7 @@ local provider(configuration) = {
     },
     deployment_manager_deployment(name, block): {
       local resource = blockType.resource('google_deployment_manager_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         create_policy: build.template(std.get(block, 'create_policy', null)),
         delete_policy: build.template(std.get(block, 'delete_policy', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -8102,7 +8107,7 @@ local provider(configuration) = {
     },
     dialogflow_agent(name, block): {
       local resource = blockType.resource('google_dialogflow_agent', name),
-      _: resource._({
+      _: resource._(block, {
         avatar_uri: build.template(std.get(block, 'avatar_uri', null)),
         classification_threshold: build.template(std.get(block, 'classification_threshold', null)),
         default_language_code: build.template(block.default_language_code),
@@ -8130,7 +8135,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_agent(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_agent', name),
-      _: resource._({
+      _: resource._(block, {
         avatar_uri: build.template(std.get(block, 'avatar_uri', null)),
         default_language_code: build.template(block.default_language_code),
         description: build.template(std.get(block, 'description', null)),
@@ -8159,7 +8164,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_entity_type(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_entity_type', name),
-      _: resource._({
+      _: resource._(block, {
         auto_expansion_mode: build.template(std.get(block, 'auto_expansion_mode', null)),
         display_name: build.template(block.display_name),
         enable_fuzzy_extraction: build.template(std.get(block, 'enable_fuzzy_extraction', null)),
@@ -8180,7 +8185,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_environment(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_environment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         parent: build.template(std.get(block, 'parent', null)),
@@ -8194,7 +8199,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_flow(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_flow', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         is_default_start_flow: build.template(std.get(block, 'is_default_start_flow', null)),
@@ -8213,7 +8218,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_intent(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_intent', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         is_default_negative_intent: build.template(std.get(block, 'is_default_negative_intent', null)),
@@ -8240,7 +8245,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_page(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_page', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         language_code: build.template(std.get(block, 'language_code', null)),
         parent: build.template(std.get(block, 'parent', null)),
@@ -8255,7 +8260,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_security_settings(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_security_settings', name),
-      _: resource._({
+      _: resource._(block, {
         deidentify_template: build.template(std.get(block, 'deidentify_template', null)),
         display_name: build.template(block.display_name),
         inspect_template: build.template(std.get(block, 'inspect_template', null)),
@@ -8281,7 +8286,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_test_case(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_test_case', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         notes: build.template(std.get(block, 'notes', null)),
         parent: build.template(std.get(block, 'parent', null)),
@@ -8298,7 +8303,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_version(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_version', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         parent: build.template(std.get(block, 'parent', null)),
@@ -8314,7 +8319,7 @@ local provider(configuration) = {
     },
     dialogflow_cx_webhook(name, block): {
       local resource = blockType.resource('google_dialogflow_cx_webhook', name),
-      _: resource._({
+      _: resource._(block, {
         disabled: build.template(std.get(block, 'disabled', null)),
         display_name: build.template(block.display_name),
         enable_spell_correction: build.template(std.get(block, 'enable_spell_correction', null)),
@@ -8336,7 +8341,7 @@ local provider(configuration) = {
     },
     dialogflow_entity_type(name, block): {
       local resource = blockType.resource('google_dialogflow_entity_type', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         enable_fuzzy_extraction: build.template(std.get(block, 'enable_fuzzy_extraction', null)),
         kind: build.template(block.kind),
@@ -8350,7 +8355,7 @@ local provider(configuration) = {
     },
     dialogflow_fulfillment(name, block): {
       local resource = blockType.resource('google_dialogflow_fulfillment', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         enabled: build.template(std.get(block, 'enabled', null)),
       }),
@@ -8362,7 +8367,7 @@ local provider(configuration) = {
     },
     dialogflow_intent(name, block): {
       local resource = blockType.resource('google_dialogflow_intent', name),
-      _: resource._({
+      _: resource._(block, {
         default_response_platforms: build.template(std.get(block, 'default_response_platforms', null)),
         display_name: build.template(block.display_name),
         events: build.template(std.get(block, 'events', null)),
@@ -8387,7 +8392,7 @@ local provider(configuration) = {
     },
     discovery_engine_chat_engine(name, block): {
       local resource = blockType.resource('google_discovery_engine_chat_engine', name),
-      _: resource._({
+      _: resource._(block, {
         collection_id: build.template(block.collection_id),
         data_store_ids: build.template(block.data_store_ids),
         display_name: build.template(block.display_name),
@@ -8410,7 +8415,7 @@ local provider(configuration) = {
     },
     discovery_engine_data_store(name, block): {
       local resource = blockType.resource('google_discovery_engine_data_store', name),
-      _: resource._({
+      _: resource._(block, {
         content_config: build.template(block.content_config),
         create_advanced_site_search: build.template(std.get(block, 'create_advanced_site_search', null)),
         data_store_id: build.template(block.data_store_id),
@@ -8436,7 +8441,7 @@ local provider(configuration) = {
     },
     discovery_engine_schema(name, block): {
       local resource = blockType.resource('google_discovery_engine_schema', name),
-      _: resource._({
+      _: resource._(block, {
         data_store_id: build.template(block.data_store_id),
         json_schema: build.template(std.get(block, 'json_schema', null)),
         location: build.template(block.location),
@@ -8452,7 +8457,7 @@ local provider(configuration) = {
     },
     discovery_engine_search_engine(name, block): {
       local resource = blockType.resource('google_discovery_engine_search_engine', name),
-      _: resource._({
+      _: resource._(block, {
         collection_id: build.template(block.collection_id),
         data_store_ids: build.template(block.data_store_ids),
         display_name: build.template(block.display_name),
@@ -8474,7 +8479,7 @@ local provider(configuration) = {
     },
     discovery_engine_target_site(name, block): {
       local resource = blockType.resource('google_discovery_engine_target_site', name),
-      _: resource._({
+      _: resource._(block, {
         data_store_id: build.template(block.data_store_id),
         exact_match: build.template(std.get(block, 'exact_match', null)),
         location: build.template(block.location),
@@ -8499,7 +8504,7 @@ local provider(configuration) = {
     },
     dns_managed_zone(name, block): {
       local resource = blockType.resource('google_dns_managed_zone', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         dns_name: build.template(block.dns_name),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -8523,7 +8528,7 @@ local provider(configuration) = {
     },
     dns_managed_zone_iam_binding(name, block): {
       local resource = blockType.resource('google_dns_managed_zone_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         managed_zone: build.template(block.managed_zone),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -8537,7 +8542,7 @@ local provider(configuration) = {
     },
     dns_managed_zone_iam_member(name, block): {
       local resource = blockType.resource('google_dns_managed_zone_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         managed_zone: build.template(block.managed_zone),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -8551,7 +8556,7 @@ local provider(configuration) = {
     },
     dns_managed_zone_iam_policy(name, block): {
       local resource = blockType.resource('google_dns_managed_zone_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         managed_zone: build.template(block.managed_zone),
         policy_data: build.template(block.policy_data),
       }),
@@ -8563,7 +8568,7 @@ local provider(configuration) = {
     },
     dns_policy(name, block): {
       local resource = blockType.resource('google_dns_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         enable_inbound_forwarding: build.template(std.get(block, 'enable_inbound_forwarding', null)),
         enable_logging: build.template(std.get(block, 'enable_logging', null)),
@@ -8578,7 +8583,7 @@ local provider(configuration) = {
     },
     dns_record_set(name, block): {
       local resource = blockType.resource('google_dns_record_set', name),
-      _: resource._({
+      _: resource._(block, {
         managed_zone: build.template(block.managed_zone),
         name: build.template(block.name),
         rrdatas: build.template(std.get(block, 'rrdatas', null)),
@@ -8595,7 +8600,7 @@ local provider(configuration) = {
     },
     dns_response_policy(name, block): {
       local resource = blockType.resource('google_dns_response_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         response_policy_name: build.template(block.response_policy_name),
       }),
@@ -8606,7 +8611,7 @@ local provider(configuration) = {
     },
     dns_response_policy_rule(name, block): {
       local resource = blockType.resource('google_dns_response_policy_rule', name),
-      _: resource._({
+      _: resource._(block, {
         dns_name: build.template(block.dns_name),
         response_policy: build.template(block.response_policy),
         rule_name: build.template(block.rule_name),
@@ -8619,7 +8624,7 @@ local provider(configuration) = {
     },
     document_ai_processor(name, block): {
       local resource = blockType.resource('google_document_ai_processor', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         kms_key_name: build.template(std.get(block, 'kms_key_name', null)),
         location: build.template(block.location),
@@ -8635,7 +8640,7 @@ local provider(configuration) = {
     },
     document_ai_processor_default_version(name, block): {
       local resource = blockType.resource('google_document_ai_processor_default_version', name),
-      _: resource._({
+      _: resource._(block, {
         processor: build.template(block.processor),
         version: build.template(block.version),
       }),
@@ -8645,7 +8650,7 @@ local provider(configuration) = {
     },
     document_ai_warehouse_document_schema(name, block): {
       local resource = blockType.resource('google_document_ai_warehouse_document_schema', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         document_is_folder: build.template(std.get(block, 'document_is_folder', null)),
         location: build.template(block.location),
@@ -8660,7 +8665,7 @@ local provider(configuration) = {
     },
     document_ai_warehouse_location(name, block): {
       local resource = blockType.resource('google_document_ai_warehouse_location', name),
-      _: resource._({
+      _: resource._(block, {
         access_control_mode: build.template(block.access_control_mode),
         database_type: build.template(block.database_type),
         document_creator_default_role: build.template(std.get(block, 'document_creator_default_role', null)),
@@ -8678,7 +8683,7 @@ local provider(configuration) = {
     },
     edgecontainer_cluster(name, block): {
       local resource = blockType.resource('google_edgecontainer_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -8706,7 +8711,7 @@ local provider(configuration) = {
     },
     edgecontainer_node_pool(name, block): {
       local resource = blockType.resource('google_edgecontainer_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -8731,7 +8736,7 @@ local provider(configuration) = {
     },
     edgecontainer_vpn_connection(name, block): {
       local resource = blockType.resource('google_edgecontainer_vpn_connection', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -8758,7 +8763,7 @@ local provider(configuration) = {
     },
     edgenetwork_network(name, block): {
       local resource = blockType.resource('google_edgenetwork_network', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -8782,7 +8787,7 @@ local provider(configuration) = {
     },
     edgenetwork_subnet(name, block): {
       local resource = blockType.resource('google_edgenetwork_subnet', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         ipv4_cidr: build.template(std.get(block, 'ipv4_cidr', null)),
         ipv6_cidr: build.template(std.get(block, 'ipv6_cidr', null)),
@@ -8812,7 +8817,7 @@ local provider(configuration) = {
     },
     endpoints_service(name, block): {
       local resource = blockType.resource('google_endpoints_service', name),
-      _: resource._({
+      _: resource._(block, {
         grpc_config: build.template(std.get(block, 'grpc_config', null)),
         openapi_config: build.template(std.get(block, 'openapi_config', null)),
         protoc_output_base64: build.template(std.get(block, 'protoc_output_base64', null)),
@@ -8831,7 +8836,7 @@ local provider(configuration) = {
     },
     endpoints_service_consumers_iam_binding(name, block): {
       local resource = blockType.resource('google_endpoints_service_consumers_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         consumer_project: build.template(block.consumer_project),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -8846,7 +8851,7 @@ local provider(configuration) = {
     },
     endpoints_service_consumers_iam_member(name, block): {
       local resource = blockType.resource('google_endpoints_service_consumers_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         consumer_project: build.template(block.consumer_project),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -8861,7 +8866,7 @@ local provider(configuration) = {
     },
     endpoints_service_consumers_iam_policy(name, block): {
       local resource = blockType.resource('google_endpoints_service_consumers_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         consumer_project: build.template(block.consumer_project),
         policy_data: build.template(block.policy_data),
         service_name: build.template(block.service_name),
@@ -8874,7 +8879,7 @@ local provider(configuration) = {
     },
     endpoints_service_iam_binding(name, block): {
       local resource = blockType.resource('google_endpoints_service_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         service_name: build.template(block.service_name),
@@ -8887,7 +8892,7 @@ local provider(configuration) = {
     },
     endpoints_service_iam_member(name, block): {
       local resource = blockType.resource('google_endpoints_service_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         service_name: build.template(block.service_name),
@@ -8900,7 +8905,7 @@ local provider(configuration) = {
     },
     endpoints_service_iam_policy(name, block): {
       local resource = blockType.resource('google_endpoints_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         service_name: build.template(block.service_name),
       }),
@@ -8911,7 +8916,7 @@ local provider(configuration) = {
     },
     essential_contacts_contact(name, block): {
       local resource = blockType.resource('google_essential_contacts_contact', name),
-      _: resource._({
+      _: resource._(block, {
         email: build.template(block.email),
         language_tag: build.template(block.language_tag),
         notification_category_subscriptions: build.template(block.notification_category_subscriptions),
@@ -8926,7 +8931,7 @@ local provider(configuration) = {
     },
     eventarc_channel(name, block): {
       local resource = blockType.resource('google_eventarc_channel', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key_name: build.template(std.get(block, 'crypto_key_name', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -8947,7 +8952,7 @@ local provider(configuration) = {
     },
     eventarc_google_channel_config(name, block): {
       local resource = blockType.resource('google_eventarc_google_channel_config', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key_name: build.template(std.get(block, 'crypto_key_name', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -8961,7 +8966,7 @@ local provider(configuration) = {
     },
     eventarc_trigger(name, block): {
       local resource = blockType.resource('google_eventarc_trigger', name),
-      _: resource._({
+      _: resource._(block, {
         channel: build.template(std.get(block, 'channel', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -8986,7 +8991,7 @@ local provider(configuration) = {
     },
     filestore_backup(name, block): {
       local resource = blockType.resource('google_filestore_backup', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -9014,7 +9019,7 @@ local provider(configuration) = {
     },
     filestore_instance(name, block): {
       local resource = blockType.resource('google_filestore_instance', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_protection_enabled: build.template(std.get(block, 'deletion_protection_enabled', null)),
         deletion_protection_reason: build.template(std.get(block, 'deletion_protection_reason', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -9043,7 +9048,7 @@ local provider(configuration) = {
     },
     filestore_snapshot(name, block): {
       local resource = blockType.resource('google_filestore_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance: build.template(block.instance),
         labels: build.template(std.get(block, 'labels', null)),
@@ -9065,7 +9070,7 @@ local provider(configuration) = {
     },
     firebase_app_check_app_attest_config(name, block): {
       local resource = blockType.resource('google_firebase_app_check_app_attest_config', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
       }),
       app_id: resource.field('app_id'),
@@ -9076,7 +9081,7 @@ local provider(configuration) = {
     },
     firebase_app_check_debug_token(name, block): {
       local resource = blockType.resource('google_firebase_app_check_debug_token', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         display_name: build.template(block.display_name),
         token: build.template(block.token),
@@ -9090,7 +9095,7 @@ local provider(configuration) = {
     },
     firebase_app_check_device_check_config(name, block): {
       local resource = blockType.resource('google_firebase_app_check_device_check_config', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         key_id: build.template(block.key_id),
         private_key: build.template(block.private_key),
@@ -9106,7 +9111,7 @@ local provider(configuration) = {
     },
     firebase_app_check_play_integrity_config(name, block): {
       local resource = blockType.resource('google_firebase_app_check_play_integrity_config', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
       }),
       app_id: resource.field('app_id'),
@@ -9117,7 +9122,7 @@ local provider(configuration) = {
     },
     firebase_app_check_recaptcha_enterprise_config(name, block): {
       local resource = blockType.resource('google_firebase_app_check_recaptcha_enterprise_config', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         site_key: build.template(block.site_key),
       }),
@@ -9130,7 +9135,7 @@ local provider(configuration) = {
     },
     firebase_app_check_recaptcha_v3_config(name, block): {
       local resource = blockType.resource('google_firebase_app_check_recaptcha_v3_config', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         site_secret: build.template(block.site_secret),
       }),
@@ -9144,7 +9149,7 @@ local provider(configuration) = {
     },
     firebase_app_check_service_config(name, block): {
       local resource = blockType.resource('google_firebase_app_check_service_config', name),
-      _: resource._({
+      _: resource._(block, {
         enforcement_mode: build.template(std.get(block, 'enforcement_mode', null)),
         service_id: build.template(block.service_id),
       }),
@@ -9156,7 +9161,7 @@ local provider(configuration) = {
     },
     firebaserules_release(name, block): {
       local resource = blockType.resource('google_firebaserules_release', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         ruleset_name: build.template(block.ruleset_name),
       }),
@@ -9170,7 +9175,7 @@ local provider(configuration) = {
     },
     firebaserules_ruleset(name, block): {
       local resource = blockType.resource('google_firebaserules_ruleset', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       create_time: resource.field('create_time'),
       id: resource.field('id'),
@@ -9180,7 +9185,7 @@ local provider(configuration) = {
     },
     firestore_backup_schedule(name, block): {
       local resource = blockType.resource('google_firestore_backup_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(std.get(block, 'database', null)),
         retention: build.template(block.retention),
       }),
@@ -9192,7 +9197,7 @@ local provider(configuration) = {
     },
     firestore_database(name, block): {
       local resource = blockType.resource('google_firestore_database', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         location_id: build.template(block.location_id),
         name: build.template(block.name),
@@ -9219,7 +9224,7 @@ local provider(configuration) = {
     },
     firestore_document(name, block): {
       local resource = blockType.resource('google_firestore_document', name),
-      _: resource._({
+      _: resource._(block, {
         collection: build.template(block.collection),
         database: build.template(std.get(block, 'database', null)),
         document_id: build.template(block.document_id),
@@ -9238,7 +9243,7 @@ local provider(configuration) = {
     },
     firestore_field(name, block): {
       local resource = blockType.resource('google_firestore_field', name),
-      _: resource._({
+      _: resource._(block, {
         collection: build.template(block.collection),
         database: build.template(std.get(block, 'database', null)),
         field: build.template(block.field),
@@ -9252,7 +9257,7 @@ local provider(configuration) = {
     },
     firestore_index(name, block): {
       local resource = blockType.resource('google_firestore_index', name),
-      _: resource._({
+      _: resource._(block, {
         api_scope: build.template(std.get(block, 'api_scope', null)),
         collection: build.template(block.collection),
         database: build.template(std.get(block, 'database', null)),
@@ -9268,7 +9273,7 @@ local provider(configuration) = {
     },
     folder(name, block): {
       local resource = blockType.resource('google_folder', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         display_name: build.template(block.display_name),
         parent: build.template(block.parent),
@@ -9286,7 +9291,7 @@ local provider(configuration) = {
     },
     folder_access_approval_settings(name, block): {
       local resource = blockType.resource('google_folder_access_approval_settings', name),
-      _: resource._({
+      _: resource._(block, {
         active_key_version: build.template(std.get(block, 'active_key_version', null)),
         folder_id: build.template(block.folder_id),
       }),
@@ -9301,7 +9306,7 @@ local provider(configuration) = {
     },
     folder_iam_audit_config(name, block): {
       local resource = blockType.resource('google_folder_iam_audit_config', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
         service: build.template(block.service),
       }),
@@ -9312,7 +9317,7 @@ local provider(configuration) = {
     },
     folder_iam_binding(name, block): {
       local resource = blockType.resource('google_folder_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -9325,7 +9330,7 @@ local provider(configuration) = {
     },
     folder_iam_member(name, block): {
       local resource = blockType.resource('google_folder_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -9338,7 +9343,7 @@ local provider(configuration) = {
     },
     folder_iam_policy(name, block): {
       local resource = blockType.resource('google_folder_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
         policy_data: build.template(block.policy_data),
       }),
@@ -9349,7 +9354,7 @@ local provider(configuration) = {
     },
     folder_organization_policy(name, block): {
       local resource = blockType.resource('google_folder_organization_policy', name),
-      _: resource._({
+      _: resource._(block, {
         constraint: build.template(block.constraint),
         folder: build.template(block.folder),
       }),
@@ -9362,7 +9367,7 @@ local provider(configuration) = {
     },
     gke_backup_backup_plan(name, block): {
       local resource = blockType.resource('google_gke_backup_backup_plan', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -9387,7 +9392,7 @@ local provider(configuration) = {
     },
     gke_backup_backup_plan_iam_binding(name, block): {
       local resource = blockType.resource('google_gke_backup_backup_plan_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -9402,7 +9407,7 @@ local provider(configuration) = {
     },
     gke_backup_backup_plan_iam_member(name, block): {
       local resource = blockType.resource('google_gke_backup_backup_plan_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -9417,7 +9422,7 @@ local provider(configuration) = {
     },
     gke_backup_backup_plan_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_backup_backup_plan_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -9430,7 +9435,7 @@ local provider(configuration) = {
     },
     gke_backup_restore_plan(name, block): {
       local resource = blockType.resource('google_gke_backup_restore_plan', name),
-      _: resource._({
+      _: resource._(block, {
         backup_plan: build.template(block.backup_plan),
         cluster: build.template(block.cluster),
         description: build.template(std.get(block, 'description', null)),
@@ -9454,7 +9459,7 @@ local provider(configuration) = {
     },
     gke_backup_restore_plan_iam_binding(name, block): {
       local resource = blockType.resource('google_gke_backup_restore_plan_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -9469,7 +9474,7 @@ local provider(configuration) = {
     },
     gke_backup_restore_plan_iam_member(name, block): {
       local resource = blockType.resource('google_gke_backup_restore_plan_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -9484,7 +9489,7 @@ local provider(configuration) = {
     },
     gke_backup_restore_plan_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_backup_restore_plan_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -9497,7 +9502,7 @@ local provider(configuration) = {
     },
     gke_hub_feature(name, block): {
       local resource = blockType.resource('google_gke_hub_feature', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
         name: build.template(std.get(block, 'name', null)),
@@ -9517,7 +9522,7 @@ local provider(configuration) = {
     },
     gke_hub_feature_iam_binding(name, block): {
       local resource = blockType.resource('google_gke_hub_feature_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -9532,7 +9537,7 @@ local provider(configuration) = {
     },
     gke_hub_feature_iam_member(name, block): {
       local resource = blockType.resource('google_gke_hub_feature_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -9547,7 +9552,7 @@ local provider(configuration) = {
     },
     gke_hub_feature_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_hub_feature_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -9560,7 +9565,7 @@ local provider(configuration) = {
     },
     gke_hub_feature_membership(name, block): {
       local resource = blockType.resource('google_gke_hub_feature_membership', name),
-      _: resource._({
+      _: resource._(block, {
         feature: build.template(block.feature),
         location: build.template(block.location),
         membership: build.template(block.membership),
@@ -9575,7 +9580,7 @@ local provider(configuration) = {
     },
     gke_hub_fleet(name, block): {
       local resource = blockType.resource('google_gke_hub_fleet', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
       }),
       create_time: resource.field('create_time'),
@@ -9589,7 +9594,7 @@ local provider(configuration) = {
     },
     gke_hub_membership(name, block): {
       local resource = blockType.resource('google_gke_hub_membership', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(std.get(block, 'location', null)),
         membership_id: build.template(block.membership_id),
@@ -9605,7 +9610,7 @@ local provider(configuration) = {
     },
     gke_hub_membership_binding(name, block): {
       local resource = blockType.resource('google_gke_hub_membership_binding', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
         membership_binding_id: build.template(block.membership_binding_id),
@@ -9630,7 +9635,7 @@ local provider(configuration) = {
     },
     gke_hub_membership_iam_binding(name, block): {
       local resource = blockType.resource('google_gke_hub_membership_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         membership_id: build.template(block.membership_id),
         role: build.template(block.role),
@@ -9645,7 +9650,7 @@ local provider(configuration) = {
     },
     gke_hub_membership_iam_member(name, block): {
       local resource = blockType.resource('google_gke_hub_membership_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         membership_id: build.template(block.membership_id),
         role: build.template(block.role),
@@ -9660,7 +9665,7 @@ local provider(configuration) = {
     },
     gke_hub_membership_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_hub_membership_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         membership_id: build.template(block.membership_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -9673,7 +9678,7 @@ local provider(configuration) = {
     },
     gke_hub_namespace(name, block): {
       local resource = blockType.resource('google_gke_hub_namespace', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         namespace_labels: build.template(std.get(block, 'namespace_labels', null)),
         scope: build.template(block.scope),
@@ -9698,7 +9703,7 @@ local provider(configuration) = {
     },
     gke_hub_scope(name, block): {
       local resource = blockType.resource('google_gke_hub_scope', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         namespace_labels: build.template(std.get(block, 'namespace_labels', null)),
         scope_id: build.template(block.scope_id),
@@ -9719,7 +9724,7 @@ local provider(configuration) = {
     },
     gke_hub_scope_iam_binding(name, block): {
       local resource = blockType.resource('google_gke_hub_scope_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         scope_id: build.template(block.scope_id),
@@ -9733,7 +9738,7 @@ local provider(configuration) = {
     },
     gke_hub_scope_iam_member(name, block): {
       local resource = blockType.resource('google_gke_hub_scope_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         scope_id: build.template(block.scope_id),
@@ -9747,7 +9752,7 @@ local provider(configuration) = {
     },
     gke_hub_scope_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_hub_scope_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         scope_id: build.template(block.scope_id),
       }),
@@ -9759,7 +9764,7 @@ local provider(configuration) = {
     },
     gke_hub_scope_rbac_role_binding(name, block): {
       local resource = blockType.resource('google_gke_hub_scope_rbac_role_binding', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(std.get(block, 'group', null)),
         labels: build.template(std.get(block, 'labels', null)),
         scope_id: build.template(block.scope_id),
@@ -9784,7 +9789,7 @@ local provider(configuration) = {
     },
     gkeonprem_bare_metal_admin_cluster(name, block): {
       local resource = blockType.resource('google_gkeonprem_bare_metal_admin_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         bare_metal_version: build.template(std.get(block, 'bare_metal_version', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -9814,7 +9819,7 @@ local provider(configuration) = {
     },
     gkeonprem_bare_metal_cluster(name, block): {
       local resource = blockType.resource('google_gkeonprem_bare_metal_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         admin_cluster_membership: build.template(block.admin_cluster_membership),
         annotations: build.template(std.get(block, 'annotations', null)),
         bare_metal_version: build.template(block.bare_metal_version),
@@ -9846,7 +9851,7 @@ local provider(configuration) = {
     },
     gkeonprem_bare_metal_node_pool(name, block): {
       local resource = blockType.resource('google_gkeonprem_bare_metal_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         bare_metal_cluster: build.template(block.bare_metal_cluster),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -9872,7 +9877,7 @@ local provider(configuration) = {
     },
     gkeonprem_vmware_cluster(name, block): {
       local resource = blockType.resource('google_gkeonprem_vmware_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         admin_cluster_membership: build.template(block.admin_cluster_membership),
         annotations: build.template(std.get(block, 'annotations', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -9909,7 +9914,7 @@ local provider(configuration) = {
     },
     gkeonprem_vmware_node_pool(name, block): {
       local resource = blockType.resource('google_gkeonprem_vmware_node_pool', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         location: build.template(block.location),
@@ -9936,7 +9941,7 @@ local provider(configuration) = {
     },
     healthcare_consent_store(name, block): {
       local resource = blockType.resource('google_healthcare_consent_store', name),
-      _: resource._({
+      _: resource._(block, {
         dataset: build.template(block.dataset),
         default_consent_ttl: build.template(std.get(block, 'default_consent_ttl', null)),
         enable_consent_create_on_update: build.template(std.get(block, 'enable_consent_create_on_update', null)),
@@ -9954,7 +9959,7 @@ local provider(configuration) = {
     },
     healthcare_consent_store_iam_binding(name, block): {
       local resource = blockType.resource('google_healthcare_consent_store_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         consent_store_id: build.template(block.consent_store_id),
         dataset: build.template(block.dataset),
         members: build.template(block.members),
@@ -9969,7 +9974,7 @@ local provider(configuration) = {
     },
     healthcare_consent_store_iam_member(name, block): {
       local resource = blockType.resource('google_healthcare_consent_store_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         consent_store_id: build.template(block.consent_store_id),
         dataset: build.template(block.dataset),
         member: build.template(block.member),
@@ -9984,7 +9989,7 @@ local provider(configuration) = {
     },
     healthcare_consent_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_consent_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         consent_store_id: build.template(block.consent_store_id),
         dataset: build.template(block.dataset),
         policy_data: build.template(block.policy_data),
@@ -9997,7 +10002,7 @@ local provider(configuration) = {
     },
     healthcare_dataset(name, block): {
       local resource = blockType.resource('google_healthcare_dataset', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
       }),
@@ -10010,7 +10015,7 @@ local provider(configuration) = {
     },
     healthcare_dataset_iam_binding(name, block): {
       local resource = blockType.resource('google_healthcare_dataset_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10023,7 +10028,7 @@ local provider(configuration) = {
     },
     healthcare_dataset_iam_member(name, block): {
       local resource = blockType.resource('google_healthcare_dataset_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10036,7 +10041,7 @@ local provider(configuration) = {
     },
     healthcare_dataset_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_dataset_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -10047,7 +10052,7 @@ local provider(configuration) = {
     },
     healthcare_dicom_store(name, block): {
       local resource = blockType.resource('google_healthcare_dicom_store', name),
-      _: resource._({
+      _: resource._(block, {
         dataset: build.template(block.dataset),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -10062,7 +10067,7 @@ local provider(configuration) = {
     },
     healthcare_dicom_store_iam_binding(name, block): {
       local resource = blockType.resource('google_healthcare_dicom_store_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         dicom_store_id: build.template(block.dicom_store_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10075,7 +10080,7 @@ local provider(configuration) = {
     },
     healthcare_dicom_store_iam_member(name, block): {
       local resource = blockType.resource('google_healthcare_dicom_store_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         dicom_store_id: build.template(block.dicom_store_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10088,7 +10093,7 @@ local provider(configuration) = {
     },
     healthcare_dicom_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_dicom_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dicom_store_id: build.template(block.dicom_store_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -10099,7 +10104,7 @@ local provider(configuration) = {
     },
     healthcare_fhir_store(name, block): {
       local resource = blockType.resource('google_healthcare_fhir_store', name),
-      _: resource._({
+      _: resource._(block, {
         dataset: build.template(block.dataset),
         default_search_handling_strict: build.template(std.get(block, 'default_search_handling_strict', null)),
         disable_referential_integrity: build.template(std.get(block, 'disable_referential_integrity', null)),
@@ -10127,7 +10132,7 @@ local provider(configuration) = {
     },
     healthcare_fhir_store_iam_binding(name, block): {
       local resource = blockType.resource('google_healthcare_fhir_store_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         fhir_store_id: build.template(block.fhir_store_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10140,7 +10145,7 @@ local provider(configuration) = {
     },
     healthcare_fhir_store_iam_member(name, block): {
       local resource = blockType.resource('google_healthcare_fhir_store_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         fhir_store_id: build.template(block.fhir_store_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10153,7 +10158,7 @@ local provider(configuration) = {
     },
     healthcare_fhir_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_fhir_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         fhir_store_id: build.template(block.fhir_store_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -10164,7 +10169,7 @@ local provider(configuration) = {
     },
     healthcare_hl7_v2_store(name, block): {
       local resource = blockType.resource('google_healthcare_hl7_v2_store', name),
-      _: resource._({
+      _: resource._(block, {
         dataset: build.template(block.dataset),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -10181,7 +10186,7 @@ local provider(configuration) = {
     },
     healthcare_hl7_v2_store_iam_binding(name, block): {
       local resource = blockType.resource('google_healthcare_hl7_v2_store_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         hl7_v2_store_id: build.template(block.hl7_v2_store_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10194,7 +10199,7 @@ local provider(configuration) = {
     },
     healthcare_hl7_v2_store_iam_member(name, block): {
       local resource = blockType.resource('google_healthcare_hl7_v2_store_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         hl7_v2_store_id: build.template(block.hl7_v2_store_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10207,7 +10212,7 @@ local provider(configuration) = {
     },
     healthcare_hl7_v2_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_hl7_v2_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         hl7_v2_store_id: build.template(block.hl7_v2_store_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -10218,7 +10223,7 @@ local provider(configuration) = {
     },
     healthcare_pipeline_job(name, block): {
       local resource = blockType.resource('google_healthcare_pipeline_job', name),
-      _: resource._({
+      _: resource._(block, {
         dataset: build.template(block.dataset),
         disable_lineage: build.template(std.get(block, 'disable_lineage', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -10237,7 +10242,7 @@ local provider(configuration) = {
     },
     healthcare_workspace(name, block): {
       local resource = blockType.resource('google_healthcare_workspace', name),
-      _: resource._({
+      _: resource._(block, {
         dataset: build.template(block.dataset),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -10251,7 +10256,7 @@ local provider(configuration) = {
     },
     iam_access_boundary_policy(name, block): {
       local resource = blockType.resource('google_iam_access_boundary_policy', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(block.name),
         parent: build.template(block.parent),
@@ -10264,7 +10269,7 @@ local provider(configuration) = {
     },
     iam_deny_policy(name, block): {
       local resource = blockType.resource('google_iam_deny_policy', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(block.name),
         parent: build.template(block.parent),
@@ -10277,7 +10282,7 @@ local provider(configuration) = {
     },
     iam_workforce_pool(name, block): {
       local resource = blockType.resource('google_iam_workforce_pool', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -10299,7 +10304,7 @@ local provider(configuration) = {
     },
     iam_workforce_pool_provider(name, block): {
       local resource = blockType.resource('google_iam_workforce_pool_provider', name),
-      _: resource._({
+      _: resource._(block, {
         attribute_condition: build.template(std.get(block, 'attribute_condition', null)),
         attribute_mapping: build.template(std.get(block, 'attribute_mapping', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -10323,7 +10328,7 @@ local provider(configuration) = {
     },
     iam_workload_identity_pool(name, block): {
       local resource = blockType.resource('google_iam_workload_identity_pool', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -10340,7 +10345,7 @@ local provider(configuration) = {
     },
     iam_workload_identity_pool_provider(name, block): {
       local resource = blockType.resource('google_iam_workload_identity_pool_provider', name),
-      _: resource._({
+      _: resource._(block, {
         attribute_condition: build.template(std.get(block, 'attribute_condition', null)),
         attribute_mapping: build.template(std.get(block, 'attribute_mapping', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -10363,7 +10368,7 @@ local provider(configuration) = {
     },
     iap_app_engine_service_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_app_engine_service_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10379,7 +10384,7 @@ local provider(configuration) = {
     },
     iap_app_engine_service_iam_member(name, block): {
       local resource = blockType.resource('google_iap_app_engine_service_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10395,7 +10400,7 @@ local provider(configuration) = {
     },
     iap_app_engine_service_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_app_engine_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         policy_data: build.template(block.policy_data),
         service: build.template(block.service),
@@ -10409,7 +10414,7 @@ local provider(configuration) = {
     },
     iap_app_engine_version_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_app_engine_version_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10427,7 +10432,7 @@ local provider(configuration) = {
     },
     iap_app_engine_version_iam_member(name, block): {
       local resource = blockType.resource('google_iap_app_engine_version_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10445,7 +10450,7 @@ local provider(configuration) = {
     },
     iap_app_engine_version_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_app_engine_version_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         policy_data: build.template(block.policy_data),
         service: build.template(block.service),
@@ -10461,7 +10466,7 @@ local provider(configuration) = {
     },
     iap_brand(name, block): {
       local resource = blockType.resource('google_iap_brand', name),
-      _: resource._({
+      _: resource._(block, {
         application_title: build.template(block.application_title),
         support_email: build.template(block.support_email),
       }),
@@ -10474,7 +10479,7 @@ local provider(configuration) = {
     },
     iap_client(name, block): {
       local resource = blockType.resource('google_iap_client', name),
-      _: resource._({
+      _: resource._(block, {
         brand: build.template(block.brand),
         display_name: build.template(block.display_name),
       }),
@@ -10486,7 +10491,7 @@ local provider(configuration) = {
     },
     iap_settings(name, block): {
       local resource = blockType.resource('google_iap_settings', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -10494,7 +10499,7 @@ local provider(configuration) = {
     },
     iap_tunnel_dest_group(name, block): {
       local resource = blockType.resource('google_iap_tunnel_dest_group', name),
-      _: resource._({
+      _: resource._(block, {
         cidrs: build.template(std.get(block, 'cidrs', null)),
         fqdns: build.template(std.get(block, 'fqdns', null)),
         group_name: build.template(block.group_name),
@@ -10509,7 +10514,7 @@ local provider(configuration) = {
     },
     iap_tunnel_dest_group_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_tunnel_dest_group_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         dest_group: build.template(block.dest_group),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10524,7 +10529,7 @@ local provider(configuration) = {
     },
     iap_tunnel_dest_group_iam_member(name, block): {
       local resource = blockType.resource('google_iap_tunnel_dest_group_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         dest_group: build.template(block.dest_group),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10539,7 +10544,7 @@ local provider(configuration) = {
     },
     iap_tunnel_dest_group_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_tunnel_dest_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dest_group: build.template(block.dest_group),
         policy_data: build.template(block.policy_data),
       }),
@@ -10552,7 +10557,7 @@ local provider(configuration) = {
     },
     iap_tunnel_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_tunnel_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
       }),
@@ -10564,7 +10569,7 @@ local provider(configuration) = {
     },
     iap_tunnel_iam_member(name, block): {
       local resource = blockType.resource('google_iap_tunnel_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
       }),
@@ -10576,7 +10581,7 @@ local provider(configuration) = {
     },
     iap_tunnel_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_tunnel_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
       }),
       etag: resource.field('etag'),
@@ -10586,7 +10591,7 @@ local provider(configuration) = {
     },
     iap_tunnel_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_tunnel_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10601,7 +10606,7 @@ local provider(configuration) = {
     },
     iap_tunnel_instance_iam_member(name, block): {
       local resource = blockType.resource('google_iap_tunnel_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10616,7 +10621,7 @@ local provider(configuration) = {
     },
     iap_tunnel_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_tunnel_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         policy_data: build.template(block.policy_data),
       }),
@@ -10629,7 +10634,7 @@ local provider(configuration) = {
     },
     iap_web_backend_service_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_web_backend_service_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         web_backend_service: build.template(block.web_backend_service),
@@ -10643,7 +10648,7 @@ local provider(configuration) = {
     },
     iap_web_backend_service_iam_member(name, block): {
       local resource = blockType.resource('google_iap_web_backend_service_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         web_backend_service: build.template(block.web_backend_service),
@@ -10657,7 +10662,7 @@ local provider(configuration) = {
     },
     iap_web_backend_service_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_backend_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         web_backend_service: build.template(block.web_backend_service),
       }),
@@ -10669,7 +10674,7 @@ local provider(configuration) = {
     },
     iap_web_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_web_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
       }),
@@ -10681,7 +10686,7 @@ local provider(configuration) = {
     },
     iap_web_iam_member(name, block): {
       local resource = blockType.resource('google_iap_web_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
       }),
@@ -10693,7 +10698,7 @@ local provider(configuration) = {
     },
     iap_web_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
       }),
       etag: resource.field('etag'),
@@ -10703,7 +10708,7 @@ local provider(configuration) = {
     },
     iap_web_region_backend_service_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_web_region_backend_service_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         web_region_backend_service: build.template(block.web_region_backend_service),
@@ -10718,7 +10723,7 @@ local provider(configuration) = {
     },
     iap_web_region_backend_service_iam_member(name, block): {
       local resource = blockType.resource('google_iap_web_region_backend_service_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         web_region_backend_service: build.template(block.web_region_backend_service),
@@ -10733,7 +10738,7 @@ local provider(configuration) = {
     },
     iap_web_region_backend_service_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_region_backend_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         web_region_backend_service: build.template(block.web_region_backend_service),
       }),
@@ -10746,7 +10751,7 @@ local provider(configuration) = {
     },
     iap_web_type_app_engine_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_web_type_app_engine_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -10760,7 +10765,7 @@ local provider(configuration) = {
     },
     iap_web_type_app_engine_iam_member(name, block): {
       local resource = blockType.resource('google_iap_web_type_app_engine_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -10774,7 +10779,7 @@ local provider(configuration) = {
     },
     iap_web_type_app_engine_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_type_app_engine_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -10786,7 +10791,7 @@ local provider(configuration) = {
     },
     iap_web_type_compute_iam_binding(name, block): {
       local resource = blockType.resource('google_iap_web_type_compute_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
       }),
@@ -10798,7 +10803,7 @@ local provider(configuration) = {
     },
     iap_web_type_compute_iam_member(name, block): {
       local resource = blockType.resource('google_iap_web_type_compute_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
       }),
@@ -10810,7 +10815,7 @@ local provider(configuration) = {
     },
     iap_web_type_compute_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_type_compute_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
       }),
       etag: resource.field('etag'),
@@ -10820,7 +10825,7 @@ local provider(configuration) = {
     },
     identity_platform_config(name, block): {
       local resource = blockType.resource('google_identity_platform_config', name),
-      _: resource._({
+      _: resource._(block, {
         autodelete_anonymous_users: build.template(std.get(block, 'autodelete_anonymous_users', null)),
       }),
       authorized_domains: resource.field('authorized_domains'),
@@ -10831,7 +10836,7 @@ local provider(configuration) = {
     },
     identity_platform_default_supported_idp_config(name, block): {
       local resource = blockType.resource('google_identity_platform_default_supported_idp_config', name),
-      _: resource._({
+      _: resource._(block, {
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -10847,7 +10852,7 @@ local provider(configuration) = {
     },
     identity_platform_inbound_saml_config(name, block): {
       local resource = blockType.resource('google_identity_platform_inbound_saml_config', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -10860,7 +10865,7 @@ local provider(configuration) = {
     },
     identity_platform_oauth_idp_config(name, block): {
       local resource = blockType.resource('google_identity_platform_oauth_idp_config', name),
-      _: resource._({
+      _: resource._(block, {
         client_id: build.template(block.client_id),
         client_secret: build.template(std.get(block, 'client_secret', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -10879,7 +10884,7 @@ local provider(configuration) = {
     },
     identity_platform_tenant(name, block): {
       local resource = blockType.resource('google_identity_platform_tenant', name),
-      _: resource._({
+      _: resource._(block, {
         allow_password_signup: build.template(std.get(block, 'allow_password_signup', null)),
         disable_auth: build.template(std.get(block, 'disable_auth', null)),
         display_name: build.template(block.display_name),
@@ -10895,7 +10900,7 @@ local provider(configuration) = {
     },
     identity_platform_tenant_default_supported_idp_config(name, block): {
       local resource = blockType.resource('google_identity_platform_tenant_default_supported_idp_config', name),
-      _: resource._({
+      _: resource._(block, {
         client_id: build.template(block.client_id),
         client_secret: build.template(block.client_secret),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -10913,7 +10918,7 @@ local provider(configuration) = {
     },
     identity_platform_tenant_inbound_saml_config(name, block): {
       local resource = blockType.resource('google_identity_platform_tenant_inbound_saml_config', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         enabled: build.template(std.get(block, 'enabled', null)),
         name: build.template(block.name),
@@ -10928,7 +10933,7 @@ local provider(configuration) = {
     },
     identity_platform_tenant_oauth_idp_config(name, block): {
       local resource = blockType.resource('google_identity_platform_tenant_oauth_idp_config', name),
-      _: resource._({
+      _: resource._(block, {
         client_id: build.template(block.client_id),
         client_secret: build.template(std.get(block, 'client_secret', null)),
         display_name: build.template(block.display_name),
@@ -10949,7 +10954,7 @@ local provider(configuration) = {
     },
     integration_connectors_connection(name, block): {
       local resource = blockType.resource('google_integration_connectors_connection', name),
-      _: resource._({
+      _: resource._(block, {
         connector_version: build.template(block.connector_version),
         description: build.template(std.get(block, 'description', null)),
         eventing_enablement_type: build.template(std.get(block, 'eventing_enablement_type', null)),
@@ -10982,7 +10987,7 @@ local provider(configuration) = {
     },
     integration_connectors_endpoint_attachment(name, block): {
       local resource = blockType.resource('google_integration_connectors_endpoint_attachment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         endpoint_global_access: build.template(std.get(block, 'endpoint_global_access', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -11006,7 +11011,7 @@ local provider(configuration) = {
     },
     integration_connectors_managed_zone(name, block): {
       local resource = blockType.resource('google_integration_connectors_managed_zone', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         dns: build.template(block.dns),
         labels: build.template(std.get(block, 'labels', null)),
@@ -11029,7 +11034,7 @@ local provider(configuration) = {
     },
     integrations_auth_config(name, block): {
       local resource = blockType.resource('google_integrations_auth_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         expiry_notification_duration: build.template(std.get(block, 'expiry_notification_duration', null)),
@@ -11059,7 +11064,7 @@ local provider(configuration) = {
     },
     integrations_client(name, block): {
       local resource = blockType.resource('google_integrations_client', name),
-      _: resource._({
+      _: resource._(block, {
         create_sample_integrations: build.template(std.get(block, 'create_sample_integrations', null)),
         location: build.template(block.location),
         run_as_service_account: build.template(std.get(block, 'run_as_service_account', null)),
@@ -11072,7 +11077,7 @@ local provider(configuration) = {
     },
     kms_crypto_key(name, block): {
       local resource = blockType.resource('google_kms_crypto_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_ring: build.template(block.key_ring),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -11096,7 +11101,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_iam_binding(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key_id: build.template(block.crypto_key_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -11109,7 +11114,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_iam_member(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key_id: build.template(block.crypto_key_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -11122,7 +11127,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_iam_policy(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key_id: build.template(block.crypto_key_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -11133,7 +11138,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_version(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_version', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key: build.template(block.crypto_key),
       }),
       algorithm: resource.field('algorithm'),
@@ -11147,7 +11152,7 @@ local provider(configuration) = {
     },
     kms_ekm_connection(name, block): {
       local resource = blockType.resource('google_kms_ekm_connection', name),
-      _: resource._({
+      _: resource._(block, {
         key_management_mode: build.template(std.get(block, 'key_management_mode', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -11163,7 +11168,7 @@ local provider(configuration) = {
     },
     kms_ekm_connection_iam_binding(name, block): {
       local resource = blockType.resource('google_kms_ekm_connection_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -11178,7 +11183,7 @@ local provider(configuration) = {
     },
     kms_ekm_connection_iam_member(name, block): {
       local resource = blockType.resource('google_kms_ekm_connection_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -11193,7 +11198,7 @@ local provider(configuration) = {
     },
     kms_ekm_connection_iam_policy(name, block): {
       local resource = blockType.resource('google_kms_ekm_connection_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -11206,7 +11211,7 @@ local provider(configuration) = {
     },
     kms_key_ring(name, block): {
       local resource = blockType.resource('google_kms_key_ring', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
       }),
@@ -11217,7 +11222,7 @@ local provider(configuration) = {
     },
     kms_key_ring_iam_binding(name, block): {
       local resource = blockType.resource('google_kms_key_ring_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         key_ring_id: build.template(block.key_ring_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -11230,7 +11235,7 @@ local provider(configuration) = {
     },
     kms_key_ring_iam_member(name, block): {
       local resource = blockType.resource('google_kms_key_ring_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         key_ring_id: build.template(block.key_ring_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -11243,7 +11248,7 @@ local provider(configuration) = {
     },
     kms_key_ring_iam_policy(name, block): {
       local resource = blockType.resource('google_kms_key_ring_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         key_ring_id: build.template(block.key_ring_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -11254,7 +11259,7 @@ local provider(configuration) = {
     },
     kms_key_ring_import_job(name, block): {
       local resource = blockType.resource('google_kms_key_ring_import_job', name),
-      _: resource._({
+      _: resource._(block, {
         import_job_id: build.template(block.import_job_id),
         import_method: build.template(block.import_method),
         key_ring: build.template(block.key_ring),
@@ -11273,7 +11278,7 @@ local provider(configuration) = {
     },
     kms_secret_ciphertext(name, block): {
       local resource = blockType.resource('google_kms_secret_ciphertext', name),
-      _: resource._({
+      _: resource._(block, {
         additional_authenticated_data: build.template(std.get(block, 'additional_authenticated_data', null)),
         crypto_key: build.template(block.crypto_key),
         plaintext: build.template(block.plaintext),
@@ -11286,7 +11291,7 @@ local provider(configuration) = {
     },
     logging_billing_account_bucket_config(name, block): {
       local resource = blockType.resource('google_logging_billing_account_bucket_config', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account: build.template(block.billing_account),
         bucket_id: build.template(block.bucket_id),
         location: build.template(block.location),
@@ -11303,7 +11308,7 @@ local provider(configuration) = {
     },
     logging_billing_account_exclusion(name, block): {
       local resource = blockType.resource('google_logging_billing_account_exclusion', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account: build.template(block.billing_account),
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
@@ -11319,7 +11324,7 @@ local provider(configuration) = {
     },
     logging_billing_account_sink(name, block): {
       local resource = blockType.resource('google_logging_billing_account_sink', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account: build.template(block.billing_account),
         description: build.template(std.get(block, 'description', null)),
         destination: build.template(block.destination),
@@ -11338,7 +11343,7 @@ local provider(configuration) = {
     },
     logging_folder_bucket_config(name, block): {
       local resource = blockType.resource('google_logging_folder_bucket_config', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_id: build.template(block.bucket_id),
         folder: build.template(block.folder),
         location: build.template(block.location),
@@ -11355,7 +11360,7 @@ local provider(configuration) = {
     },
     logging_folder_exclusion(name, block): {
       local resource = blockType.resource('google_logging_folder_exclusion', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         filter: build.template(block.filter),
@@ -11371,7 +11376,7 @@ local provider(configuration) = {
     },
     logging_folder_settings(name, block): {
       local resource = blockType.resource('google_logging_folder_settings', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
       }),
       disable_default_sink: resource.field('disable_default_sink'),
@@ -11385,7 +11390,7 @@ local provider(configuration) = {
     },
     logging_folder_sink(name, block): {
       local resource = blockType.resource('google_logging_folder_sink', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         destination: build.template(block.destination),
         disabled: build.template(std.get(block, 'disabled', null)),
@@ -11408,7 +11413,7 @@ local provider(configuration) = {
     },
     logging_linked_dataset(name, block): {
       local resource = blockType.resource('google_logging_linked_dataset', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         description: build.template(std.get(block, 'description', null)),
         link_id: build.template(block.link_id),
@@ -11425,7 +11430,7 @@ local provider(configuration) = {
     },
     logging_log_scope(name, block): {
       local resource = blockType.resource('google_logging_log_scope', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         name: build.template(block.name),
         resource_names: build.template(block.resource_names),
@@ -11441,7 +11446,7 @@ local provider(configuration) = {
     },
     logging_log_view(name, block): {
       local resource = blockType.resource('google_logging_log_view', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         description: build.template(std.get(block, 'description', null)),
         filter: build.template(std.get(block, 'filter', null)),
@@ -11459,7 +11464,7 @@ local provider(configuration) = {
     },
     logging_log_view_iam_binding(name, block): {
       local resource = blockType.resource('google_logging_log_view_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         members: build.template(block.members),
         name: build.template(block.name),
@@ -11477,7 +11482,7 @@ local provider(configuration) = {
     },
     logging_log_view_iam_member(name, block): {
       local resource = blockType.resource('google_logging_log_view_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         member: build.template(block.member),
         name: build.template(block.name),
@@ -11495,7 +11500,7 @@ local provider(configuration) = {
     },
     logging_log_view_iam_policy(name, block): {
       local resource = blockType.resource('google_logging_log_view_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         name: build.template(block.name),
         parent: build.template(block.parent),
@@ -11511,7 +11516,7 @@ local provider(configuration) = {
     },
     logging_metric(name, block): {
       local resource = blockType.resource('google_logging_metric', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_name: build.template(std.get(block, 'bucket_name', null)),
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
@@ -11532,7 +11537,7 @@ local provider(configuration) = {
     },
     logging_organization_bucket_config(name, block): {
       local resource = blockType.resource('google_logging_organization_bucket_config', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_id: build.template(block.bucket_id),
         location: build.template(block.location),
         organization: build.template(block.organization),
@@ -11549,7 +11554,7 @@ local provider(configuration) = {
     },
     logging_organization_exclusion(name, block): {
       local resource = blockType.resource('google_logging_organization_exclusion', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         filter: build.template(block.filter),
@@ -11565,7 +11570,7 @@ local provider(configuration) = {
     },
     logging_organization_settings(name, block): {
       local resource = blockType.resource('google_logging_organization_settings', name),
-      _: resource._({
+      _: resource._(block, {
         organization: build.template(block.organization),
       }),
       disable_default_sink: resource.field('disable_default_sink'),
@@ -11579,7 +11584,7 @@ local provider(configuration) = {
     },
     logging_organization_sink(name, block): {
       local resource = blockType.resource('google_logging_organization_sink', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         destination: build.template(block.destination),
         disabled: build.template(std.get(block, 'disabled', null)),
@@ -11602,7 +11607,7 @@ local provider(configuration) = {
     },
     logging_project_bucket_config(name, block): {
       local resource = blockType.resource('google_logging_project_bucket_config', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_id: build.template(block.bucket_id),
         enable_analytics: build.template(std.get(block, 'enable_analytics', null)),
         location: build.template(block.location),
@@ -11623,7 +11628,7 @@ local provider(configuration) = {
     },
     logging_project_exclusion(name, block): {
       local resource = blockType.resource('google_logging_project_exclusion', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disabled: build.template(std.get(block, 'disabled', null)),
         filter: build.template(block.filter),
@@ -11638,7 +11643,7 @@ local provider(configuration) = {
     },
     logging_project_sink(name, block): {
       local resource = blockType.resource('google_logging_project_sink', name),
-      _: resource._({
+      _: resource._(block, {
         custom_writer_identity: build.template(std.get(block, 'custom_writer_identity', null)),
         description: build.template(std.get(block, 'description', null)),
         destination: build.template(block.destination),
@@ -11660,7 +11665,7 @@ local provider(configuration) = {
     },
     looker_instance(name, block): {
       local resource = blockType.resource('google_looker_instance', name),
-      _: resource._({
+      _: resource._(block, {
         consumer_network: build.template(std.get(block, 'consumer_network', null)),
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         fips_enabled: build.template(std.get(block, 'fips_enabled', null)),
@@ -11693,7 +11698,7 @@ local provider(configuration) = {
     },
     memcache_instance(name, block): {
       local resource = blockType.resource('google_memcache_instance', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         memcache_version: build.template(std.get(block, 'memcache_version', null)),
         name: build.template(block.name),
@@ -11721,7 +11726,7 @@ local provider(configuration) = {
     },
     memorystore_instance(name, block): {
       local resource = blockType.resource('google_memorystore_instance', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_protection_enabled: build.template(std.get(block, 'deletion_protection_enabled', null)),
         engine_configs: build.template(std.get(block, 'engine_configs', null)),
         instance_id: build.template(block.instance_id),
@@ -11758,7 +11763,7 @@ local provider(configuration) = {
     },
     migration_center_group(name, block): {
       local resource = blockType.resource('google_migration_center_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         group_id: build.template(block.group_id),
@@ -11780,7 +11785,7 @@ local provider(configuration) = {
     },
     migration_center_preference_set(name, block): {
       local resource = blockType.resource('google_migration_center_preference_set', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         location: build.template(block.location),
@@ -11798,7 +11803,7 @@ local provider(configuration) = {
     },
     ml_engine_model(name, block): {
       local resource = blockType.resource('google_ml_engine_model', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -11819,7 +11824,7 @@ local provider(configuration) = {
     },
     monitoring_alert_policy(name, block): {
       local resource = blockType.resource('google_monitoring_alert_policy', name),
-      _: resource._({
+      _: resource._(block, {
         combiner: build.template(block.combiner),
         display_name: build.template(block.display_name),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -11840,7 +11845,7 @@ local provider(configuration) = {
     },
     monitoring_custom_service(name, block): {
       local resource = blockType.resource('google_monitoring_custom_service', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         user_labels: build.template(std.get(block, 'user_labels', null)),
       }),
@@ -11853,7 +11858,7 @@ local provider(configuration) = {
     },
     monitoring_dashboard(name, block): {
       local resource = blockType.resource('google_monitoring_dashboard', name),
-      _: resource._({
+      _: resource._(block, {
         dashboard_json: build.template(block.dashboard_json),
       }),
       dashboard_json: resource.field('dashboard_json'),
@@ -11862,7 +11867,7 @@ local provider(configuration) = {
     },
     monitoring_group(name, block): {
       local resource = blockType.resource('google_monitoring_group', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         filter: build.template(block.filter),
         is_cluster: build.template(std.get(block, 'is_cluster', null)),
@@ -11878,7 +11883,7 @@ local provider(configuration) = {
     },
     monitoring_metric_descriptor(name, block): {
       local resource = blockType.resource('google_monitoring_metric_descriptor', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         display_name: build.template(block.display_name),
         launch_stage: build.template(std.get(block, 'launch_stage', null)),
@@ -11901,7 +11906,7 @@ local provider(configuration) = {
     },
     monitoring_monitored_project(name, block): {
       local resource = blockType.resource('google_monitoring_monitored_project', name),
-      _: resource._({
+      _: resource._(block, {
         metrics_scope: build.template(block.metrics_scope),
         name: build.template(block.name),
       }),
@@ -11912,7 +11917,7 @@ local provider(configuration) = {
     },
     monitoring_notification_channel(name, block): {
       local resource = blockType.resource('google_monitoring_notification_channel', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -11935,7 +11940,7 @@ local provider(configuration) = {
     },
     monitoring_service(name, block): {
       local resource = blockType.resource('google_monitoring_service', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         service_id: build.template(block.service_id),
         user_labels: build.template(std.get(block, 'user_labels', null)),
@@ -11950,7 +11955,7 @@ local provider(configuration) = {
     },
     monitoring_slo(name, block): {
       local resource = blockType.resource('google_monitoring_slo', name),
-      _: resource._({
+      _: resource._(block, {
         calendar_period: build.template(std.get(block, 'calendar_period', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         goal: build.template(block.goal),
@@ -11971,7 +11976,7 @@ local provider(configuration) = {
     },
     monitoring_uptime_check_config(name, block): {
       local resource = blockType.resource('google_monitoring_uptime_check_config', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         period: build.template(std.get(block, 'period', null)),
         selected_regions: build.template(std.get(block, 'selected_regions', null)),
@@ -11991,7 +11996,7 @@ local provider(configuration) = {
     },
     netapp_active_directory(name, block): {
       local resource = blockType.resource('google_netapp_active_directory', name),
-      _: resource._({
+      _: resource._(block, {
         administrators: build.template(std.get(block, 'administrators', null)),
         aes_encryption: build.template(std.get(block, 'aes_encryption', null)),
         backup_operators: build.template(std.get(block, 'backup_operators', null)),
@@ -12042,7 +12047,7 @@ local provider(configuration) = {
     },
     netapp_backup(name, block): {
       local resource = blockType.resource('google_netapp_backup', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -12070,7 +12075,7 @@ local provider(configuration) = {
     },
     netapp_backup_policy(name, block): {
       local resource = blockType.resource('google_netapp_backup_policy', name),
-      _: resource._({
+      _: resource._(block, {
         daily_backup_limit: build.template(block.daily_backup_limit),
         description: build.template(std.get(block, 'description', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
@@ -12098,7 +12103,7 @@ local provider(configuration) = {
     },
     netapp_backup_vault(name, block): {
       local resource = blockType.resource('google_netapp_backup_vault', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -12117,7 +12122,7 @@ local provider(configuration) = {
     },
     netapp_kmsconfig(name, block): {
       local resource = blockType.resource('google_netapp_kmsconfig', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key_name: build.template(block.crypto_key_name),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12138,7 +12143,7 @@ local provider(configuration) = {
     },
     netapp_storage_pool(name, block): {
       local resource = blockType.resource('google_netapp_storage_pool', name),
-      _: resource._({
+      _: resource._(block, {
         active_directory: build.template(std.get(block, 'active_directory', null)),
         allow_auto_tiering: build.template(std.get(block, 'allow_auto_tiering', null)),
         capacity_gib: build.template(block.capacity_gib),
@@ -12176,7 +12181,7 @@ local provider(configuration) = {
     },
     netapp_volume(name, block): {
       local resource = blockType.resource('google_netapp_volume', name),
-      _: resource._({
+      _: resource._(block, {
         capacity_gib: build.template(block.capacity_gib),
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -12232,7 +12237,7 @@ local provider(configuration) = {
     },
     netapp_volume_replication(name, block): {
       local resource = blockType.resource('google_netapp_volume_replication', name),
-      _: resource._({
+      _: resource._(block, {
         delete_destination_volume: build.template(std.get(block, 'delete_destination_volume', null)),
         description: build.template(std.get(block, 'description', null)),
         force_stopping: build.template(std.get(block, 'force_stopping', null)),
@@ -12270,7 +12275,7 @@ local provider(configuration) = {
     },
     netapp_volume_snapshot(name, block): {
       local resource = blockType.resource('google_netapp_volume_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -12290,7 +12295,7 @@ local provider(configuration) = {
     },
     network_connectivity_group(name, block): {
       local resource = blockType.resource('google_network_connectivity_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         hub: build.template(block.hub),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12312,7 +12317,7 @@ local provider(configuration) = {
     },
     network_connectivity_hub(name, block): {
       local resource = blockType.resource('google_network_connectivity_hub', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
       }),
@@ -12332,7 +12337,7 @@ local provider(configuration) = {
     },
     network_connectivity_internal_range(name, block): {
       local resource = blockType.resource('google_network_connectivity_internal_range', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -12361,7 +12366,7 @@ local provider(configuration) = {
     },
     network_connectivity_policy_based_route(name, block): {
       local resource = blockType.resource('google_network_connectivity_policy_based_route', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -12388,7 +12393,7 @@ local provider(configuration) = {
     },
     network_connectivity_regional_endpoint(name, block): {
       local resource = blockType.resource('google_network_connectivity_regional_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         access_type: build.template(block.access_type),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12415,7 +12420,7 @@ local provider(configuration) = {
     },
     network_connectivity_service_connection_policy(name, block): {
       local resource = blockType.resource('google_network_connectivity_service_connection_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -12441,7 +12446,7 @@ local provider(configuration) = {
     },
     network_connectivity_spoke(name, block): {
       local resource = blockType.resource('google_network_connectivity_spoke', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         hub: build.template(block.hub),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12464,7 +12469,7 @@ local provider(configuration) = {
     },
     network_management_connectivity_test(name, block): {
       local resource = blockType.resource('google_network_management_connectivity_test', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -12483,7 +12488,7 @@ local provider(configuration) = {
     },
     network_security_address_group(name, block): {
       local resource = blockType.resource('google_network_security_address_group', name),
-      _: resource._({
+      _: resource._(block, {
         capacity: build.template(block.capacity),
         description: build.template(std.get(block, 'description', null)),
         items: build.template(std.get(block, 'items', null)),
@@ -12509,7 +12514,7 @@ local provider(configuration) = {
     },
     network_security_address_group_iam_binding(name, block): {
       local resource = blockType.resource('google_network_security_address_group_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -12524,7 +12529,7 @@ local provider(configuration) = {
     },
     network_security_address_group_iam_member(name, block): {
       local resource = blockType.resource('google_network_security_address_group_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -12539,7 +12544,7 @@ local provider(configuration) = {
     },
     network_security_address_group_iam_policy(name, block): {
       local resource = blockType.resource('google_network_security_address_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -12552,7 +12557,7 @@ local provider(configuration) = {
     },
     network_security_client_tls_policy(name, block): {
       local resource = blockType.resource('google_network_security_client_tls_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -12573,7 +12578,7 @@ local provider(configuration) = {
     },
     network_security_firewall_endpoint(name, block): {
       local resource = blockType.resource('google_network_security_firewall_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         billing_project_id: build.template(block.billing_project_id),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -12597,7 +12602,7 @@ local provider(configuration) = {
     },
     network_security_firewall_endpoint_association(name, block): {
       local resource = blockType.resource('google_network_security_firewall_endpoint_association', name),
-      _: resource._({
+      _: resource._(block, {
         disabled: build.template(std.get(block, 'disabled', null)),
         firewall_endpoint: build.template(block.firewall_endpoint),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12626,7 +12631,7 @@ local provider(configuration) = {
     },
     network_security_gateway_security_policy(name, block): {
       local resource = blockType.resource('google_network_security_gateway_security_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(std.get(block, 'location', null)),
         name: build.template(block.name),
@@ -12644,7 +12649,7 @@ local provider(configuration) = {
     },
     network_security_gateway_security_policy_rule(name, block): {
       local resource = blockType.resource('google_network_security_gateway_security_policy_rule', name),
-      _: resource._({
+      _: resource._(block, {
         application_matcher: build.template(std.get(block, 'application_matcher', null)),
         basic_profile: build.template(block.basic_profile),
         description: build.template(std.get(block, 'description', null)),
@@ -12674,7 +12679,7 @@ local provider(configuration) = {
     },
     network_security_security_profile(name, block): {
       local resource = blockType.resource('google_network_security_security_profile', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -12698,7 +12703,7 @@ local provider(configuration) = {
     },
     network_security_security_profile_group(name, block): {
       local resource = blockType.resource('google_network_security_security_profile_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -12721,7 +12726,7 @@ local provider(configuration) = {
     },
     network_security_server_tls_policy(name, block): {
       local resource = blockType.resource('google_network_security_server_tls_policy', name),
-      _: resource._({
+      _: resource._(block, {
         allow_open: build.template(std.get(block, 'allow_open', null)),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12742,7 +12747,7 @@ local provider(configuration) = {
     },
     network_security_tls_inspection_policy(name, block): {
       local resource = blockType.resource('google_network_security_tls_inspection_policy', name),
-      _: resource._({
+      _: resource._(block, {
         ca_pool: build.template(block.ca_pool),
         custom_tls_features: build.template(std.get(block, 'custom_tls_features', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -12769,7 +12774,7 @@ local provider(configuration) = {
     },
     network_security_url_lists(name, block): {
       local resource = blockType.resource('google_network_security_url_lists', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -12786,7 +12791,7 @@ local provider(configuration) = {
     },
     network_services_edge_cache_keyset(name, block): {
       local resource = blockType.resource('google_network_services_edge_cache_keyset', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -12801,7 +12806,7 @@ local provider(configuration) = {
     },
     network_services_edge_cache_origin(name, block): {
       local resource = blockType.resource('google_network_services_edge_cache_origin', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         failover_origin: build.template(std.get(block, 'failover_origin', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12825,7 +12830,7 @@ local provider(configuration) = {
     },
     network_services_edge_cache_service(name, block): {
       local resource = blockType.resource('google_network_services_edge_cache_service', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         disable_http2: build.template(std.get(block, 'disable_http2', null)),
         edge_security_policy: build.template(std.get(block, 'edge_security_policy', null)),
@@ -12852,7 +12857,7 @@ local provider(configuration) = {
     },
     network_services_gateway(name, block): {
       local resource = blockType.resource('google_network_services_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_urls: build.template(std.get(block, 'certificate_urls', null)),
         delete_swg_autogen_router_on_destroy: build.template(std.get(block, 'delete_swg_autogen_router_on_destroy', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -12893,7 +12898,7 @@ local provider(configuration) = {
     },
     network_services_lb_route_extension(name, block): {
       local resource = blockType.resource('google_network_services_lb_route_extension', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         forwarding_rules: build.template(block.forwarding_rules),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12914,7 +12919,7 @@ local provider(configuration) = {
     },
     network_services_lb_traffic_extension(name, block): {
       local resource = blockType.resource('google_network_services_lb_traffic_extension', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         forwarding_rules: build.template(block.forwarding_rules),
         labels: build.template(std.get(block, 'labels', null)),
@@ -12935,7 +12940,7 @@ local provider(configuration) = {
     },
     notebooks_environment(name, block): {
       local resource = blockType.resource('google_notebooks_environment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         location: build.template(block.location),
@@ -12953,7 +12958,7 @@ local provider(configuration) = {
     },
     notebooks_instance(name, block): {
       local resource = blockType.resource('google_notebooks_instance', name),
-      _: resource._({
+      _: resource._(block, {
         boot_disk_size_gb: build.template(std.get(block, 'boot_disk_size_gb', null)),
         boot_disk_type: build.template(std.get(block, 'boot_disk_type', null)),
         custom_gpu_driver_path: build.template(std.get(block, 'custom_gpu_driver_path', null)),
@@ -13010,7 +13015,7 @@ local provider(configuration) = {
     },
     notebooks_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_notebooks_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -13025,7 +13030,7 @@ local provider(configuration) = {
     },
     notebooks_instance_iam_member(name, block): {
       local resource = blockType.resource('google_notebooks_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -13040,7 +13045,7 @@ local provider(configuration) = {
     },
     notebooks_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_notebooks_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
         policy_data: build.template(block.policy_data),
       }),
@@ -13053,7 +13058,7 @@ local provider(configuration) = {
     },
     notebooks_location(name, block): {
       local resource = blockType.resource('google_notebooks_location', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
       }),
       id: resource.field('id'),
@@ -13063,7 +13068,7 @@ local provider(configuration) = {
     },
     notebooks_runtime(name, block): {
       local resource = blockType.resource('google_notebooks_runtime', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -13081,7 +13086,7 @@ local provider(configuration) = {
     },
     notebooks_runtime_iam_binding(name, block): {
       local resource = blockType.resource('google_notebooks_runtime_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         runtime_name: build.template(block.runtime_name),
@@ -13096,7 +13101,7 @@ local provider(configuration) = {
     },
     notebooks_runtime_iam_member(name, block): {
       local resource = blockType.resource('google_notebooks_runtime_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         runtime_name: build.template(block.runtime_name),
@@ -13111,7 +13116,7 @@ local provider(configuration) = {
     },
     notebooks_runtime_iam_policy(name, block): {
       local resource = blockType.resource('google_notebooks_runtime_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         runtime_name: build.template(block.runtime_name),
       }),
@@ -13124,7 +13129,7 @@ local provider(configuration) = {
     },
     oracle_database_autonomous_database(name, block): {
       local resource = blockType.resource('google_oracle_database_autonomous_database', name),
-      _: resource._({
+      _: resource._(block, {
         admin_password: build.template(std.get(block, 'admin_password', null)),
         autonomous_database_id: build.template(block.autonomous_database_id),
         cidr: build.template(block.cidr),
@@ -13151,7 +13156,7 @@ local provider(configuration) = {
     },
     oracle_database_cloud_exadata_infrastructure(name, block): {
       local resource = blockType.resource('google_oracle_database_cloud_exadata_infrastructure', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_exadata_infrastructure_id: build.template(block.cloud_exadata_infrastructure_id),
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -13172,7 +13177,7 @@ local provider(configuration) = {
     },
     oracle_database_cloud_vm_cluster(name, block): {
       local resource = blockType.resource('google_oracle_database_cloud_vm_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         backup_subnet_cidr: build.template(block.backup_subnet_cidr),
         cidr: build.template(block.cidr),
         cloud_vm_cluster_id: build.template(block.cloud_vm_cluster_id),
@@ -13200,7 +13205,7 @@ local provider(configuration) = {
     },
     org_policy_custom_constraint(name, block): {
       local resource = blockType.resource('google_org_policy_custom_constraint', name),
-      _: resource._({
+      _: resource._(block, {
         action_type: build.template(block.action_type),
         condition: build.template(block.condition),
         description: build.template(std.get(block, 'description', null)),
@@ -13223,7 +13228,7 @@ local provider(configuration) = {
     },
     org_policy_policy(name, block): {
       local resource = blockType.resource('google_org_policy_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent: build.template(block.parent),
       }),
@@ -13234,7 +13239,7 @@ local provider(configuration) = {
     },
     organization_access_approval_settings(name, block): {
       local resource = blockType.resource('google_organization_access_approval_settings', name),
-      _: resource._({
+      _: resource._(block, {
         active_key_version: build.template(std.get(block, 'active_key_version', null)),
         organization_id: build.template(block.organization_id),
       }),
@@ -13249,7 +13254,7 @@ local provider(configuration) = {
     },
     organization_iam_audit_config(name, block): {
       local resource = blockType.resource('google_organization_iam_audit_config', name),
-      _: resource._({
+      _: resource._(block, {
         org_id: build.template(block.org_id),
         service: build.template(block.service),
       }),
@@ -13260,7 +13265,7 @@ local provider(configuration) = {
     },
     organization_iam_binding(name, block): {
       local resource = blockType.resource('google_organization_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         org_id: build.template(block.org_id),
         role: build.template(block.role),
@@ -13273,7 +13278,7 @@ local provider(configuration) = {
     },
     organization_iam_custom_role(name, block): {
       local resource = blockType.resource('google_organization_iam_custom_role', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         org_id: build.template(block.org_id),
         permissions: build.template(block.permissions),
@@ -13293,7 +13298,7 @@ local provider(configuration) = {
     },
     organization_iam_member(name, block): {
       local resource = blockType.resource('google_organization_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         org_id: build.template(block.org_id),
         role: build.template(block.role),
@@ -13306,7 +13311,7 @@ local provider(configuration) = {
     },
     organization_iam_policy(name, block): {
       local resource = blockType.resource('google_organization_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         org_id: build.template(block.org_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -13317,7 +13322,7 @@ local provider(configuration) = {
     },
     organization_policy(name, block): {
       local resource = blockType.resource('google_organization_policy', name),
-      _: resource._({
+      _: resource._(block, {
         constraint: build.template(block.constraint),
         org_id: build.template(block.org_id),
       }),
@@ -13330,7 +13335,7 @@ local provider(configuration) = {
     },
     os_config_os_policy_assignment(name, block): {
       local resource = blockType.resource('google_os_config_os_policy_assignment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -13353,7 +13358,7 @@ local provider(configuration) = {
     },
     os_config_patch_deployment(name, block): {
       local resource = blockType.resource('google_os_config_patch_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         duration: build.template(std.get(block, 'duration', null)),
         patch_deployment_id: build.template(block.patch_deployment_id),
@@ -13370,7 +13375,7 @@ local provider(configuration) = {
     },
     os_login_ssh_public_key(name, block): {
       local resource = blockType.resource('google_os_login_ssh_public_key', name),
-      _: resource._({
+      _: resource._(block, {
         expiration_time_usec: build.template(std.get(block, 'expiration_time_usec', null)),
         key: build.template(block.key),
         project: build.template(std.get(block, 'project', null)),
@@ -13385,7 +13390,7 @@ local provider(configuration) = {
     },
     privateca_ca_pool(name, block): {
       local resource = blockType.resource('google_privateca_ca_pool', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -13402,7 +13407,7 @@ local provider(configuration) = {
     },
     privateca_ca_pool_iam_binding(name, block): {
       local resource = blockType.resource('google_privateca_ca_pool_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         ca_pool: build.template(block.ca_pool),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -13417,7 +13422,7 @@ local provider(configuration) = {
     },
     privateca_ca_pool_iam_member(name, block): {
       local resource = blockType.resource('google_privateca_ca_pool_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         ca_pool: build.template(block.ca_pool),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -13432,7 +13437,7 @@ local provider(configuration) = {
     },
     privateca_ca_pool_iam_policy(name, block): {
       local resource = blockType.resource('google_privateca_ca_pool_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         ca_pool: build.template(block.ca_pool),
         policy_data: build.template(block.policy_data),
       }),
@@ -13445,7 +13450,7 @@ local provider(configuration) = {
     },
     privateca_certificate(name, block): {
       local resource = blockType.resource('google_privateca_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_authority: build.template(std.get(block, 'certificate_authority', null)),
         certificate_template: build.template(std.get(block, 'certificate_template', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -13477,7 +13482,7 @@ local provider(configuration) = {
     },
     privateca_certificate_authority(name, block): {
       local resource = blockType.resource('google_privateca_certificate_authority', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_authority_id: build.template(block.certificate_authority_id),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         desired_state: build.template(std.get(block, 'desired_state', null)),
@@ -13516,7 +13521,7 @@ local provider(configuration) = {
     },
     privateca_certificate_template(name, block): {
       local resource = blockType.resource('google_privateca_certificate_template', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -13537,7 +13542,7 @@ local provider(configuration) = {
     },
     privateca_certificate_template_iam_binding(name, block): {
       local resource = blockType.resource('google_privateca_certificate_template_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_template: build.template(block.certificate_template),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -13552,7 +13557,7 @@ local provider(configuration) = {
     },
     privateca_certificate_template_iam_member(name, block): {
       local resource = blockType.resource('google_privateca_certificate_template_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_template: build.template(block.certificate_template),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -13567,7 +13572,7 @@ local provider(configuration) = {
     },
     privateca_certificate_template_iam_policy(name, block): {
       local resource = blockType.resource('google_privateca_certificate_template_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_template: build.template(block.certificate_template),
         policy_data: build.template(block.policy_data),
       }),
@@ -13580,7 +13585,7 @@ local provider(configuration) = {
     },
     privileged_access_manager_entitlement(name, block): {
       local resource = blockType.resource('google_privileged_access_manager_entitlement', name),
-      _: resource._({
+      _: resource._(block, {
         entitlement_id: build.template(block.entitlement_id),
         location: build.template(block.location),
         max_request_duration: build.template(block.max_request_duration),
@@ -13599,7 +13604,7 @@ local provider(configuration) = {
     },
     project(name, block): {
       local resource = blockType.resource('google_project', name),
-      _: resource._({
+      _: resource._(block, {
         auto_create_network: build.template(std.get(block, 'auto_create_network', null)),
         billing_account: build.template(std.get(block, 'billing_account', null)),
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
@@ -13626,7 +13631,7 @@ local provider(configuration) = {
     },
     project_access_approval_settings(name, block): {
       local resource = blockType.resource('google_project_access_approval_settings', name),
-      _: resource._({
+      _: resource._(block, {
         active_key_version: build.template(std.get(block, 'active_key_version', null)),
         project: build.template(std.get(block, 'project', null)),
         project_id: build.template(block.project_id),
@@ -13643,7 +13648,7 @@ local provider(configuration) = {
     },
     project_default_service_accounts(name, block): {
       local resource = blockType.resource('google_project_default_service_accounts', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         project: build.template(block.project),
         restore_policy: build.template(std.get(block, 'restore_policy', null)),
@@ -13656,7 +13661,7 @@ local provider(configuration) = {
     },
     project_iam_audit_config(name, block): {
       local resource = blockType.resource('google_project_iam_audit_config', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(block.project),
         service: build.template(block.service),
       }),
@@ -13667,7 +13672,7 @@ local provider(configuration) = {
     },
     project_iam_binding(name, block): {
       local resource = blockType.resource('google_project_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         project: build.template(block.project),
         role: build.template(block.role),
@@ -13680,7 +13685,7 @@ local provider(configuration) = {
     },
     project_iam_custom_role(name, block): {
       local resource = blockType.resource('google_project_iam_custom_role', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         permissions: build.template(block.permissions),
         role_id: build.template(block.role_id),
@@ -13699,7 +13704,7 @@ local provider(configuration) = {
     },
     project_iam_member(name, block): {
       local resource = blockType.resource('google_project_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         project: build.template(block.project),
         role: build.template(block.role),
@@ -13712,7 +13717,7 @@ local provider(configuration) = {
     },
     project_iam_member_remove(name, block): {
       local resource = blockType.resource('google_project_iam_member_remove', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         project: build.template(block.project),
         role: build.template(block.role),
@@ -13724,7 +13729,7 @@ local provider(configuration) = {
     },
     project_iam_policy(name, block): {
       local resource = blockType.resource('google_project_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         project: build.template(block.project),
       }),
@@ -13735,7 +13740,7 @@ local provider(configuration) = {
     },
     project_organization_policy(name, block): {
       local resource = blockType.resource('google_project_organization_policy', name),
-      _: resource._({
+      _: resource._(block, {
         constraint: build.template(block.constraint),
         project: build.template(block.project),
       }),
@@ -13748,7 +13753,7 @@ local provider(configuration) = {
     },
     project_service(name, block): {
       local resource = blockType.resource('google_project_service', name),
-      _: resource._({
+      _: resource._(block, {
         disable_dependent_services: build.template(std.get(block, 'disable_dependent_services', null)),
         disable_on_destroy: build.template(std.get(block, 'disable_on_destroy', null)),
         service: build.template(block.service),
@@ -13761,7 +13766,7 @@ local provider(configuration) = {
     },
     project_usage_export_bucket(name, block): {
       local resource = blockType.resource('google_project_usage_export_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         bucket_name: build.template(block.bucket_name),
         prefix: build.template(std.get(block, 'prefix', null)),
       }),
@@ -13772,7 +13777,7 @@ local provider(configuration) = {
     },
     public_ca_external_account_key(name, block): {
       local resource = blockType.resource('google_public_ca_external_account_key', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
       }),
       b64_mac_key: resource.field('b64_mac_key'),
@@ -13784,7 +13789,7 @@ local provider(configuration) = {
     },
     pubsub_lite_reservation(name, block): {
       local resource = blockType.resource('google_pubsub_lite_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         region: build.template(std.get(block, 'region', null)),
         throughput_capacity: build.template(block.throughput_capacity),
@@ -13797,7 +13802,7 @@ local provider(configuration) = {
     },
     pubsub_lite_subscription(name, block): {
       local resource = blockType.resource('google_pubsub_lite_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         region: build.template(std.get(block, 'region', null)),
         topic: build.template(block.topic),
@@ -13812,7 +13817,7 @@ local provider(configuration) = {
     },
     pubsub_lite_topic(name, block): {
       local resource = blockType.resource('google_pubsub_lite_topic', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         region: build.template(std.get(block, 'region', null)),
         zone: build.template(std.get(block, 'zone', null)),
@@ -13825,7 +13830,7 @@ local provider(configuration) = {
     },
     pubsub_schema(name, block): {
       local resource = blockType.resource('google_pubsub_schema', name),
-      _: resource._({
+      _: resource._(block, {
         definition: build.template(std.get(block, 'definition', null)),
         name: build.template(block.name),
         type: build.template(std.get(block, 'type', null)),
@@ -13838,7 +13843,7 @@ local provider(configuration) = {
     },
     pubsub_schema_iam_binding(name, block): {
       local resource = blockType.resource('google_pubsub_schema_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         schema: build.template(block.schema),
@@ -13852,7 +13857,7 @@ local provider(configuration) = {
     },
     pubsub_schema_iam_member(name, block): {
       local resource = blockType.resource('google_pubsub_schema_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         schema: build.template(block.schema),
@@ -13866,7 +13871,7 @@ local provider(configuration) = {
     },
     pubsub_schema_iam_policy(name, block): {
       local resource = blockType.resource('google_pubsub_schema_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         schema: build.template(block.schema),
       }),
@@ -13878,7 +13883,7 @@ local provider(configuration) = {
     },
     pubsub_subscription(name, block): {
       local resource = blockType.resource('google_pubsub_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         enable_exactly_once_delivery: build.template(std.get(block, 'enable_exactly_once_delivery', null)),
         enable_message_ordering: build.template(std.get(block, 'enable_message_ordering', null)),
         filter: build.template(std.get(block, 'filter', null)),
@@ -13904,7 +13909,7 @@ local provider(configuration) = {
     },
     pubsub_subscription_iam_binding(name, block): {
       local resource = blockType.resource('google_pubsub_subscription_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         subscription: build.template(block.subscription),
@@ -13918,7 +13923,7 @@ local provider(configuration) = {
     },
     pubsub_subscription_iam_member(name, block): {
       local resource = blockType.resource('google_pubsub_subscription_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         subscription: build.template(block.subscription),
@@ -13932,7 +13937,7 @@ local provider(configuration) = {
     },
     pubsub_subscription_iam_policy(name, block): {
       local resource = blockType.resource('google_pubsub_subscription_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         subscription: build.template(block.subscription),
       }),
@@ -13944,7 +13949,7 @@ local provider(configuration) = {
     },
     pubsub_topic(name, block): {
       local resource = blockType.resource('google_pubsub_topic', name),
-      _: resource._({
+      _: resource._(block, {
         kms_key_name: build.template(std.get(block, 'kms_key_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
         message_retention_duration: build.template(std.get(block, 'message_retention_duration', null)),
@@ -13961,7 +13966,7 @@ local provider(configuration) = {
     },
     pubsub_topic_iam_binding(name, block): {
       local resource = blockType.resource('google_pubsub_topic_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         topic: build.template(block.topic),
@@ -13975,7 +13980,7 @@ local provider(configuration) = {
     },
     pubsub_topic_iam_member(name, block): {
       local resource = blockType.resource('google_pubsub_topic_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         topic: build.template(block.topic),
@@ -13989,7 +13994,7 @@ local provider(configuration) = {
     },
     pubsub_topic_iam_policy(name, block): {
       local resource = blockType.resource('google_pubsub_topic_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         topic: build.template(block.topic),
       }),
@@ -14001,7 +14006,7 @@ local provider(configuration) = {
     },
     recaptcha_enterprise_key(name, block): {
       local resource = blockType.resource('google_recaptcha_enterprise_key', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         labels: build.template(std.get(block, 'labels', null)),
       }),
@@ -14016,7 +14021,7 @@ local provider(configuration) = {
     },
     redis_cluster(name, block): {
       local resource = blockType.resource('google_redis_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         authorization_mode: build.template(std.get(block, 'authorization_mode', null)),
         deletion_protection_enabled: build.template(std.get(block, 'deletion_protection_enabled', null)),
         redis_configs: build.template(std.get(block, 'redis_configs', null)),
@@ -14047,7 +14052,7 @@ local provider(configuration) = {
     },
     redis_instance(name, block): {
       local resource = blockType.resource('google_redis_instance', name),
-      _: resource._({
+      _: resource._(block, {
         auth_enabled: build.template(std.get(block, 'auth_enabled', null)),
         connect_mode: build.template(std.get(block, 'connect_mode', null)),
         customer_managed_key: build.template(std.get(block, 'customer_managed_key', null)),
@@ -14097,7 +14102,7 @@ local provider(configuration) = {
     },
     resource_manager_lien(name, block): {
       local resource = blockType.resource('google_resource_manager_lien', name),
-      _: resource._({
+      _: resource._(block, {
         origin: build.template(block.origin),
         parent: build.template(block.parent),
         reason: build.template(block.reason),
@@ -14113,7 +14118,7 @@ local provider(configuration) = {
     },
     scc_event_threat_detection_custom_module(name, block): {
       local resource = blockType.resource('google_scc_event_threat_detection_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         config: build.template(block.config),
         display_name: build.template(std.get(block, 'display_name', null)),
         enablement_state: build.template(block.enablement_state),
@@ -14132,7 +14137,7 @@ local provider(configuration) = {
     },
     scc_folder_custom_module(name, block): {
       local resource = blockType.resource('google_scc_folder_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         enablement_state: build.template(block.enablement_state),
         folder: build.template(block.folder),
@@ -14148,7 +14153,7 @@ local provider(configuration) = {
     },
     scc_folder_notification_config(name, block): {
       local resource = blockType.resource('google_scc_folder_notification_config', name),
-      _: resource._({
+      _: resource._(block, {
         config_id: build.template(block.config_id),
         description: build.template(std.get(block, 'description', null)),
         folder: build.template(block.folder),
@@ -14164,7 +14169,7 @@ local provider(configuration) = {
     },
     scc_folder_scc_big_query_export(name, block): {
       local resource = blockType.resource('google_scc_folder_scc_big_query_export', name),
-      _: resource._({
+      _: resource._(block, {
         big_query_export_id: build.template(block.big_query_export_id),
         dataset: build.template(block.dataset),
         description: build.template(block.description),
@@ -14185,7 +14190,7 @@ local provider(configuration) = {
     },
     scc_management_folder_security_health_analytics_custom_module(name, block): {
       local resource = blockType.resource('google_scc_management_folder_security_health_analytics_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         enablement_state: build.template(std.get(block, 'enablement_state', null)),
         folder: build.template(block.folder),
@@ -14203,7 +14208,7 @@ local provider(configuration) = {
     },
     scc_management_organization_event_threat_detection_custom_module(name, block): {
       local resource = blockType.resource('google_scc_management_organization_event_threat_detection_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         config: build.template(std.get(block, 'config', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         enablement_state: build.template(std.get(block, 'enablement_state', null)),
@@ -14224,7 +14229,7 @@ local provider(configuration) = {
     },
     scc_management_organization_security_health_analytics_custom_module(name, block): {
       local resource = blockType.resource('google_scc_management_organization_security_health_analytics_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         enablement_state: build.template(std.get(block, 'enablement_state', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -14242,7 +14247,7 @@ local provider(configuration) = {
     },
     scc_management_project_security_health_analytics_custom_module(name, block): {
       local resource = blockType.resource('google_scc_management_project_security_health_analytics_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         enablement_state: build.template(std.get(block, 'enablement_state', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -14259,7 +14264,7 @@ local provider(configuration) = {
     },
     scc_mute_config(name, block): {
       local resource = blockType.resource('google_scc_mute_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         filter: build.template(block.filter),
         mute_config_id: build.template(block.mute_config_id),
@@ -14277,7 +14282,7 @@ local provider(configuration) = {
     },
     scc_notification_config(name, block): {
       local resource = blockType.resource('google_scc_notification_config', name),
-      _: resource._({
+      _: resource._(block, {
         config_id: build.template(block.config_id),
         description: build.template(std.get(block, 'description', null)),
         organization: build.template(block.organization),
@@ -14293,7 +14298,7 @@ local provider(configuration) = {
     },
     scc_organization_custom_module(name, block): {
       local resource = blockType.resource('google_scc_organization_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         enablement_state: build.template(block.enablement_state),
         organization: build.template(block.organization),
@@ -14309,7 +14314,7 @@ local provider(configuration) = {
     },
     scc_organization_scc_big_query_export(name, block): {
       local resource = blockType.resource('google_scc_organization_scc_big_query_export', name),
-      _: resource._({
+      _: resource._(block, {
         big_query_export_id: build.template(block.big_query_export_id),
         dataset: build.template(std.get(block, 'dataset', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14330,7 +14335,7 @@ local provider(configuration) = {
     },
     scc_project_custom_module(name, block): {
       local resource = blockType.resource('google_scc_project_custom_module', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         enablement_state: build.template(block.enablement_state),
       }),
@@ -14345,7 +14350,7 @@ local provider(configuration) = {
     },
     scc_project_notification_config(name, block): {
       local resource = blockType.resource('google_scc_project_notification_config', name),
-      _: resource._({
+      _: resource._(block, {
         config_id: build.template(block.config_id),
         description: build.template(std.get(block, 'description', null)),
         pubsub_topic: build.template(block.pubsub_topic),
@@ -14360,7 +14365,7 @@ local provider(configuration) = {
     },
     scc_project_scc_big_query_export(name, block): {
       local resource = blockType.resource('google_scc_project_scc_big_query_export', name),
-      _: resource._({
+      _: resource._(block, {
         big_query_export_id: build.template(block.big_query_export_id),
         dataset: build.template(std.get(block, 'dataset', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14380,7 +14385,7 @@ local provider(configuration) = {
     },
     scc_source(name, block): {
       local resource = blockType.resource('google_scc_source', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         organization: build.template(block.organization),
@@ -14393,7 +14398,7 @@ local provider(configuration) = {
     },
     scc_source_iam_binding(name, block): {
       local resource = blockType.resource('google_scc_source_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         organization: build.template(block.organization),
         role: build.template(block.role),
@@ -14408,7 +14413,7 @@ local provider(configuration) = {
     },
     scc_source_iam_member(name, block): {
       local resource = blockType.resource('google_scc_source_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         organization: build.template(block.organization),
         role: build.template(block.role),
@@ -14423,7 +14428,7 @@ local provider(configuration) = {
     },
     scc_source_iam_policy(name, block): {
       local resource = blockType.resource('google_scc_source_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         organization: build.template(block.organization),
         policy_data: build.template(block.policy_data),
         source: build.template(block.source),
@@ -14436,7 +14441,7 @@ local provider(configuration) = {
     },
     scc_v2_folder_mute_config(name, block): {
       local resource = blockType.resource('google_scc_v2_folder_mute_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         filter: build.template(block.filter),
         folder: build.template(block.folder),
@@ -14458,7 +14463,7 @@ local provider(configuration) = {
     },
     scc_v2_folder_notification_config(name, block): {
       local resource = blockType.resource('google_scc_v2_folder_notification_config', name),
-      _: resource._({
+      _: resource._(block, {
         config_id: build.template(block.config_id),
         description: build.template(std.get(block, 'description', null)),
         folder: build.template(block.folder),
@@ -14476,7 +14481,7 @@ local provider(configuration) = {
     },
     scc_v2_folder_scc_big_query_export(name, block): {
       local resource = blockType.resource('google_scc_v2_folder_scc_big_query_export', name),
-      _: resource._({
+      _: resource._(block, {
         big_query_export_id: build.template(block.big_query_export_id),
         dataset: build.template(std.get(block, 'dataset', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14499,7 +14504,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_mute_config(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_mute_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         filter: build.template(block.filter),
         location: build.template(std.get(block, 'location', null)),
@@ -14521,7 +14526,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_notification_config(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_notification_config', name),
-      _: resource._({
+      _: resource._(block, {
         config_id: build.template(block.config_id),
         description: build.template(std.get(block, 'description', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -14539,7 +14544,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_scc_big_query_export(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_scc_big_query_export', name),
-      _: resource._({
+      _: resource._(block, {
         big_query_export_id: build.template(block.big_query_export_id),
         dataset: build.template(std.get(block, 'dataset', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14563,7 +14568,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_scc_big_query_exports(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_scc_big_query_exports', name),
-      _: resource._({
+      _: resource._(block, {
         big_query_export_id: build.template(block.big_query_export_id),
         dataset: build.template(std.get(block, 'dataset', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14587,7 +14592,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_source(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_source', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         organization: build.template(block.organization),
@@ -14600,7 +14605,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_source_iam_binding(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_source_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         organization: build.template(block.organization),
         role: build.template(block.role),
@@ -14615,7 +14620,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_source_iam_member(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_source_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         organization: build.template(block.organization),
         role: build.template(block.role),
@@ -14630,7 +14635,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_source_iam_policy(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_source_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         organization: build.template(block.organization),
         policy_data: build.template(block.policy_data),
         source: build.template(block.source),
@@ -14643,7 +14648,7 @@ local provider(configuration) = {
     },
     scc_v2_project_mute_config(name, block): {
       local resource = blockType.resource('google_scc_v2_project_mute_config', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         filter: build.template(block.filter),
         location: build.template(std.get(block, 'location', null)),
@@ -14664,7 +14669,7 @@ local provider(configuration) = {
     },
     scc_v2_project_notification_config(name, block): {
       local resource = blockType.resource('google_scc_v2_project_notification_config', name),
-      _: resource._({
+      _: resource._(block, {
         config_id: build.template(block.config_id),
         description: build.template(std.get(block, 'description', null)),
         location: build.template(std.get(block, 'location', null)),
@@ -14681,7 +14686,7 @@ local provider(configuration) = {
     },
     scc_v2_project_scc_big_query_export(name, block): {
       local resource = blockType.resource('google_scc_v2_project_scc_big_query_export', name),
-      _: resource._({
+      _: resource._(block, {
         big_query_export_id: build.template(block.big_query_export_id),
         dataset: build.template(std.get(block, 'dataset', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -14703,7 +14708,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -14730,7 +14735,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret_iam_binding(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         secret_id: build.template(block.secret_id),
@@ -14745,7 +14750,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret_iam_member(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         secret_id: build.template(block.secret_id),
@@ -14760,7 +14765,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret_iam_policy(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         secret_id: build.template(block.secret_id),
       }),
@@ -14773,7 +14778,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret_version(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret_version', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         is_secret_data_base64: build.template(std.get(block, 'is_secret_data_base64', null)),
@@ -14795,7 +14800,7 @@ local provider(configuration) = {
     },
     secret_manager_secret(name, block): {
       local resource = blockType.resource('google_secret_manager_secret', name),
-      _: resource._({
+      _: resource._(block, {
         annotations: build.template(std.get(block, 'annotations', null)),
         labels: build.template(std.get(block, 'labels', null)),
         secret_id: build.template(block.secret_id),
@@ -14820,7 +14825,7 @@ local provider(configuration) = {
     },
     secret_manager_secret_iam_binding(name, block): {
       local resource = blockType.resource('google_secret_manager_secret_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         secret_id: build.template(block.secret_id),
@@ -14834,7 +14839,7 @@ local provider(configuration) = {
     },
     secret_manager_secret_iam_member(name, block): {
       local resource = blockType.resource('google_secret_manager_secret_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         secret_id: build.template(block.secret_id),
@@ -14848,7 +14853,7 @@ local provider(configuration) = {
     },
     secret_manager_secret_iam_policy(name, block): {
       local resource = blockType.resource('google_secret_manager_secret_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         secret_id: build.template(block.secret_id),
       }),
@@ -14860,7 +14865,7 @@ local provider(configuration) = {
     },
     secret_manager_secret_version(name, block): {
       local resource = blockType.resource('google_secret_manager_secret_version', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         enabled: build.template(std.get(block, 'enabled', null)),
         is_secret_data_base64: build.template(std.get(block, 'is_secret_data_base64', null)),
@@ -14880,7 +14885,7 @@ local provider(configuration) = {
     },
     secure_source_manager_branch_rule(name, block): {
       local resource = blockType.resource('google_secure_source_manager_branch_rule', name),
-      _: resource._({
+      _: resource._(block, {
         allow_stale_reviews: build.template(std.get(block, 'allow_stale_reviews', null)),
         branch_rule_id: build.template(block.branch_rule_id),
         disabled: build.template(std.get(block, 'disabled', null)),
@@ -14913,7 +14918,7 @@ local provider(configuration) = {
     },
     secure_source_manager_instance(name, block): {
       local resource = blockType.resource('google_secure_source_manager_instance', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         kms_key: build.template(std.get(block, 'kms_key', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -14936,7 +14941,7 @@ local provider(configuration) = {
     },
     secure_source_manager_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_secure_source_manager_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -14951,7 +14956,7 @@ local provider(configuration) = {
     },
     secure_source_manager_instance_iam_member(name, block): {
       local resource = blockType.resource('google_secure_source_manager_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -14966,7 +14971,7 @@ local provider(configuration) = {
     },
     secure_source_manager_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_secure_source_manager_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
         policy_data: build.template(block.policy_data),
       }),
@@ -14979,7 +14984,7 @@ local provider(configuration) = {
     },
     secure_source_manager_repository(name, block): {
       local resource = blockType.resource('google_secure_source_manager_repository', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         instance: build.template(block.instance),
         location: build.template(block.location),
@@ -14999,7 +15004,7 @@ local provider(configuration) = {
     },
     secure_source_manager_repository_iam_binding(name, block): {
       local resource = blockType.resource('google_secure_source_manager_repository_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         repository_id: build.template(block.repository_id),
         role: build.template(block.role),
@@ -15014,7 +15019,7 @@ local provider(configuration) = {
     },
     secure_source_manager_repository_iam_member(name, block): {
       local resource = blockType.resource('google_secure_source_manager_repository_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         repository_id: build.template(block.repository_id),
         role: build.template(block.role),
@@ -15029,7 +15034,7 @@ local provider(configuration) = {
     },
     secure_source_manager_repository_iam_policy(name, block): {
       local resource = blockType.resource('google_secure_source_manager_repository_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         repository_id: build.template(block.repository_id),
       }),
@@ -15042,7 +15047,7 @@ local provider(configuration) = {
     },
     securityposture_posture(name, block): {
       local resource = blockType.resource('google_securityposture_posture', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         parent: build.template(block.parent),
@@ -15064,7 +15069,7 @@ local provider(configuration) = {
     },
     securityposture_posture_deployment(name, block): {
       local resource = blockType.resource('google_securityposture_posture_deployment', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         parent: build.template(block.parent),
@@ -15093,7 +15098,7 @@ local provider(configuration) = {
     },
     service_account(name, block): {
       local resource = blockType.resource('google_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         create_ignore_already_exists: build.template(std.get(block, 'create_ignore_already_exists', null)),
         description: build.template(std.get(block, 'description', null)),
@@ -15114,7 +15119,7 @@ local provider(configuration) = {
     },
     service_account_iam_binding(name, block): {
       local resource = blockType.resource('google_service_account_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         service_account_id: build.template(block.service_account_id),
@@ -15127,7 +15132,7 @@ local provider(configuration) = {
     },
     service_account_iam_member(name, block): {
       local resource = blockType.resource('google_service_account_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         service_account_id: build.template(block.service_account_id),
@@ -15140,7 +15145,7 @@ local provider(configuration) = {
     },
     service_account_iam_policy(name, block): {
       local resource = blockType.resource('google_service_account_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         service_account_id: build.template(block.service_account_id),
       }),
@@ -15151,7 +15156,7 @@ local provider(configuration) = {
     },
     service_account_key(name, block): {
       local resource = blockType.resource('google_service_account_key', name),
-      _: resource._({
+      _: resource._(block, {
         keepers: build.template(std.get(block, 'keepers', null)),
         key_algorithm: build.template(std.get(block, 'key_algorithm', null)),
         private_key_type: build.template(std.get(block, 'private_key_type', null)),
@@ -15174,7 +15179,7 @@ local provider(configuration) = {
     },
     service_networking_connection(name, block): {
       local resource = blockType.resource('google_service_networking_connection', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         network: build.template(block.network),
         reserved_peering_ranges: build.template(block.reserved_peering_ranges),
@@ -15191,7 +15196,7 @@ local provider(configuration) = {
     },
     service_networking_peered_dns_domain(name, block): {
       local resource = blockType.resource('google_service_networking_peered_dns_domain', name),
-      _: resource._({
+      _: resource._(block, {
         dns_suffix: build.template(block.dns_suffix),
         name: build.template(block.name),
         network: build.template(block.network),
@@ -15207,7 +15212,7 @@ local provider(configuration) = {
     },
     service_networking_vpc_service_controls(name, block): {
       local resource = blockType.resource('google_service_networking_vpc_service_controls', name),
-      _: resource._({
+      _: resource._(block, {
         enabled: build.template(block.enabled),
         network: build.template(block.network),
         project: build.template(std.get(block, 'project', null)),
@@ -15221,7 +15226,7 @@ local provider(configuration) = {
     },
     site_verification_owner(name, block): {
       local resource = blockType.resource('google_site_verification_owner', name),
-      _: resource._({
+      _: resource._(block, {
         email: build.template(block.email),
         web_resource_id: build.template(block.web_resource_id),
       }),
@@ -15231,7 +15236,7 @@ local provider(configuration) = {
     },
     site_verification_web_resource(name, block): {
       local resource = blockType.resource('google_site_verification_web_resource', name),
-      _: resource._({
+      _: resource._(block, {
         verification_method: build.template(block.verification_method),
       }),
       id: resource.field('id'),
@@ -15241,7 +15246,7 @@ local provider(configuration) = {
     },
     sourcerepo_repository(name, block): {
       local resource = blockType.resource('google_sourcerepo_repository', name),
-      _: resource._({
+      _: resource._(block, {
         create_ignore_already_exists: build.template(std.get(block, 'create_ignore_already_exists', null)),
         name: build.template(block.name),
       }),
@@ -15254,7 +15259,7 @@ local provider(configuration) = {
     },
     sourcerepo_repository_iam_binding(name, block): {
       local resource = blockType.resource('google_sourcerepo_repository_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         repository: build.template(block.repository),
         role: build.template(block.role),
@@ -15268,7 +15273,7 @@ local provider(configuration) = {
     },
     sourcerepo_repository_iam_member(name, block): {
       local resource = blockType.resource('google_sourcerepo_repository_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         repository: build.template(block.repository),
         role: build.template(block.role),
@@ -15282,7 +15287,7 @@ local provider(configuration) = {
     },
     sourcerepo_repository_iam_policy(name, block): {
       local resource = blockType.resource('google_sourcerepo_repository_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         repository: build.template(block.repository),
       }),
@@ -15294,7 +15299,7 @@ local provider(configuration) = {
     },
     spanner_backup_schedule(name, block): {
       local resource = blockType.resource('google_spanner_backup_schedule', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         instance: build.template(block.instance),
         name: build.template(std.get(block, 'name', null)),
@@ -15309,7 +15314,7 @@ local provider(configuration) = {
     },
     spanner_database(name, block): {
       local resource = blockType.resource('google_spanner_database', name),
-      _: resource._({
+      _: resource._(block, {
         ddl: build.template(std.get(block, 'ddl', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         enable_drop_protection: build.template(std.get(block, 'enable_drop_protection', null)),
@@ -15329,7 +15334,7 @@ local provider(configuration) = {
     },
     spanner_database_iam_binding(name, block): {
       local resource = blockType.resource('google_spanner_database_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         instance: build.template(block.instance),
         members: build.template(block.members),
@@ -15345,7 +15350,7 @@ local provider(configuration) = {
     },
     spanner_database_iam_member(name, block): {
       local resource = blockType.resource('google_spanner_database_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         instance: build.template(block.instance),
         member: build.template(block.member),
@@ -15361,7 +15366,7 @@ local provider(configuration) = {
     },
     spanner_database_iam_policy(name, block): {
       local resource = blockType.resource('google_spanner_database_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         instance: build.template(block.instance),
         policy_data: build.template(block.policy_data),
@@ -15375,7 +15380,7 @@ local provider(configuration) = {
     },
     spanner_instance(name, block): {
       local resource = blockType.resource('google_spanner_instance', name),
-      _: resource._({
+      _: resource._(block, {
         config: build.template(block.config),
         display_name: build.template(block.display_name),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -15398,7 +15403,7 @@ local provider(configuration) = {
     },
     spanner_instance_config(name, block): {
       local resource = blockType.resource('google_spanner_instance_config', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         labels: build.template(std.get(block, 'labels', null)),
       }),
@@ -15414,7 +15419,7 @@ local provider(configuration) = {
     },
     spanner_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_spanner_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -15428,7 +15433,7 @@ local provider(configuration) = {
     },
     spanner_instance_iam_member(name, block): {
       local resource = blockType.resource('google_spanner_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -15442,7 +15447,7 @@ local provider(configuration) = {
     },
     spanner_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_spanner_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         policy_data: build.template(block.policy_data),
       }),
@@ -15454,7 +15459,7 @@ local provider(configuration) = {
     },
     sql_database(name, block): {
       local resource = blockType.resource('google_sql_database', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         instance: build.template(block.instance),
         name: build.template(block.name),
@@ -15470,7 +15475,7 @@ local provider(configuration) = {
     },
     sql_database_instance(name, block): {
       local resource = blockType.resource('google_sql_database_instance', name),
-      _: resource._({
+      _: resource._(block, {
         database_version: build.template(block.database_version),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
         root_password: build.template(std.get(block, 'root_password', null)),
@@ -15501,7 +15506,7 @@ local provider(configuration) = {
     },
     sql_source_representation_instance(name, block): {
       local resource = blockType.resource('google_sql_source_representation_instance', name),
-      _: resource._({
+      _: resource._(block, {
         ca_certificate: build.template(std.get(block, 'ca_certificate', null)),
         client_certificate: build.template(std.get(block, 'client_certificate', null)),
         client_key: build.template(std.get(block, 'client_key', null)),
@@ -15529,7 +15534,7 @@ local provider(configuration) = {
     },
     sql_ssl_cert(name, block): {
       local resource = blockType.resource('google_sql_ssl_cert', name),
-      _: resource._({
+      _: resource._(block, {
         common_name: build.template(block.common_name),
         instance: build.template(block.instance),
       }),
@@ -15547,7 +15552,7 @@ local provider(configuration) = {
     },
     sql_user(name, block): {
       local resource = blockType.resource('google_sql_user', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_policy: build.template(std.get(block, 'deletion_policy', null)),
         instance: build.template(block.instance),
         name: build.template(block.name),
@@ -15566,7 +15571,7 @@ local provider(configuration) = {
     },
     storage_bucket(name, block): {
       local resource = blockType.resource('google_storage_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         default_event_based_hold: build.template(std.get(block, 'default_event_based_hold', null)),
         enable_object_retention: build.template(std.get(block, 'enable_object_retention', null)),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
@@ -15597,7 +15602,7 @@ local provider(configuration) = {
     },
     storage_bucket_access_control(name, block): {
       local resource = blockType.resource('google_storage_bucket_access_control', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         entity: build.template(block.entity),
         role: build.template(std.get(block, 'role', null)),
@@ -15611,7 +15616,7 @@ local provider(configuration) = {
     },
     storage_bucket_acl(name, block): {
       local resource = blockType.resource('google_storage_bucket_acl', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         default_acl: build.template(std.get(block, 'default_acl', null)),
         predefined_acl: build.template(std.get(block, 'predefined_acl', null)),
@@ -15624,7 +15629,7 @@ local provider(configuration) = {
     },
     storage_bucket_iam_binding(name, block): {
       local resource = blockType.resource('google_storage_bucket_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         members: build.template(block.members),
         role: build.template(block.role),
@@ -15637,7 +15642,7 @@ local provider(configuration) = {
     },
     storage_bucket_iam_member(name, block): {
       local resource = blockType.resource('google_storage_bucket_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         member: build.template(block.member),
         role: build.template(block.role),
@@ -15650,7 +15655,7 @@ local provider(configuration) = {
     },
     storage_bucket_iam_policy(name, block): {
       local resource = blockType.resource('google_storage_bucket_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         policy_data: build.template(block.policy_data),
       }),
@@ -15661,7 +15666,7 @@ local provider(configuration) = {
     },
     storage_bucket_object(name, block): {
       local resource = blockType.resource('google_storage_bucket_object', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         cache_control: build.template(std.get(block, 'cache_control', null)),
         content_disposition: build.template(std.get(block, 'content_disposition', null)),
@@ -15699,7 +15704,7 @@ local provider(configuration) = {
     },
     storage_default_object_access_control(name, block): {
       local resource = blockType.resource('google_storage_default_object_access_control', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         entity: build.template(block.entity),
         object: build.template(std.get(block, 'object', null)),
@@ -15718,7 +15723,7 @@ local provider(configuration) = {
     },
     storage_default_object_acl(name, block): {
       local resource = blockType.resource('google_storage_default_object_acl', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
       }),
       bucket: resource.field('bucket'),
@@ -15727,7 +15732,7 @@ local provider(configuration) = {
     },
     storage_hmac_key(name, block): {
       local resource = blockType.resource('google_storage_hmac_key', name),
-      _: resource._({
+      _: resource._(block, {
         service_account_email: build.template(block.service_account_email),
         state: build.template(std.get(block, 'state', null)),
       }),
@@ -15742,7 +15747,7 @@ local provider(configuration) = {
     },
     storage_insights_report_config(name, block): {
       local resource = blockType.resource('google_storage_insights_report_config', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         location: build.template(block.location),
       }),
@@ -15754,7 +15759,7 @@ local provider(configuration) = {
     },
     storage_managed_folder(name, block): {
       local resource = blockType.resource('google_storage_managed_folder', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         name: build.template(block.name),
@@ -15770,7 +15775,7 @@ local provider(configuration) = {
     },
     storage_managed_folder_iam_binding(name, block): {
       local resource = blockType.resource('google_storage_managed_folder_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         managed_folder: build.template(block.managed_folder),
         members: build.template(block.members),
@@ -15785,7 +15790,7 @@ local provider(configuration) = {
     },
     storage_managed_folder_iam_member(name, block): {
       local resource = blockType.resource('google_storage_managed_folder_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         managed_folder: build.template(block.managed_folder),
         member: build.template(block.member),
@@ -15800,7 +15805,7 @@ local provider(configuration) = {
     },
     storage_managed_folder_iam_policy(name, block): {
       local resource = blockType.resource('google_storage_managed_folder_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         managed_folder: build.template(block.managed_folder),
         policy_data: build.template(block.policy_data),
@@ -15813,7 +15818,7 @@ local provider(configuration) = {
     },
     storage_notification(name, block): {
       local resource = blockType.resource('google_storage_notification', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         custom_attributes: build.template(std.get(block, 'custom_attributes', null)),
         event_types: build.template(std.get(block, 'event_types', null)),
@@ -15833,7 +15838,7 @@ local provider(configuration) = {
     },
     storage_object_access_control(name, block): {
       local resource = blockType.resource('google_storage_object_access_control', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         entity: build.template(block.entity),
         object: build.template(block.object),
@@ -15852,7 +15857,7 @@ local provider(configuration) = {
     },
     storage_object_acl(name, block): {
       local resource = blockType.resource('google_storage_object_acl', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         object: build.template(block.object),
         predefined_acl: build.template(std.get(block, 'predefined_acl', null)),
@@ -15865,7 +15870,7 @@ local provider(configuration) = {
     },
     storage_transfer_agent_pool(name, block): {
       local resource = blockType.resource('google_storage_transfer_agent_pool', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(block.name),
       }),
@@ -15877,7 +15882,7 @@ local provider(configuration) = {
     },
     storage_transfer_job(name, block): {
       local resource = blockType.resource('google_storage_transfer_job', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(block.description),
         status: build.template(std.get(block, 'status', null)),
       }),
@@ -15892,7 +15897,7 @@ local provider(configuration) = {
     },
     tags_location_tag_binding(name, block): {
       local resource = blockType.resource('google_tags_location_tag_binding', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         parent: build.template(block.parent),
         tag_value: build.template(block.tag_value),
@@ -15905,7 +15910,7 @@ local provider(configuration) = {
     },
     tags_tag_binding(name, block): {
       local resource = blockType.resource('google_tags_tag_binding', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
         tag_value: build.template(block.tag_value),
       }),
@@ -15916,7 +15921,7 @@ local provider(configuration) = {
     },
     tags_tag_key(name, block): {
       local resource = blockType.resource('google_tags_tag_key', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         parent: build.template(block.parent),
         purpose: build.template(std.get(block, 'purpose', null)),
@@ -15936,7 +15941,7 @@ local provider(configuration) = {
     },
     tags_tag_key_iam_binding(name, block): {
       local resource = blockType.resource('google_tags_tag_key_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         tag_key: build.template(block.tag_key),
@@ -15949,7 +15954,7 @@ local provider(configuration) = {
     },
     tags_tag_key_iam_member(name, block): {
       local resource = blockType.resource('google_tags_tag_key_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         tag_key: build.template(block.tag_key),
@@ -15962,7 +15967,7 @@ local provider(configuration) = {
     },
     tags_tag_key_iam_policy(name, block): {
       local resource = blockType.resource('google_tags_tag_key_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         tag_key: build.template(block.tag_key),
       }),
@@ -15973,7 +15978,7 @@ local provider(configuration) = {
     },
     tags_tag_value(name, block): {
       local resource = blockType.resource('google_tags_tag_value', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         parent: build.template(block.parent),
         short_name: build.template(block.short_name),
@@ -15989,7 +15994,7 @@ local provider(configuration) = {
     },
     tags_tag_value_iam_binding(name, block): {
       local resource = blockType.resource('google_tags_tag_value_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         role: build.template(block.role),
         tag_value: build.template(block.tag_value),
@@ -16002,7 +16007,7 @@ local provider(configuration) = {
     },
     tags_tag_value_iam_member(name, block): {
       local resource = blockType.resource('google_tags_tag_value_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         role: build.template(block.role),
         tag_value: build.template(block.tag_value),
@@ -16015,7 +16020,7 @@ local provider(configuration) = {
     },
     tags_tag_value_iam_policy(name, block): {
       local resource = blockType.resource('google_tags_tag_value_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_data: build.template(block.policy_data),
         tag_value: build.template(block.tag_value),
       }),
@@ -16026,7 +16031,7 @@ local provider(configuration) = {
     },
     tpu_node(name, block): {
       local resource = blockType.resource('google_tpu_node', name),
-      _: resource._({
+      _: resource._(block, {
         accelerator_type: build.template(block.accelerator_type),
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
@@ -16052,7 +16057,7 @@ local provider(configuration) = {
     },
     transcoder_job(name, block): {
       local resource = blockType.resource('google_transcoder_job', name),
-      _: resource._({
+      _: resource._(block, {
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
       }),
@@ -16071,7 +16076,7 @@ local provider(configuration) = {
     },
     transcoder_job_template(name, block): {
       local resource = blockType.resource('google_transcoder_job_template', name),
-      _: resource._({
+      _: resource._(block, {
         job_template_id: build.template(block.job_template_id),
         labels: build.template(std.get(block, 'labels', null)),
         location: build.template(block.location),
@@ -16087,7 +16092,7 @@ local provider(configuration) = {
     },
     vertex_ai_dataset(name, block): {
       local resource = blockType.resource('google_vertex_ai_dataset', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(block.display_name),
         labels: build.template(std.get(block, 'labels', null)),
         metadata_schema_uri: build.template(block.metadata_schema_uri),
@@ -16106,7 +16111,7 @@ local provider(configuration) = {
     },
     vertex_ai_deployment_resource_pool(name, block): {
       local resource = blockType.resource('google_vertex_ai_deployment_resource_pool', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         region: build.template(std.get(block, 'region', null)),
       }),
@@ -16118,7 +16123,7 @@ local provider(configuration) = {
     },
     vertex_ai_endpoint(name, block): {
       local resource = blockType.resource('google_vertex_ai_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         dedicated_endpoint_enabled: build.template(std.get(block, 'dedicated_endpoint_enabled', null)),
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
@@ -16150,7 +16155,7 @@ local provider(configuration) = {
     },
     vertex_ai_feature_group(name, block): {
       local resource = blockType.resource('google_vertex_ai_feature_group', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -16170,7 +16175,7 @@ local provider(configuration) = {
     },
     vertex_ai_feature_group_feature(name, block): {
       local resource = blockType.resource('google_vertex_ai_feature_group_feature', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         feature_group: build.template(block.feature_group),
         labels: build.template(std.get(block, 'labels', null)),
@@ -16192,7 +16197,7 @@ local provider(configuration) = {
     },
     vertex_ai_feature_online_store(name, block): {
       local resource = blockType.resource('google_vertex_ai_feature_online_store', name),
-      _: resource._({
+      _: resource._(block, {
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(block.name),
@@ -16212,7 +16217,7 @@ local provider(configuration) = {
     },
     vertex_ai_feature_online_store_featureview(name, block): {
       local resource = blockType.resource('google_vertex_ai_feature_online_store_featureview', name),
-      _: resource._({
+      _: resource._(block, {
         feature_online_store: build.template(block.feature_online_store),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -16231,7 +16236,7 @@ local provider(configuration) = {
     },
     vertex_ai_featurestore(name, block): {
       local resource = blockType.resource('google_vertex_ai_featurestore', name),
-      _: resource._({
+      _: resource._(block, {
         force_destroy: build.template(std.get(block, 'force_destroy', null)),
         labels: build.template(std.get(block, 'labels', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -16250,7 +16255,7 @@ local provider(configuration) = {
     },
     vertex_ai_featurestore_entitytype(name, block): {
       local resource = blockType.resource('google_vertex_ai_featurestore_entitytype', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         featurestore: build.template(block.featurestore),
         labels: build.template(std.get(block, 'labels', null)),
@@ -16270,7 +16275,7 @@ local provider(configuration) = {
     },
     vertex_ai_featurestore_entitytype_feature(name, block): {
       local resource = blockType.resource('google_vertex_ai_featurestore_entitytype_feature', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         entitytype: build.template(block.entitytype),
         labels: build.template(std.get(block, 'labels', null)),
@@ -16292,7 +16297,7 @@ local provider(configuration) = {
     },
     vertex_ai_index(name, block): {
       local resource = blockType.resource('google_vertex_ai_index', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         index_update_method: build.template(std.get(block, 'index_update_method', null)),
@@ -16318,7 +16323,7 @@ local provider(configuration) = {
     },
     vertex_ai_index_endpoint(name, block): {
       local resource = blockType.resource('google_vertex_ai_index_endpoint', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         labels: build.template(std.get(block, 'labels', null)),
@@ -16344,7 +16349,7 @@ local provider(configuration) = {
     },
     vertex_ai_index_endpoint_deployed_index(name, block): {
       local resource = blockType.resource('google_vertex_ai_index_endpoint_deployed_index', name),
-      _: resource._({
+      _: resource._(block, {
         deployed_index_id: build.template(block.deployed_index_id),
         deployment_group: build.template(std.get(block, 'deployment_group', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
@@ -16368,7 +16373,7 @@ local provider(configuration) = {
     },
     vertex_ai_tensorboard(name, block): {
       local resource = blockType.resource('google_vertex_ai_tensorboard', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         display_name: build.template(block.display_name),
         labels: build.template(std.get(block, 'labels', null)),
@@ -16389,7 +16394,7 @@ local provider(configuration) = {
     },
     vmwareengine_cluster(name, block): {
       local resource = blockType.resource('google_vmwareengine_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent: build.template(block.parent),
       }),
@@ -16402,7 +16407,7 @@ local provider(configuration) = {
     },
     vmwareengine_external_access_rule(name, block): {
       local resource = blockType.resource('google_vmwareengine_external_access_rule', name),
-      _: resource._({
+      _: resource._(block, {
         action: build.template(block.action),
         description: build.template(std.get(block, 'description', null)),
         destination_ports: build.template(block.destination_ports),
@@ -16428,7 +16433,7 @@ local provider(configuration) = {
     },
     vmwareengine_external_address(name, block): {
       local resource = blockType.resource('google_vmwareengine_external_address', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         internal_ip: build.template(block.internal_ip),
         name: build.template(block.name),
@@ -16447,7 +16452,7 @@ local provider(configuration) = {
     },
     vmwareengine_network(name, block): {
       local resource = blockType.resource('google_vmwareengine_network', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
         name: build.template(block.name),
@@ -16465,7 +16470,7 @@ local provider(configuration) = {
     },
     vmwareengine_network_peering(name, block): {
       local resource = blockType.resource('google_vmwareengine_network_peering', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         export_custom_routes: build.template(std.get(block, 'export_custom_routes', null)),
         export_custom_routes_with_public_ip: build.template(std.get(block, 'export_custom_routes_with_public_ip', null)),
@@ -16496,7 +16501,7 @@ local provider(configuration) = {
     },
     vmwareengine_network_policy(name, block): {
       local resource = blockType.resource('google_vmwareengine_network_policy', name),
-      _: resource._({
+      _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         edge_services_cidr: build.template(block.edge_services_cidr),
         location: build.template(block.location),
@@ -16517,7 +16522,7 @@ local provider(configuration) = {
     },
     vmwareengine_private_cloud(name, block): {
       local resource = blockType.resource('google_vmwareengine_private_cloud', name),
-      _: resource._({
+      _: resource._(block, {
         deletion_delay_hours: build.template(std.get(block, 'deletion_delay_hours', null)),
         description: build.template(std.get(block, 'description', null)),
         location: build.template(block.location),
@@ -16541,7 +16546,7 @@ local provider(configuration) = {
     },
     vmwareengine_subnet(name, block): {
       local resource = blockType.resource('google_vmwareengine_subnet', name),
-      _: resource._({
+      _: resource._(block, {
         ip_cidr_range: build.template(block.ip_cidr_range),
         name: build.template(block.name),
         parent: build.template(block.parent),
@@ -16563,7 +16568,7 @@ local provider(configuration) = {
     },
     vpc_access_connector(name, block): {
       local resource = blockType.resource('google_vpc_access_connector', name),
-      _: resource._({
+      _: resource._(block, {
         ip_cidr_range: build.template(std.get(block, 'ip_cidr_range', null)),
         machine_type: build.template(std.get(block, 'machine_type', null)),
         name: build.template(block.name),
@@ -16585,7 +16590,7 @@ local provider(configuration) = {
     },
     workbench_instance(name, block): {
       local resource = blockType.resource('google_workbench_instance', name),
-      _: resource._({
+      _: resource._(block, {
         desired_state: build.template(std.get(block, 'desired_state', null)),
         disable_proxy_access: build.template(std.get(block, 'disable_proxy_access', null)),
         instance_id: build.template(std.get(block, 'instance_id', null)),
@@ -16616,7 +16621,7 @@ local provider(configuration) = {
     },
     workbench_instance_iam_binding(name, block): {
       local resource = blockType.resource('google_workbench_instance_iam_binding', name),
-      _: resource._({
+      _: resource._(block, {
         members: build.template(block.members),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -16631,7 +16636,7 @@ local provider(configuration) = {
     },
     workbench_instance_iam_member(name, block): {
       local resource = blockType.resource('google_workbench_instance_iam_member', name),
-      _: resource._({
+      _: resource._(block, {
         member: build.template(block.member),
         name: build.template(block.name),
         role: build.template(block.role),
@@ -16646,7 +16651,7 @@ local provider(configuration) = {
     },
     workbench_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_workbench_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         policy_data: build.template(block.policy_data),
       }),
@@ -16659,7 +16664,7 @@ local provider(configuration) = {
     },
     workflows_workflow(name, block): {
       local resource = blockType.resource('google_workflows_workflow', name),
-      _: resource._({
+      _: resource._(block, {
         call_log_level: build.template(std.get(block, 'call_log_level', null)),
         crypto_key_name: build.template(std.get(block, 'crypto_key_name', null)),
         deletion_protection: build.template(std.get(block, 'deletion_protection', null)),
@@ -16693,7 +16698,7 @@ local provider(configuration) = {
     local blockType = provider.blockType('data'),
     access_approval_folder_service_account(name, block): {
       local resource = blockType.resource('google_access_approval_folder_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         folder_id: build.template(block.folder_id),
       }),
       account_email: resource.field('account_email'),
@@ -16703,7 +16708,7 @@ local provider(configuration) = {
     },
     access_approval_organization_service_account(name, block): {
       local resource = blockType.resource('google_access_approval_organization_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         organization_id: build.template(block.organization_id),
       }),
       account_email: resource.field('account_email'),
@@ -16713,7 +16718,7 @@ local provider(configuration) = {
     },
     access_approval_project_service_account(name, block): {
       local resource = blockType.resource('google_access_approval_project_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         project_id: build.template(block.project_id),
       }),
       account_email: resource.field('account_email'),
@@ -16723,7 +16728,7 @@ local provider(configuration) = {
     },
     access_context_manager_access_policy_iam_policy(name, block): {
       local resource = blockType.resource('google_access_context_manager_access_policy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -16733,7 +16738,7 @@ local provider(configuration) = {
     },
     active_folder(name, block): {
       local resource = blockType.resource('google_active_folder', name),
-      _: resource._({
+      _: resource._(block, {
         api_method: build.template(std.get(block, 'api_method', null)),
         display_name: build.template(block.display_name),
         parent: build.template(block.parent),
@@ -16746,7 +16751,7 @@ local provider(configuration) = {
     },
     alloydb_locations(name, block): {
       local resource = blockType.resource('google_alloydb_locations', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(std.get(block, 'project', null)),
       }),
       id: resource.field('id'),
@@ -16755,7 +16760,7 @@ local provider(configuration) = {
     },
     alloydb_supported_database_flags(name, block): {
       local resource = blockType.resource('google_alloydb_supported_database_flags', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -16766,7 +16771,7 @@ local provider(configuration) = {
     },
     apigee_environment_iam_policy(name, block): {
       local resource = blockType.resource('google_apigee_environment_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         env_id: build.template(block.env_id),
         org_id: build.template(block.org_id),
       }),
@@ -16778,7 +16783,7 @@ local provider(configuration) = {
     },
     app_engine_default_service_account(name, block): {
       local resource = blockType.resource('google_app_engine_default_service_account', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       display_name: resource.field('display_name'),
       email: resource.field('email'),
@@ -16790,7 +16795,7 @@ local provider(configuration) = {
     },
     apphub_application(name, block): {
       local resource = blockType.resource('google_apphub_application', name),
-      _: resource._({
+      _: resource._(block, {
         application_id: build.template(block.application_id),
         location: build.template(block.location),
         project: build.template(block.project),
@@ -16811,7 +16816,7 @@ local provider(configuration) = {
     },
     apphub_discovered_service(name, block): {
       local resource = blockType.resource('google_apphub_discovered_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
         service_uri: build.template(block.service_uri),
@@ -16826,7 +16831,7 @@ local provider(configuration) = {
     },
     apphub_discovered_workload(name, block): {
       local resource = blockType.resource('google_apphub_discovered_workload', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
         workload_uri: build.template(block.workload_uri),
@@ -16841,7 +16846,7 @@ local provider(configuration) = {
     },
     artifact_registry_docker_image(name, block): {
       local resource = blockType.resource('google_artifact_registry_docker_image', name),
-      _: resource._({
+      _: resource._(block, {
         image_name: build.template(block.image_name),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -16863,7 +16868,7 @@ local provider(configuration) = {
     },
     artifact_registry_locations(name, block): {
       local resource = blockType.resource('google_artifact_registry_locations', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       locations: resource.field('locations'),
@@ -16871,7 +16876,7 @@ local provider(configuration) = {
     },
     artifact_registry_repository(name, block): {
       local resource = blockType.resource('google_artifact_registry_repository', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
         repository_id: build.template(block.repository_id),
@@ -16899,7 +16904,7 @@ local provider(configuration) = {
     },
     artifact_registry_repository_iam_policy(name, block): {
       local resource = blockType.resource('google_artifact_registry_repository_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         repository: build.template(block.repository),
       }),
       etag: resource.field('etag'),
@@ -16911,7 +16916,7 @@ local provider(configuration) = {
     },
     beyondcorp_app_connection(name, block): {
       local resource = blockType.resource('google_beyondcorp_app_connection', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -16931,7 +16936,7 @@ local provider(configuration) = {
     },
     beyondcorp_app_connector(name, block): {
       local resource = blockType.resource('google_beyondcorp_app_connector', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -16949,7 +16954,7 @@ local provider(configuration) = {
     },
     beyondcorp_app_gateway(name, block): {
       local resource = blockType.resource('google_beyondcorp_app_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -16970,7 +16975,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_data_exchange_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_data_exchange_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
       }),
       data_exchange_id: resource.field('data_exchange_id'),
@@ -16982,7 +16987,7 @@ local provider(configuration) = {
     },
     bigquery_analytics_hub_listing_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_analytics_hub_listing_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_exchange_id: build.template(block.data_exchange_id),
         listing_id: build.template(block.listing_id),
       }),
@@ -16996,7 +17001,7 @@ local provider(configuration) = {
     },
     bigquery_connection_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_connection_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         connection_id: build.template(block.connection_id),
       }),
       connection_id: resource.field('connection_id'),
@@ -17008,7 +17013,7 @@ local provider(configuration) = {
     },
     bigquery_datapolicy_data_policy_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_datapolicy_data_policy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_policy_id: build.template(block.data_policy_id),
       }),
       data_policy_id: resource.field('data_policy_id'),
@@ -17020,7 +17025,7 @@ local provider(configuration) = {
     },
     bigquery_dataset(name, block): {
       local resource = blockType.resource('google_bigquery_dataset', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -17051,7 +17056,7 @@ local provider(configuration) = {
     },
     bigquery_dataset_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_dataset_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
       }),
       dataset_id: resource.field('dataset_id'),
@@ -17062,7 +17067,7 @@ local provider(configuration) = {
     },
     bigquery_default_service_account(name, block): {
       local resource = blockType.resource('google_bigquery_default_service_account', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       email: resource.field('email'),
       id: resource.field('id'),
@@ -17071,7 +17076,7 @@ local provider(configuration) = {
     },
     bigquery_table_iam_policy(name, block): {
       local resource = blockType.resource('google_bigquery_table_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         table_id: build.template(block.table_id),
       }),
@@ -17084,7 +17089,7 @@ local provider(configuration) = {
     },
     bigquery_tables(name, block): {
       local resource = blockType.resource('google_bigquery_tables', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -17095,7 +17100,7 @@ local provider(configuration) = {
     },
     bigtable_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_bigtable_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
       }),
       etag: resource.field('etag'),
@@ -17106,7 +17111,7 @@ local provider(configuration) = {
     },
     bigtable_table_iam_policy(name, block): {
       local resource = blockType.resource('google_bigtable_table_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         table: build.template(block.table),
       }),
@@ -17119,7 +17124,7 @@ local provider(configuration) = {
     },
     billing_account(name, block): {
       local resource = blockType.resource('google_billing_account', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account: build.template(std.get(block, 'billing_account', null)),
         lookup_projects: build.template(std.get(block, 'lookup_projects', null)),
       }),
@@ -17133,7 +17138,7 @@ local provider(configuration) = {
     },
     billing_account_iam_policy(name, block): {
       local resource = blockType.resource('google_billing_account_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         billing_account_id: build.template(block.billing_account_id),
       }),
       billing_account_id: resource.field('billing_account_id'),
@@ -17143,7 +17148,7 @@ local provider(configuration) = {
     },
     binary_authorization_attestor_iam_policy(name, block): {
       local resource = blockType.resource('google_binary_authorization_attestor_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         attestor: build.template(block.attestor),
       }),
       attestor: resource.field('attestor'),
@@ -17154,7 +17159,7 @@ local provider(configuration) = {
     },
     certificate_manager_certificate_map(name, block): {
       local resource = blockType.resource('google_certificate_manager_certificate_map', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -17171,7 +17176,7 @@ local provider(configuration) = {
     },
     certificate_manager_certificates(name, block): {
       local resource = blockType.resource('google_certificate_manager_certificates', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         region: build.template(std.get(block, 'region', null)),
       }),
@@ -17182,7 +17187,7 @@ local provider(configuration) = {
     },
     client_config(name, block): {
       local resource = blockType.resource('google_client_config', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       access_token: resource.field('access_token'),
       default_labels: resource.field('default_labels'),
@@ -17193,14 +17198,14 @@ local provider(configuration) = {
     },
     client_openid_userinfo(name, block): {
       local resource = blockType.resource('google_client_openid_userinfo', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       email: resource.field('email'),
       id: resource.field('id'),
     },
     cloud_asset_search_all_resources(name, block): {
       local resource = blockType.resource('google_cloud_asset_search_all_resources', name),
-      _: resource._({
+      _: resource._(block, {
         asset_types: build.template(std.get(block, 'asset_types', null)),
         query: build.template(std.get(block, 'query', null)),
         scope: build.template(block.scope),
@@ -17213,14 +17218,14 @@ local provider(configuration) = {
     },
     cloud_identity_group_lookup(name, block): {
       local resource = blockType.resource('google_cloud_identity_group_lookup', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       name: resource.field('name'),
     },
     cloud_identity_group_memberships(name, block): {
       local resource = blockType.resource('google_cloud_identity_group_memberships', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(block.group),
       }),
       group: resource.field('group'),
@@ -17229,7 +17234,7 @@ local provider(configuration) = {
     },
     cloud_identity_group_transitive_memberships(name, block): {
       local resource = blockType.resource('google_cloud_identity_group_transitive_memberships', name),
-      _: resource._({
+      _: resource._(block, {
         group: build.template(block.group),
       }),
       group: resource.field('group'),
@@ -17238,7 +17243,7 @@ local provider(configuration) = {
     },
     cloud_identity_groups(name, block): {
       local resource = blockType.resource('google_cloud_identity_groups', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
       }),
       groups: resource.field('groups'),
@@ -17247,7 +17252,7 @@ local provider(configuration) = {
     },
     cloud_quotas_quota_info(name, block): {
       local resource = blockType.resource('google_cloud_quotas_quota_info', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
         quota_id: build.template(block.quota_id),
         service: build.template(block.service),
@@ -17273,7 +17278,7 @@ local provider(configuration) = {
     },
     cloud_quotas_quota_infos(name, block): {
       local resource = blockType.resource('google_cloud_quotas_quota_infos', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
         service: build.template(block.service),
       }),
@@ -17284,7 +17289,7 @@ local provider(configuration) = {
     },
     cloud_run_locations(name, block): {
       local resource = blockType.resource('google_cloud_run_locations', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       locations: resource.field('locations'),
@@ -17292,7 +17297,7 @@ local provider(configuration) = {
     },
     cloud_run_service(name, block): {
       local resource = blockType.resource('google_cloud_run_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -17309,7 +17314,7 @@ local provider(configuration) = {
     },
     cloud_run_service_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_run_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         service: build.template(block.service),
       }),
       etag: resource.field('etag'),
@@ -17321,7 +17326,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_job(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_job', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -17359,7 +17364,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_job_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_job_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17371,7 +17376,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_service(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -17417,7 +17422,7 @@ local provider(configuration) = {
     },
     cloud_run_v2_service_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_run_v2_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17429,7 +17434,7 @@ local provider(configuration) = {
     },
     cloud_tasks_queue_iam_policy(name, block): {
       local resource = blockType.resource('google_cloud_tasks_queue_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17441,7 +17446,7 @@ local provider(configuration) = {
     },
     cloudbuild_trigger(name, block): {
       local resource = blockType.resource('google_cloudbuild_trigger', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
         trigger_id: build.template(block.trigger_id),
@@ -17475,7 +17480,7 @@ local provider(configuration) = {
     },
     cloudbuildv2_connection_iam_policy(name, block): {
       local resource = blockType.resource('google_cloudbuildv2_connection_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17487,7 +17492,7 @@ local provider(configuration) = {
     },
     clouddeploy_custom_target_type_iam_policy(name, block): {
       local resource = blockType.resource('google_clouddeploy_custom_target_type_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17499,7 +17504,7 @@ local provider(configuration) = {
     },
     clouddeploy_delivery_pipeline_iam_policy(name, block): {
       local resource = blockType.resource('google_clouddeploy_delivery_pipeline_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17511,7 +17516,7 @@ local provider(configuration) = {
     },
     clouddeploy_target_iam_policy(name, block): {
       local resource = blockType.resource('google_clouddeploy_target_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17523,7 +17528,7 @@ local provider(configuration) = {
     },
     cloudfunctions2_function(name, block): {
       local resource = blockType.resource('google_cloudfunctions2_function', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -17547,7 +17552,7 @@ local provider(configuration) = {
     },
     cloudfunctions2_function_iam_policy(name, block): {
       local resource = blockType.resource('google_cloudfunctions2_function_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
       }),
       cloud_function: resource.field('cloud_function'),
@@ -17559,7 +17564,7 @@ local provider(configuration) = {
     },
     cloudfunctions_function(name, block): {
       local resource = blockType.resource('google_cloudfunctions_function', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -17603,7 +17608,7 @@ local provider(configuration) = {
     },
     cloudfunctions_function_iam_policy(name, block): {
       local resource = blockType.resource('google_cloudfunctions_function_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_function: build.template(block.cloud_function),
       }),
       cloud_function: resource.field('cloud_function'),
@@ -17615,7 +17620,7 @@ local provider(configuration) = {
     },
     composer_environment(name, block): {
       local resource = blockType.resource('google_composer_environment', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -17632,7 +17637,7 @@ local provider(configuration) = {
     },
     composer_image_versions(name, block): {
       local resource = blockType.resource('google_composer_image_versions', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       image_versions: resource.field('image_versions'),
@@ -17641,7 +17646,7 @@ local provider(configuration) = {
     },
     compute_address(name, block): {
       local resource = blockType.resource('google_compute_address', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       address: resource.field('address'),
@@ -17661,7 +17666,7 @@ local provider(configuration) = {
     },
     compute_addresses(name, block): {
       local resource = blockType.resource('google_compute_addresses', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         region: build.template(std.get(block, 'region', null)),
       }),
@@ -17673,7 +17678,7 @@ local provider(configuration) = {
     },
     compute_backend_bucket(name, block): {
       local resource = blockType.resource('google_compute_backend_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -17692,7 +17697,7 @@ local provider(configuration) = {
     },
     compute_backend_service(name, block): {
       local resource = blockType.resource('google_compute_backend_service', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -17734,7 +17739,7 @@ local provider(configuration) = {
     },
     compute_default_service_account(name, block): {
       local resource = blockType.resource('google_compute_default_service_account', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       display_name: resource.field('display_name'),
       email: resource.field('email'),
@@ -17746,7 +17751,7 @@ local provider(configuration) = {
     },
     compute_disk(name, block): {
       local resource = blockType.resource('google_compute_disk', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         zone: build.template(std.get(block, 'zone', null)),
@@ -17789,7 +17794,7 @@ local provider(configuration) = {
     },
     compute_disk_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_disk_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -17801,7 +17806,7 @@ local provider(configuration) = {
     },
     compute_forwarding_rule(name, block): {
       local resource = blockType.resource('google_compute_forwarding_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -17845,7 +17850,7 @@ local provider(configuration) = {
     },
     compute_forwarding_rules(name, block): {
       local resource = blockType.resource('google_compute_forwarding_rules', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
       }),
@@ -17856,7 +17861,7 @@ local provider(configuration) = {
     },
     compute_global_address(name, block): {
       local resource = blockType.resource('google_compute_global_address', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       address: resource.field('address'),
@@ -17875,7 +17880,7 @@ local provider(configuration) = {
     },
     compute_global_forwarding_rule(name, block): {
       local resource = blockType.resource('google_compute_global_forwarding_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -17906,7 +17911,7 @@ local provider(configuration) = {
     },
     compute_ha_vpn_gateway(name, block): {
       local resource = blockType.resource('google_compute_ha_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -17924,7 +17929,7 @@ local provider(configuration) = {
     },
     compute_health_check(name, block): {
       local resource = blockType.resource('google_compute_health_check', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -17950,7 +17955,7 @@ local provider(configuration) = {
     },
     compute_image(name, block): {
       local resource = blockType.resource('google_compute_image', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         most_recent: build.template(std.get(block, 'most_recent', null)),
       }),
@@ -17978,7 +17983,7 @@ local provider(configuration) = {
     },
     compute_image_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_image_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         image: build.template(block.image),
       }),
       etag: resource.field('etag'),
@@ -17989,7 +17994,7 @@ local provider(configuration) = {
     },
     compute_instance(name, block): {
       local resource = blockType.resource('google_compute_instance', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         project: build.template(std.get(block, 'project', null)),
         self_link: build.template(std.get(block, 'self_link', null)),
@@ -18040,7 +18045,7 @@ local provider(configuration) = {
     },
     compute_instance_group(name, block): {
       local resource = blockType.resource('google_compute_instance_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
       }),
       description: resource.field('description'),
@@ -18056,7 +18061,7 @@ local provider(configuration) = {
     },
     compute_instance_group_manager(name, block): {
       local resource = blockType.resource('google_compute_instance_group_manager', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         project: build.template(std.get(block, 'project', null)),
         self_link: build.template(std.get(block, 'self_link', null)),
@@ -18091,7 +18096,7 @@ local provider(configuration) = {
     },
     compute_instance_guest_attributes(name, block): {
       local resource = blockType.resource('google_compute_instance_guest_attributes', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         query_path: build.template(std.get(block, 'query_path', null)),
         variable_key: build.template(std.get(block, 'variable_key', null)),
@@ -18108,7 +18113,7 @@ local provider(configuration) = {
     },
     compute_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
       }),
       etag: resource.field('etag'),
@@ -18120,7 +18125,7 @@ local provider(configuration) = {
     },
     compute_instance_serial_port(name, block): {
       local resource = blockType.resource('google_compute_instance_serial_port', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         port: build.template(block.port),
       }),
@@ -18133,7 +18138,7 @@ local provider(configuration) = {
     },
     compute_instance_template(name, block): {
       local resource = blockType.resource('google_compute_instance_template', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         most_recent: build.template(std.get(block, 'most_recent', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -18179,7 +18184,7 @@ local provider(configuration) = {
     },
     compute_lb_ip_ranges(name, block): {
       local resource = blockType.resource('google_compute_lb_ip_ranges', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       http_ssl_tcp_internal: resource.field('http_ssl_tcp_internal'),
       id: resource.field('id'),
@@ -18187,7 +18192,7 @@ local provider(configuration) = {
     },
     compute_machine_types(name, block): {
       local resource = blockType.resource('google_compute_machine_types', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
       }),
       filter: resource.field('filter'),
@@ -18198,7 +18203,7 @@ local provider(configuration) = {
     },
     compute_network(name, block): {
       local resource = blockType.resource('google_compute_network', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -18213,7 +18218,7 @@ local provider(configuration) = {
     },
     compute_network_endpoint_group(name, block): {
       local resource = blockType.resource('google_compute_network_endpoint_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         project: build.template(std.get(block, 'project', null)),
         self_link: build.template(std.get(block, 'self_link', null)),
@@ -18233,7 +18238,7 @@ local provider(configuration) = {
     },
     compute_network_peering(name, block): {
       local resource = blockType.resource('google_compute_network_peering', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         network: build.template(block.network),
       }),
@@ -18251,7 +18256,7 @@ local provider(configuration) = {
     },
     compute_networks(name, block): {
       local resource = blockType.resource('google_compute_networks', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(std.get(block, 'project', null)),
       }),
       id: resource.field('id'),
@@ -18261,7 +18266,7 @@ local provider(configuration) = {
     },
     compute_node_types(name, block): {
       local resource = blockType.resource('google_compute_node_types', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       names: resource.field('names'),
@@ -18270,7 +18275,7 @@ local provider(configuration) = {
     },
     compute_region_disk(name, block): {
       local resource = blockType.resource('google_compute_region_disk', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -18305,7 +18310,7 @@ local provider(configuration) = {
     },
     compute_region_disk_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_region_disk_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -18317,7 +18322,7 @@ local provider(configuration) = {
     },
     compute_region_instance_group(name, block): {
       local resource = blockType.resource('google_compute_region_instance_group', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       instances: resource.field('instances'),
@@ -18329,7 +18334,7 @@ local provider(configuration) = {
     },
     compute_region_instance_group_manager(name, block): {
       local resource = blockType.resource('google_compute_region_instance_group_manager', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -18365,7 +18370,7 @@ local provider(configuration) = {
     },
     compute_region_instance_template(name, block): {
       local resource = blockType.resource('google_compute_region_instance_template', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         most_recent: build.template(std.get(block, 'most_recent', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -18410,7 +18415,7 @@ local provider(configuration) = {
     },
     compute_region_network_endpoint_group(name, block): {
       local resource = blockType.resource('google_compute_region_network_endpoint_group', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -18432,7 +18437,7 @@ local provider(configuration) = {
     },
     compute_region_ssl_certificate(name, block): {
       local resource = blockType.resource('google_compute_region_ssl_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -18452,7 +18457,7 @@ local provider(configuration) = {
     },
     compute_regions(name, block): {
       local resource = blockType.resource('google_compute_regions', name),
-      _: resource._({
+      _: resource._(block, {
         status: build.template(std.get(block, 'status', null)),
       }),
       id: resource.field('id'),
@@ -18462,7 +18467,7 @@ local provider(configuration) = {
     },
     compute_reservation(name, block): {
       local resource = blockType.resource('google_compute_reservation', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         zone: build.template(block.zone),
@@ -18482,7 +18487,7 @@ local provider(configuration) = {
     },
     compute_resource_policy(name, block): {
       local resource = blockType.resource('google_compute_resource_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -18500,7 +18505,7 @@ local provider(configuration) = {
     },
     compute_router(name, block): {
       local resource = blockType.resource('google_compute_router', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         network: build.template(block.network),
         project: build.template(std.get(block, 'project', null)),
@@ -18519,7 +18524,7 @@ local provider(configuration) = {
     },
     compute_router_nat(name, block): {
       local resource = blockType.resource('google_compute_router_nat', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -18552,7 +18557,7 @@ local provider(configuration) = {
     },
     compute_router_status(name, block): {
       local resource = blockType.resource('google_compute_router_status', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -18566,7 +18571,7 @@ local provider(configuration) = {
     },
     compute_security_policy(name, block): {
       local resource = blockType.resource('google_compute_security_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
         project: build.template(std.get(block, 'project', null)),
         self_link: build.template(std.get(block, 'self_link', null)),
@@ -18585,7 +18590,7 @@ local provider(configuration) = {
     },
     compute_snapshot(name, block): {
       local resource = blockType.resource('google_compute_snapshot', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         most_recent: build.template(std.get(block, 'most_recent', null)),
         name: build.template(std.get(block, 'name', null)),
@@ -18616,7 +18621,7 @@ local provider(configuration) = {
     },
     compute_snapshot_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_snapshot_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -18627,7 +18632,7 @@ local provider(configuration) = {
     },
     compute_ssl_certificate(name, block): {
       local resource = blockType.resource('google_compute_ssl_certificate', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -18645,7 +18650,7 @@ local provider(configuration) = {
     },
     compute_ssl_policy(name, block): {
       local resource = blockType.resource('google_compute_ssl_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -18663,7 +18668,7 @@ local provider(configuration) = {
     },
     compute_subnetwork(name, block): {
       local resource = blockType.resource('google_compute_subnetwork', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(std.get(block, 'name', null)),
       }),
       description: resource.field('description'),
@@ -18681,7 +18686,7 @@ local provider(configuration) = {
     },
     compute_subnetwork_iam_policy(name, block): {
       local resource = blockType.resource('google_compute_subnetwork_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         subnetwork: build.template(block.subnetwork),
       }),
       etag: resource.field('etag'),
@@ -18693,7 +18698,7 @@ local provider(configuration) = {
     },
     compute_subnetworks(name, block): {
       local resource = blockType.resource('google_compute_subnetworks', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -18706,7 +18711,7 @@ local provider(configuration) = {
     },
     compute_vpn_gateway(name, block): {
       local resource = blockType.resource('google_compute_vpn_gateway', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       description: resource.field('description'),
@@ -18719,7 +18724,7 @@ local provider(configuration) = {
     },
     compute_zones(name, block): {
       local resource = blockType.resource('google_compute_zones', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
         status: build.template(std.get(block, 'status', null)),
       }),
@@ -18731,7 +18736,7 @@ local provider(configuration) = {
     },
     container_analysis_note_iam_policy(name, block): {
       local resource = blockType.resource('google_container_analysis_note_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         note: build.template(block.note),
       }),
       etag: resource.field('etag'),
@@ -18742,7 +18747,7 @@ local provider(configuration) = {
     },
     container_attached_install_manifest(name, block): {
       local resource = blockType.resource('google_container_attached_install_manifest', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_id: build.template(block.cluster_id),
         location: build.template(block.location),
         platform_version: build.template(block.platform_version),
@@ -18757,7 +18762,7 @@ local provider(configuration) = {
     },
     container_attached_versions(name, block): {
       local resource = blockType.resource('google_container_attached_versions', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(block.project),
       }),
@@ -18768,7 +18773,7 @@ local provider(configuration) = {
     },
     container_aws_versions(name, block): {
       local resource = blockType.resource('google_container_aws_versions', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -18780,7 +18785,7 @@ local provider(configuration) = {
     },
     container_azure_versions(name, block): {
       local resource = blockType.resource('google_container_azure_versions', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -18792,7 +18797,7 @@ local provider(configuration) = {
     },
     container_cluster(name, block): {
       local resource = blockType.resource('google_container_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -18876,7 +18881,7 @@ local provider(configuration) = {
     },
     container_engine_versions(name, block): {
       local resource = blockType.resource('google_container_engine_versions', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         project: build.template(std.get(block, 'project', null)),
         version_prefix: build.template(std.get(block, 'version_prefix', null)),
@@ -18895,7 +18900,7 @@ local provider(configuration) = {
     },
     container_registry_image(name, block): {
       local resource = blockType.resource('google_container_registry_image', name),
-      _: resource._({
+      _: resource._(block, {
         digest: build.template(std.get(block, 'digest', null)),
         name: build.template(block.name),
         region: build.template(std.get(block, 'region', null)),
@@ -18911,7 +18916,7 @@ local provider(configuration) = {
     },
     container_registry_repository(name, block): {
       local resource = blockType.resource('google_container_registry_repository', name),
-      _: resource._({
+      _: resource._(block, {
         region: build.template(std.get(block, 'region', null)),
       }),
       id: resource.field('id'),
@@ -18921,7 +18926,7 @@ local provider(configuration) = {
     },
     data_catalog_entry_group_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_entry_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group: build.template(block.entry_group),
       }),
       entry_group: resource.field('entry_group'),
@@ -18933,7 +18938,7 @@ local provider(configuration) = {
     },
     data_catalog_policy_tag_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_policy_tag_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_tag: build.template(block.policy_tag),
       }),
       etag: resource.field('etag'),
@@ -18943,7 +18948,7 @@ local provider(configuration) = {
     },
     data_catalog_tag_template_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_tag_template_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         tag_template: build.template(block.tag_template),
       }),
       etag: resource.field('etag'),
@@ -18955,7 +18960,7 @@ local provider(configuration) = {
     },
     data_catalog_taxonomy_iam_policy(name, block): {
       local resource = blockType.resource('google_data_catalog_taxonomy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         taxonomy: build.template(block.taxonomy),
       }),
       etag: resource.field('etag'),
@@ -18967,7 +18972,7 @@ local provider(configuration) = {
     },
     data_fusion_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_data_fusion_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -18979,7 +18984,7 @@ local provider(configuration) = {
     },
     dataplex_aspect_type_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_aspect_type_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         aspect_type_id: build.template(block.aspect_type_id),
       }),
       aspect_type_id: resource.field('aspect_type_id'),
@@ -18991,7 +18996,7 @@ local provider(configuration) = {
     },
     dataplex_asset_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_asset_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         asset: build.template(block.asset),
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
@@ -19007,7 +19012,7 @@ local provider(configuration) = {
     },
     dataplex_datascan_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_datascan_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         data_scan_id: build.template(block.data_scan_id),
       }),
       data_scan_id: resource.field('data_scan_id'),
@@ -19019,7 +19024,7 @@ local provider(configuration) = {
     },
     dataplex_entry_group_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_entry_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         entry_group_id: build.template(block.entry_group_id),
       }),
       entry_group_id: resource.field('entry_group_id'),
@@ -19031,7 +19036,7 @@ local provider(configuration) = {
     },
     dataplex_entry_type_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_entry_type_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         entry_type_id: build.template(block.entry_type_id),
       }),
       entry_type_id: resource.field('entry_type_id'),
@@ -19043,7 +19048,7 @@ local provider(configuration) = {
     },
     dataplex_lake_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_lake_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
       }),
       etag: resource.field('etag'),
@@ -19055,7 +19060,7 @@ local provider(configuration) = {
     },
     dataplex_task_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_task_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         lake: build.template(block.lake),
         task_id: build.template(block.task_id),
       }),
@@ -19069,7 +19074,7 @@ local provider(configuration) = {
     },
     dataplex_zone_iam_policy(name, block): {
       local resource = blockType.resource('google_dataplex_zone_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataplex_zone: build.template(block.dataplex_zone),
         lake: build.template(block.lake),
       }),
@@ -19083,7 +19088,7 @@ local provider(configuration) = {
     },
     dataproc_autoscaling_policy_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_autoscaling_policy_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         policy_id: build.template(block.policy_id),
       }),
       etag: resource.field('etag'),
@@ -19095,7 +19100,7 @@ local provider(configuration) = {
     },
     dataproc_cluster_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_cluster_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         cluster: build.template(block.cluster),
       }),
       cluster: resource.field('cluster'),
@@ -19107,7 +19112,7 @@ local provider(configuration) = {
     },
     dataproc_job_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_job_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         job_id: build.template(block.job_id),
       }),
       etag: resource.field('etag'),
@@ -19119,7 +19124,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_federation_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_federation_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         federation_id: build.template(block.federation_id),
       }),
       etag: resource.field('etag'),
@@ -19131,7 +19136,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_service(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_service', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
         service_id: build.template(block.service_id),
@@ -19166,7 +19171,7 @@ local provider(configuration) = {
     },
     dataproc_metastore_service_iam_policy(name, block): {
       local resource = blockType.resource('google_dataproc_metastore_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         service_id: build.template(block.service_id),
       }),
       etag: resource.field('etag'),
@@ -19178,7 +19183,7 @@ local provider(configuration) = {
     },
     datastream_static_ips(name, block): {
       local resource = blockType.resource('google_datastream_static_ips', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -19189,7 +19194,7 @@ local provider(configuration) = {
     },
     dns_keys(name, block): {
       local resource = blockType.resource('google_dns_keys', name),
-      _: resource._({
+      _: resource._(block, {
         managed_zone: build.template(block.managed_zone),
       }),
       id: resource.field('id'),
@@ -19200,7 +19205,7 @@ local provider(configuration) = {
     },
     dns_managed_zone(name, block): {
       local resource = blockType.resource('google_dns_managed_zone', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -19215,7 +19220,7 @@ local provider(configuration) = {
     },
     dns_managed_zone_iam_policy(name, block): {
       local resource = blockType.resource('google_dns_managed_zone_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         managed_zone: build.template(block.managed_zone),
       }),
       etag: resource.field('etag'),
@@ -19226,7 +19231,7 @@ local provider(configuration) = {
     },
     dns_managed_zones(name, block): {
       local resource = blockType.resource('google_dns_managed_zones', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(std.get(block, 'project', null)),
       }),
       id: resource.field('id'),
@@ -19235,7 +19240,7 @@ local provider(configuration) = {
     },
     dns_record_set(name, block): {
       local resource = blockType.resource('google_dns_record_set', name),
-      _: resource._({
+      _: resource._(block, {
         managed_zone: build.template(block.managed_zone),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -19251,7 +19256,7 @@ local provider(configuration) = {
     },
     endpoints_service_consumers_iam_policy(name, block): {
       local resource = blockType.resource('google_endpoints_service_consumers_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         consumer_project: build.template(block.consumer_project),
         service_name: build.template(block.service_name),
       }),
@@ -19263,7 +19268,7 @@ local provider(configuration) = {
     },
     endpoints_service_iam_policy(name, block): {
       local resource = blockType.resource('google_endpoints_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         service_name: build.template(block.service_name),
       }),
       etag: resource.field('etag'),
@@ -19273,7 +19278,7 @@ local provider(configuration) = {
     },
     filestore_instance(name, block): {
       local resource = blockType.resource('google_filestore_instance', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(std.get(block, 'location', null)),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -19299,7 +19304,7 @@ local provider(configuration) = {
     },
     folder(name, block): {
       local resource = blockType.resource('google_folder', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
         lookup_organization: build.template(std.get(block, 'lookup_organization', null)),
       }),
@@ -19317,7 +19322,7 @@ local provider(configuration) = {
     },
     folder_iam_policy(name, block): {
       local resource = blockType.resource('google_folder_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
       }),
       etag: resource.field('etag'),
@@ -19327,7 +19332,7 @@ local provider(configuration) = {
     },
     folder_organization_policy(name, block): {
       local resource = blockType.resource('google_folder_organization_policy', name),
-      _: resource._({
+      _: resource._(block, {
         constraint: build.template(block.constraint),
         folder: build.template(block.folder),
       }),
@@ -19343,7 +19348,7 @@ local provider(configuration) = {
     },
     folders(name, block): {
       local resource = blockType.resource('google_folders', name),
-      _: resource._({
+      _: resource._(block, {
         parent_id: build.template(block.parent_id),
       }),
       folders: resource.field('folders'),
@@ -19352,7 +19357,7 @@ local provider(configuration) = {
     },
     gke_backup_backup_plan_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_backup_backup_plan_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -19364,7 +19369,7 @@ local provider(configuration) = {
     },
     gke_backup_restore_plan_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_backup_restore_plan_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -19376,7 +19381,7 @@ local provider(configuration) = {
     },
     gke_hub_feature_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_hub_feature_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -19388,7 +19393,7 @@ local provider(configuration) = {
     },
     gke_hub_membership_binding(name, block): {
       local resource = blockType.resource('google_gke_hub_membership_binding', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         membership_binding_id: build.template(block.membership_binding_id),
         membership_id: build.template(block.membership_id),
@@ -19412,7 +19417,7 @@ local provider(configuration) = {
     },
     gke_hub_membership_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_hub_membership_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         membership_id: build.template(block.membership_id),
       }),
       etag: resource.field('etag'),
@@ -19424,7 +19429,7 @@ local provider(configuration) = {
     },
     gke_hub_scope_iam_policy(name, block): {
       local resource = blockType.resource('google_gke_hub_scope_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         scope_id: build.template(block.scope_id),
       }),
       etag: resource.field('etag'),
@@ -19435,7 +19440,7 @@ local provider(configuration) = {
     },
     healthcare_consent_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_consent_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         consent_store_id: build.template(block.consent_store_id),
         dataset: build.template(block.dataset),
       }),
@@ -19447,7 +19452,7 @@ local provider(configuration) = {
     },
     healthcare_dataset_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_dataset_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dataset_id: build.template(block.dataset_id),
       }),
       dataset_id: resource.field('dataset_id'),
@@ -19457,7 +19462,7 @@ local provider(configuration) = {
     },
     healthcare_dicom_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_dicom_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dicom_store_id: build.template(block.dicom_store_id),
       }),
       dicom_store_id: resource.field('dicom_store_id'),
@@ -19467,7 +19472,7 @@ local provider(configuration) = {
     },
     healthcare_fhir_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_fhir_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         fhir_store_id: build.template(block.fhir_store_id),
       }),
       etag: resource.field('etag'),
@@ -19477,7 +19482,7 @@ local provider(configuration) = {
     },
     healthcare_hl7_v2_store_iam_policy(name, block): {
       local resource = blockType.resource('google_healthcare_hl7_v2_store_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         hl7_v2_store_id: build.template(block.hl7_v2_store_id),
       }),
       etag: resource.field('etag'),
@@ -19487,14 +19492,14 @@ local provider(configuration) = {
     },
     iam_policy(name, block): {
       local resource = blockType.resource('google_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       policy_data: resource.field('policy_data'),
     },
     iam_role(name, block): {
       local resource = blockType.resource('google_iam_role', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       id: resource.field('id'),
@@ -19505,7 +19510,7 @@ local provider(configuration) = {
     },
     iam_testable_permissions(name, block): {
       local resource = blockType.resource('google_iam_testable_permissions', name),
-      _: resource._({
+      _: resource._(block, {
         custom_support_level: build.template(std.get(block, 'custom_support_level', null)),
         full_resource_name: build.template(block.full_resource_name),
         stages: build.template(std.get(block, 'stages', null)),
@@ -19518,7 +19523,7 @@ local provider(configuration) = {
     },
     iap_app_engine_service_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_app_engine_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         service: build.template(block.service),
       }),
@@ -19531,7 +19536,7 @@ local provider(configuration) = {
     },
     iap_app_engine_version_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_app_engine_version_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
         service: build.template(block.service),
         version_id: build.template(block.version_id),
@@ -19546,7 +19551,7 @@ local provider(configuration) = {
     },
     iap_client(name, block): {
       local resource = blockType.resource('google_iap_client', name),
-      _: resource._({
+      _: resource._(block, {
         brand: build.template(block.brand),
         client_id: build.template(block.client_id),
       }),
@@ -19558,7 +19563,7 @@ local provider(configuration) = {
     },
     iap_tunnel_dest_group_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_tunnel_dest_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         dest_group: build.template(block.dest_group),
       }),
       dest_group: resource.field('dest_group'),
@@ -19570,7 +19575,7 @@ local provider(configuration) = {
     },
     iap_tunnel_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_tunnel_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       etag: resource.field('etag'),
       id: resource.field('id'),
@@ -19579,7 +19584,7 @@ local provider(configuration) = {
     },
     iap_tunnel_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_tunnel_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
       }),
       etag: resource.field('etag'),
@@ -19591,7 +19596,7 @@ local provider(configuration) = {
     },
     iap_web_backend_service_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_backend_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         web_backend_service: build.template(block.web_backend_service),
       }),
       etag: resource.field('etag'),
@@ -19602,7 +19607,7 @@ local provider(configuration) = {
     },
     iap_web_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       etag: resource.field('etag'),
       id: resource.field('id'),
@@ -19611,7 +19616,7 @@ local provider(configuration) = {
     },
     iap_web_region_backend_service_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_region_backend_service_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         web_region_backend_service: build.template(block.web_region_backend_service),
       }),
       etag: resource.field('etag'),
@@ -19623,7 +19628,7 @@ local provider(configuration) = {
     },
     iap_web_type_app_engine_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_type_app_engine_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         app_id: build.template(block.app_id),
       }),
       app_id: resource.field('app_id'),
@@ -19634,7 +19639,7 @@ local provider(configuration) = {
     },
     iap_web_type_compute_iam_policy(name, block): {
       local resource = blockType.resource('google_iap_web_type_compute_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       etag: resource.field('etag'),
       id: resource.field('id'),
@@ -19643,7 +19648,7 @@ local provider(configuration) = {
     },
     kms_crypto_key(name, block): {
       local resource = blockType.resource('google_kms_crypto_key', name),
-      _: resource._({
+      _: resource._(block, {
         key_ring: build.template(block.key_ring),
         name: build.template(block.name),
       }),
@@ -19664,7 +19669,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_iam_policy(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key_id: build.template(block.crypto_key_id),
       }),
       crypto_key_id: resource.field('crypto_key_id'),
@@ -19674,7 +19679,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_latest_version(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_latest_version', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key: build.template(block.crypto_key),
         filter: build.template(std.get(block, 'filter', null)),
       }),
@@ -19690,7 +19695,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_version(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_version', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key: build.template(block.crypto_key),
         version: build.template(std.get(block, 'version', null)),
       }),
@@ -19705,7 +19710,7 @@ local provider(configuration) = {
     },
     kms_crypto_key_versions(name, block): {
       local resource = blockType.resource('google_kms_crypto_key_versions', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key: build.template(block.crypto_key),
         filter: build.template(std.get(block, 'filter', null)),
       }),
@@ -19717,7 +19722,7 @@ local provider(configuration) = {
     },
     kms_crypto_keys(name, block): {
       local resource = blockType.resource('google_kms_crypto_keys', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         key_ring: build.template(block.key_ring),
       }),
@@ -19728,7 +19733,7 @@ local provider(configuration) = {
     },
     kms_ekm_connection_iam_policy(name, block): {
       local resource = blockType.resource('google_kms_ekm_connection_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -19740,7 +19745,7 @@ local provider(configuration) = {
     },
     kms_key_ring(name, block): {
       local resource = blockType.resource('google_kms_key_ring', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -19752,7 +19757,7 @@ local provider(configuration) = {
     },
     kms_key_ring_iam_policy(name, block): {
       local resource = blockType.resource('google_kms_key_ring_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         key_ring_id: build.template(block.key_ring_id),
       }),
       etag: resource.field('etag'),
@@ -19762,7 +19767,7 @@ local provider(configuration) = {
     },
     kms_key_rings(name, block): {
       local resource = blockType.resource('google_kms_key_rings', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -19775,7 +19780,7 @@ local provider(configuration) = {
     },
     kms_secret(name, block): {
       local resource = blockType.resource('google_kms_secret', name),
-      _: resource._({
+      _: resource._(block, {
         additional_authenticated_data: build.template(std.get(block, 'additional_authenticated_data', null)),
         ciphertext: build.template(block.ciphertext),
         crypto_key: build.template(block.crypto_key),
@@ -19788,7 +19793,7 @@ local provider(configuration) = {
     },
     kms_secret_ciphertext(name, block): {
       local resource = blockType.resource('google_kms_secret_ciphertext', name),
-      _: resource._({
+      _: resource._(block, {
         crypto_key: build.template(block.crypto_key),
         plaintext: build.template(block.plaintext),
       }),
@@ -19799,7 +19804,7 @@ local provider(configuration) = {
     },
     logging_folder_settings(name, block): {
       local resource = blockType.resource('google_logging_folder_settings', name),
-      _: resource._({
+      _: resource._(block, {
         folder: build.template(block.folder),
       }),
       disable_default_sink: resource.field('disable_default_sink'),
@@ -19813,7 +19818,7 @@ local provider(configuration) = {
     },
     logging_log_view_iam_policy(name, block): {
       local resource = blockType.resource('google_logging_log_view_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         name: build.template(block.name),
         parent: build.template(block.parent),
@@ -19828,7 +19833,7 @@ local provider(configuration) = {
     },
     logging_organization_settings(name, block): {
       local resource = blockType.resource('google_logging_organization_settings', name),
-      _: resource._({
+      _: resource._(block, {
         organization: build.template(block.organization),
       }),
       disable_default_sink: resource.field('disable_default_sink'),
@@ -19842,7 +19847,7 @@ local provider(configuration) = {
     },
     logging_project_cmek_settings(name, block): {
       local resource = blockType.resource('google_logging_project_cmek_settings', name),
-      _: resource._({
+      _: resource._(block, {
         kms_key_name: build.template(std.get(block, 'kms_key_name', null)),
         project: build.template(block.project),
       }),
@@ -19855,7 +19860,7 @@ local provider(configuration) = {
     },
     logging_project_settings(name, block): {
       local resource = blockType.resource('google_logging_project_settings', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(block.project),
       }),
       disable_default_sink: resource.field('disable_default_sink'),
@@ -19869,7 +19874,7 @@ local provider(configuration) = {
     },
     logging_sink(name, block): {
       local resource = blockType.resource('google_logging_sink', name),
-      _: resource._({
+      _: resource._(block, {
         id: build.template(block.id),
       }),
       bigquery_options: resource.field('bigquery_options'),
@@ -19884,7 +19889,7 @@ local provider(configuration) = {
     },
     monitoring_app_engine_service(name, block): {
       local resource = blockType.resource('google_monitoring_app_engine_service', name),
-      _: resource._({
+      _: resource._(block, {
         module_id: build.template(block.module_id),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -19899,7 +19904,7 @@ local provider(configuration) = {
     },
     monitoring_cluster_istio_service(name, block): {
       local resource = blockType.resource('google_monitoring_cluster_istio_service', name),
-      _: resource._({
+      _: resource._(block, {
         cluster_name: build.template(block.cluster_name),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -19920,7 +19925,7 @@ local provider(configuration) = {
     },
     monitoring_istio_canonical_service(name, block): {
       local resource = blockType.resource('google_monitoring_istio_canonical_service', name),
-      _: resource._({
+      _: resource._(block, {
         canonical_service: build.template(block.canonical_service),
         canonical_service_namespace: build.template(block.canonical_service_namespace),
         mesh_uid: build.template(block.mesh_uid),
@@ -19939,7 +19944,7 @@ local provider(configuration) = {
     },
     monitoring_mesh_istio_service(name, block): {
       local resource = blockType.resource('google_monitoring_mesh_istio_service', name),
-      _: resource._({
+      _: resource._(block, {
         mesh_uid: build.template(block.mesh_uid),
         project: build.template(std.get(block, 'project', null)),
         service_name: build.template(block.service_name),
@@ -19958,7 +19963,7 @@ local provider(configuration) = {
     },
     monitoring_notification_channel(name, block): {
       local resource = blockType.resource('google_monitoring_notification_channel', name),
-      _: resource._({
+      _: resource._(block, {
         display_name: build.template(std.get(block, 'display_name', null)),
         labels: build.template(std.get(block, 'labels', null)),
         project: build.template(std.get(block, 'project', null)),
@@ -19980,14 +19985,14 @@ local provider(configuration) = {
     },
     monitoring_uptime_check_ips(name, block): {
       local resource = blockType.resource('google_monitoring_uptime_check_ips', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       uptime_check_ips: resource.field('uptime_check_ips'),
     },
     netblock_ip_ranges(name, block): {
       local resource = blockType.resource('google_netblock_ip_ranges', name),
-      _: resource._({
+      _: resource._(block, {
         range_type: build.template(std.get(block, 'range_type', null)),
       }),
       cidr_blocks: resource.field('cidr_blocks'),
@@ -19998,7 +20003,7 @@ local provider(configuration) = {
     },
     network_security_address_group_iam_policy(name, block): {
       local resource = blockType.resource('google_network_security_address_group_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
@@ -20010,7 +20015,7 @@ local provider(configuration) = {
     },
     notebooks_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_notebooks_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_name: build.template(block.instance_name),
       }),
       etag: resource.field('etag'),
@@ -20022,7 +20027,7 @@ local provider(configuration) = {
     },
     notebooks_runtime_iam_policy(name, block): {
       local resource = blockType.resource('google_notebooks_runtime_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         runtime_name: build.template(block.runtime_name),
       }),
       etag: resource.field('etag'),
@@ -20034,7 +20039,7 @@ local provider(configuration) = {
     },
     oracle_database_autonomous_database(name, block): {
       local resource = blockType.resource('google_oracle_database_autonomous_database', name),
-      _: resource._({
+      _: resource._(block, {
         autonomous_database_id: build.template(block.autonomous_database_id),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -20058,7 +20063,7 @@ local provider(configuration) = {
     },
     oracle_database_autonomous_databases(name, block): {
       local resource = blockType.resource('google_oracle_database_autonomous_databases', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20069,7 +20074,7 @@ local provider(configuration) = {
     },
     oracle_database_cloud_exadata_infrastructure(name, block): {
       local resource = blockType.resource('google_oracle_database_cloud_exadata_infrastructure', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_exadata_infrastructure_id: build.template(block.cloud_exadata_infrastructure_id),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -20090,7 +20095,7 @@ local provider(configuration) = {
     },
     oracle_database_cloud_exadata_infrastructures(name, block): {
       local resource = blockType.resource('google_oracle_database_cloud_exadata_infrastructures', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20101,7 +20106,7 @@ local provider(configuration) = {
     },
     oracle_database_cloud_vm_cluster(name, block): {
       local resource = blockType.resource('google_oracle_database_cloud_vm_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_vm_cluster_id: build.template(block.cloud_vm_cluster_id),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -20125,7 +20130,7 @@ local provider(configuration) = {
     },
     oracle_database_cloud_vm_clusters(name, block): {
       local resource = blockType.resource('google_oracle_database_cloud_vm_clusters', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20136,7 +20141,7 @@ local provider(configuration) = {
     },
     oracle_database_db_nodes(name, block): {
       local resource = blockType.resource('google_oracle_database_db_nodes', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_vm_cluster: build.template(block.cloud_vm_cluster),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -20149,7 +20154,7 @@ local provider(configuration) = {
     },
     oracle_database_db_servers(name, block): {
       local resource = blockType.resource('google_oracle_database_db_servers', name),
-      _: resource._({
+      _: resource._(block, {
         cloud_exadata_infrastructure: build.template(block.cloud_exadata_infrastructure),
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
@@ -20162,7 +20167,7 @@ local provider(configuration) = {
     },
     organization(name, block): {
       local resource = blockType.resource('google_organization', name),
-      _: resource._({
+      _: resource._(block, {
         organization: build.template(std.get(block, 'organization', null)),
       }),
       create_time: resource.field('create_time'),
@@ -20176,7 +20181,7 @@ local provider(configuration) = {
     },
     organization_iam_policy(name, block): {
       local resource = blockType.resource('google_organization_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         org_id: build.template(block.org_id),
       }),
       etag: resource.field('etag'),
@@ -20186,7 +20191,7 @@ local provider(configuration) = {
     },
     privateca_ca_pool_iam_policy(name, block): {
       local resource = blockType.resource('google_privateca_ca_pool_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         ca_pool: build.template(block.ca_pool),
       }),
       ca_pool: resource.field('ca_pool'),
@@ -20198,7 +20203,7 @@ local provider(configuration) = {
     },
     privateca_certificate_authority(name, block): {
       local resource = blockType.resource('google_privateca_certificate_authority', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_authority_id: build.template(std.get(block, 'certificate_authority_id', null)),
         location: build.template(std.get(block, 'location', null)),
         pool: build.template(std.get(block, 'pool', null)),
@@ -20233,7 +20238,7 @@ local provider(configuration) = {
     },
     privateca_certificate_template_iam_policy(name, block): {
       local resource = blockType.resource('google_privateca_certificate_template_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         certificate_template: build.template(block.certificate_template),
       }),
       certificate_template: resource.field('certificate_template'),
@@ -20245,7 +20250,7 @@ local provider(configuration) = {
     },
     privileged_access_manager_entitlement(name, block): {
       local resource = blockType.resource('google_privileged_access_manager_entitlement', name),
-      _: resource._({
+      _: resource._(block, {
         entitlement_id: build.template(std.get(block, 'entitlement_id', null)),
         location: build.template(std.get(block, 'location', null)),
         parent: build.template(std.get(block, 'parent', null)),
@@ -20268,7 +20273,7 @@ local provider(configuration) = {
     },
     project(name, block): {
       local resource = blockType.resource('google_project', name),
-      _: resource._({
+      _: resource._(block, {
         project_id: build.template(std.get(block, 'project_id', null)),
       }),
       auto_create_network: resource.field('auto_create_network'),
@@ -20287,7 +20292,7 @@ local provider(configuration) = {
     },
     project_iam_policy(name, block): {
       local resource = blockType.resource('google_project_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(block.project),
       }),
       etag: resource.field('etag'),
@@ -20297,7 +20302,7 @@ local provider(configuration) = {
     },
     project_organization_policy(name, block): {
       local resource = blockType.resource('google_project_organization_policy', name),
-      _: resource._({
+      _: resource._(block, {
         constraint: build.template(block.constraint),
         project: build.template(block.project),
       }),
@@ -20313,7 +20318,7 @@ local provider(configuration) = {
     },
     project_service(name, block): {
       local resource = blockType.resource('google_project_service', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(std.get(block, 'project', null)),
         service: build.template(block.service),
       }),
@@ -20325,7 +20330,7 @@ local provider(configuration) = {
     },
     projects(name, block): {
       local resource = blockType.resource('google_projects', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(block.filter),
       }),
       filter: resource.field('filter'),
@@ -20334,7 +20339,7 @@ local provider(configuration) = {
     },
     pubsub_schema_iam_policy(name, block): {
       local resource = blockType.resource('google_pubsub_schema_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         schema: build.template(block.schema),
       }),
       etag: resource.field('etag'),
@@ -20345,7 +20350,7 @@ local provider(configuration) = {
     },
     pubsub_subscription(name, block): {
       local resource = blockType.resource('google_pubsub_subscription', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20371,7 +20376,7 @@ local provider(configuration) = {
     },
     pubsub_subscription_iam_policy(name, block): {
       local resource = blockType.resource('google_pubsub_subscription_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         subscription: build.template(block.subscription),
       }),
       etag: resource.field('etag'),
@@ -20382,7 +20387,7 @@ local provider(configuration) = {
     },
     pubsub_topic(name, block): {
       local resource = blockType.resource('google_pubsub_topic', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20400,7 +20405,7 @@ local provider(configuration) = {
     },
     pubsub_topic_iam_policy(name, block): {
       local resource = blockType.resource('google_pubsub_topic_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         topic: build.template(block.topic),
       }),
       etag: resource.field('etag'),
@@ -20411,7 +20416,7 @@ local provider(configuration) = {
     },
     redis_instance(name, block): {
       local resource = blockType.resource('google_redis_instance', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -20456,7 +20461,7 @@ local provider(configuration) = {
     },
     scc_source_iam_policy(name, block): {
       local resource = blockType.resource('google_scc_source_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         organization: build.template(block.organization),
         source: build.template(block.source),
       }),
@@ -20468,7 +20473,7 @@ local provider(configuration) = {
     },
     scc_v2_organization_source_iam_policy(name, block): {
       local resource = blockType.resource('google_scc_v2_organization_source_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         organization: build.template(block.organization),
         source: build.template(block.source),
       }),
@@ -20480,7 +20485,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         project: build.template(std.get(block, 'project', null)),
         secret_id: build.template(block.secret_id),
@@ -20506,7 +20511,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret_iam_policy(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         secret_id: build.template(block.secret_id),
       }),
       etag: resource.field('etag'),
@@ -20518,7 +20523,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret_version(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret_version', name),
-      _: resource._({
+      _: resource._(block, {
         is_secret_data_base64: build.template(std.get(block, 'is_secret_data_base64', null)),
         secret: build.template(block.secret),
       }),
@@ -20537,7 +20542,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secret_version_access(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secret_version_access', name),
-      _: resource._({
+      _: resource._(block, {
         is_secret_data_base64: build.template(std.get(block, 'is_secret_data_base64', null)),
         secret: build.template(block.secret),
       }),
@@ -20552,7 +20557,7 @@ local provider(configuration) = {
     },
     secret_manager_regional_secrets(name, block): {
       local resource = blockType.resource('google_secret_manager_regional_secrets', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
         location: build.template(block.location),
       }),
@@ -20564,7 +20569,7 @@ local provider(configuration) = {
     },
     secret_manager_secret(name, block): {
       local resource = blockType.resource('google_secret_manager_secret', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(std.get(block, 'project', null)),
         secret_id: build.template(block.secret_id),
       }),
@@ -20588,7 +20593,7 @@ local provider(configuration) = {
     },
     secret_manager_secret_iam_policy(name, block): {
       local resource = blockType.resource('google_secret_manager_secret_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         secret_id: build.template(block.secret_id),
       }),
       etag: resource.field('etag'),
@@ -20599,7 +20604,7 @@ local provider(configuration) = {
     },
     secret_manager_secret_version(name, block): {
       local resource = blockType.resource('google_secret_manager_secret_version', name),
-      _: resource._({
+      _: resource._(block, {
         is_secret_data_base64: build.template(std.get(block, 'is_secret_data_base64', null)),
         secret: build.template(block.secret),
       }),
@@ -20616,7 +20621,7 @@ local provider(configuration) = {
     },
     secret_manager_secret_version_access(name, block): {
       local resource = blockType.resource('google_secret_manager_secret_version_access', name),
-      _: resource._({
+      _: resource._(block, {
         is_secret_data_base64: build.template(std.get(block, 'is_secret_data_base64', null)),
         secret: build.template(block.secret),
       }),
@@ -20630,7 +20635,7 @@ local provider(configuration) = {
     },
     secret_manager_secrets(name, block): {
       local resource = blockType.resource('google_secret_manager_secrets', name),
-      _: resource._({
+      _: resource._(block, {
         filter: build.template(std.get(block, 'filter', null)),
       }),
       filter: resource.field('filter'),
@@ -20640,7 +20645,7 @@ local provider(configuration) = {
     },
     secure_source_manager_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_secure_source_manager_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance_id: build.template(block.instance_id),
       }),
       etag: resource.field('etag'),
@@ -20652,7 +20657,7 @@ local provider(configuration) = {
     },
     secure_source_manager_repository_iam_policy(name, block): {
       local resource = blockType.resource('google_secure_source_manager_repository_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         repository_id: build.template(block.repository_id),
       }),
       etag: resource.field('etag'),
@@ -20664,7 +20669,7 @@ local provider(configuration) = {
     },
     service_account(name, block): {
       local resource = blockType.resource('google_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         account_id: build.template(block.account_id),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20680,7 +20685,7 @@ local provider(configuration) = {
     },
     service_account_access_token(name, block): {
       local resource = blockType.resource('google_service_account_access_token', name),
-      _: resource._({
+      _: resource._(block, {
         delegates: build.template(std.get(block, 'delegates', null)),
         lifetime: build.template(std.get(block, 'lifetime', null)),
         scopes: build.template(block.scopes),
@@ -20695,7 +20700,7 @@ local provider(configuration) = {
     },
     service_account_iam_policy(name, block): {
       local resource = blockType.resource('google_service_account_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         service_account_id: build.template(block.service_account_id),
       }),
       etag: resource.field('etag'),
@@ -20705,7 +20710,7 @@ local provider(configuration) = {
     },
     service_account_id_token(name, block): {
       local resource = blockType.resource('google_service_account_id_token', name),
-      _: resource._({
+      _: resource._(block, {
         delegates: build.template(std.get(block, 'delegates', null)),
         include_email: build.template(std.get(block, 'include_email', null)),
         target_audience: build.template(block.target_audience),
@@ -20720,7 +20725,7 @@ local provider(configuration) = {
     },
     service_account_jwt(name, block): {
       local resource = blockType.resource('google_service_account_jwt', name),
-      _: resource._({
+      _: resource._(block, {
         delegates: build.template(std.get(block, 'delegates', null)),
         expires_in: build.template(std.get(block, 'expires_in', null)),
         payload: build.template(block.payload),
@@ -20735,7 +20740,7 @@ local provider(configuration) = {
     },
     service_account_key(name, block): {
       local resource = blockType.resource('google_service_account_key', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         public_key_type: build.template(std.get(block, 'public_key_type', null)),
@@ -20749,7 +20754,7 @@ local provider(configuration) = {
     },
     service_accounts(name, block): {
       local resource = blockType.resource('google_service_accounts', name),
-      _: resource._({
+      _: resource._(block, {
         project: build.template(std.get(block, 'project', null)),
       }),
       accounts: resource.field('accounts'),
@@ -20758,7 +20763,7 @@ local provider(configuration) = {
     },
     service_networking_peered_dns_domain(name, block): {
       local resource = blockType.resource('google_service_networking_peered_dns_domain', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         network: build.template(block.network),
         project: build.template(block.project),
@@ -20774,7 +20779,7 @@ local provider(configuration) = {
     },
     site_verification_token(name, block): {
       local resource = blockType.resource('google_site_verification_token', name),
-      _: resource._({
+      _: resource._(block, {
         identifier: build.template(block.identifier),
         type: build.template(block.type),
         verification_method: build.template(block.verification_method),
@@ -20787,7 +20792,7 @@ local provider(configuration) = {
     },
     sourcerepo_repository(name, block): {
       local resource = blockType.resource('google_sourcerepo_repository', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20801,7 +20806,7 @@ local provider(configuration) = {
     },
     sourcerepo_repository_iam_policy(name, block): {
       local resource = blockType.resource('google_sourcerepo_repository_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         repository: build.template(block.repository),
       }),
       etag: resource.field('etag'),
@@ -20812,7 +20817,7 @@ local provider(configuration) = {
     },
     spanner_database(name, block): {
       local resource = blockType.resource('google_spanner_database', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -20831,7 +20836,7 @@ local provider(configuration) = {
     },
     spanner_database_iam_policy(name, block): {
       local resource = blockType.resource('google_spanner_database_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         database: build.template(block.database),
         instance: build.template(block.instance),
       }),
@@ -20844,7 +20849,7 @@ local provider(configuration) = {
     },
     spanner_instance(name, block): {
       local resource = blockType.resource('google_spanner_instance', name),
-      _: resource._({
+      _: resource._(block, {
         config: build.template(std.get(block, 'config', null)),
         display_name: build.template(std.get(block, 'display_name', null)),
         name: build.template(block.name),
@@ -20868,7 +20873,7 @@ local provider(configuration) = {
     },
     spanner_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_spanner_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
       }),
       etag: resource.field('etag'),
@@ -20879,7 +20884,7 @@ local provider(configuration) = {
     },
     sql_backup_run(name, block): {
       local resource = blockType.resource('google_sql_backup_run', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         most_recent: build.template(std.get(block, 'most_recent', null)),
       }),
@@ -20894,7 +20899,7 @@ local provider(configuration) = {
     },
     sql_ca_certs(name, block): {
       local resource = blockType.resource('google_sql_ca_certs', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
       }),
       active_version: resource.field('active_version'),
@@ -20905,7 +20910,7 @@ local provider(configuration) = {
     },
     sql_database(name, block): {
       local resource = blockType.resource('google_sql_database', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -20921,7 +20926,7 @@ local provider(configuration) = {
     },
     sql_database_instance(name, block): {
       local resource = blockType.resource('google_sql_database_instance', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20955,7 +20960,7 @@ local provider(configuration) = {
     },
     sql_database_instance_latest_recovery_time(name, block): {
       local resource = blockType.resource('google_sql_database_instance_latest_recovery_time', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
       }),
       id: resource.field('id'),
@@ -20965,7 +20970,7 @@ local provider(configuration) = {
     },
     sql_database_instances(name, block): {
       local resource = blockType.resource('google_sql_database_instances', name),
-      _: resource._({
+      _: resource._(block, {
         database_version: build.template(std.get(block, 'database_version', null)),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -20984,7 +20989,7 @@ local provider(configuration) = {
     },
     sql_databases(name, block): {
       local resource = blockType.resource('google_sql_databases', name),
-      _: resource._({
+      _: resource._(block, {
         instance: build.template(block.instance),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -20995,7 +21000,7 @@ local provider(configuration) = {
     },
     sql_tiers(name, block): {
       local resource = blockType.resource('google_sql_tiers', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       project: resource.field('project'),
@@ -21003,7 +21008,7 @@ local provider(configuration) = {
     },
     storage_bucket(name, block): {
       local resource = blockType.resource('google_storage_bucket', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -21039,7 +21044,7 @@ local provider(configuration) = {
     },
     storage_bucket_iam_policy(name, block): {
       local resource = blockType.resource('google_storage_bucket_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
       }),
       bucket: resource.field('bucket'),
@@ -21049,7 +21054,7 @@ local provider(configuration) = {
     },
     storage_bucket_object(name, block): {
       local resource = blockType.resource('google_storage_bucket_object', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(std.get(block, 'bucket', null)),
         name: build.template(std.get(block, 'name', null)),
       }),
@@ -21080,7 +21085,7 @@ local provider(configuration) = {
     },
     storage_bucket_object_content(name, block): {
       local resource = blockType.resource('google_storage_bucket_object_content', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         content: build.template(std.get(block, 'content', null)),
         name: build.template(block.name),
@@ -21112,7 +21117,7 @@ local provider(configuration) = {
     },
     storage_bucket_objects(name, block): {
       local resource = blockType.resource('google_storage_bucket_objects', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         match_glob: build.template(std.get(block, 'match_glob', null)),
         prefix: build.template(std.get(block, 'prefix', null)),
@@ -21125,7 +21130,7 @@ local provider(configuration) = {
     },
     storage_buckets(name, block): {
       local resource = blockType.resource('google_storage_buckets', name),
-      _: resource._({
+      _: resource._(block, {
         prefix: build.template(std.get(block, 'prefix', null)),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -21136,7 +21141,7 @@ local provider(configuration) = {
     },
     storage_managed_folder_iam_policy(name, block): {
       local resource = blockType.resource('google_storage_managed_folder_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         managed_folder: build.template(block.managed_folder),
       }),
@@ -21148,7 +21153,7 @@ local provider(configuration) = {
     },
     storage_object_signed_url(name, block): {
       local resource = blockType.resource('google_storage_object_signed_url', name),
-      _: resource._({
+      _: resource._(block, {
         bucket: build.template(block.bucket),
         content_md5: build.template(std.get(block, 'content_md5', null)),
         content_type: build.template(std.get(block, 'content_type', null)),
@@ -21171,7 +21176,7 @@ local provider(configuration) = {
     },
     storage_project_service_account(name, block): {
       local resource = blockType.resource('google_storage_project_service_account', name),
-      _: resource._({
+      _: resource._(block, {
         user_project: build.template(std.get(block, 'user_project', null)),
       }),
       email_address: resource.field('email_address'),
@@ -21182,7 +21187,7 @@ local provider(configuration) = {
     },
     storage_transfer_project_service_account(name, block): {
       local resource = blockType.resource('google_storage_transfer_project_service_account', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       email: resource.field('email'),
       id: resource.field('id'),
@@ -21192,7 +21197,7 @@ local provider(configuration) = {
     },
     tags_tag_key(name, block): {
       local resource = blockType.resource('google_tags_tag_key', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
         short_name: build.template(block.short_name),
       }),
@@ -21207,7 +21212,7 @@ local provider(configuration) = {
     },
     tags_tag_key_iam_policy(name, block): {
       local resource = blockType.resource('google_tags_tag_key_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         tag_key: build.template(block.tag_key),
       }),
       etag: resource.field('etag'),
@@ -21217,7 +21222,7 @@ local provider(configuration) = {
     },
     tags_tag_keys(name, block): {
       local resource = blockType.resource('google_tags_tag_keys', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
       }),
       id: resource.field('id'),
@@ -21226,7 +21231,7 @@ local provider(configuration) = {
     },
     tags_tag_value(name, block): {
       local resource = blockType.resource('google_tags_tag_value', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
         short_name: build.template(block.short_name),
       }),
@@ -21241,7 +21246,7 @@ local provider(configuration) = {
     },
     tags_tag_value_iam_policy(name, block): {
       local resource = blockType.resource('google_tags_tag_value_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         tag_value: build.template(block.tag_value),
       }),
       etag: resource.field('etag'),
@@ -21251,7 +21256,7 @@ local provider(configuration) = {
     },
     tags_tag_values(name, block): {
       local resource = blockType.resource('google_tags_tag_values', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
       }),
       id: resource.field('id'),
@@ -21260,7 +21265,7 @@ local provider(configuration) = {
     },
     tpu_tensorflow_versions(name, block): {
       local resource = blockType.resource('google_tpu_tensorflow_versions', name),
-      _: resource._({
+      _: resource._(block, {
       }),
       id: resource.field('id'),
       project: resource.field('project'),
@@ -21269,7 +21274,7 @@ local provider(configuration) = {
     },
     vertex_ai_index(name, block): {
       local resource = blockType.resource('google_vertex_ai_index', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(block.region),
@@ -21294,7 +21299,7 @@ local provider(configuration) = {
     },
     vmwareengine_cluster(name, block): {
       local resource = blockType.resource('google_vmwareengine_cluster', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent: build.template(block.parent),
       }),
@@ -21309,7 +21314,7 @@ local provider(configuration) = {
     },
     vmwareengine_external_access_rule(name, block): {
       local resource = blockType.resource('google_vmwareengine_external_access_rule', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent: build.template(block.parent),
       }),
@@ -21331,7 +21336,7 @@ local provider(configuration) = {
     },
     vmwareengine_external_address(name, block): {
       local resource = blockType.resource('google_vmwareengine_external_address', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent: build.template(block.parent),
       }),
@@ -21348,7 +21353,7 @@ local provider(configuration) = {
     },
     vmwareengine_network(name, block): {
       local resource = blockType.resource('google_vmwareengine_network', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -21365,7 +21370,7 @@ local provider(configuration) = {
     },
     vmwareengine_network_peering(name, block): {
       local resource = blockType.resource('google_vmwareengine_network_peering', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
       }),
@@ -21389,7 +21394,7 @@ local provider(configuration) = {
     },
     vmwareengine_network_policy(name, block): {
       local resource = blockType.resource('google_vmwareengine_network_policy', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -21410,7 +21415,7 @@ local provider(configuration) = {
     },
     vmwareengine_nsx_credentials(name, block): {
       local resource = blockType.resource('google_vmwareengine_nsx_credentials', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
       }),
       id: resource.field('id'),
@@ -21420,7 +21425,7 @@ local provider(configuration) = {
     },
     vmwareengine_private_cloud(name, block): {
       local resource = blockType.resource('google_vmwareengine_private_cloud', name),
-      _: resource._({
+      _: resource._(block, {
         location: build.template(block.location),
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
@@ -21443,7 +21448,7 @@ local provider(configuration) = {
     },
     vmwareengine_subnet(name, block): {
       local resource = blockType.resource('google_vmwareengine_subnet', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         parent: build.template(block.parent),
       }),
@@ -21464,7 +21469,7 @@ local provider(configuration) = {
     },
     vmwareengine_vcenter_credentials(name, block): {
       local resource = blockType.resource('google_vmwareengine_vcenter_credentials', name),
-      _: resource._({
+      _: resource._(block, {
         parent: build.template(block.parent),
       }),
       id: resource.field('id'),
@@ -21474,7 +21479,7 @@ local provider(configuration) = {
     },
     vpc_access_connector(name, block): {
       local resource = blockType.resource('google_vpc_access_connector', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
         project: build.template(std.get(block, 'project', null)),
         region: build.template(std.get(block, 'region', null)),
@@ -21497,7 +21502,7 @@ local provider(configuration) = {
     },
     workbench_instance_iam_policy(name, block): {
       local resource = blockType.resource('google_workbench_instance_iam_policy', name),
-      _: resource._({
+      _: resource._(block, {
         name: build.template(block.name),
       }),
       etag: resource.field('etag'),
