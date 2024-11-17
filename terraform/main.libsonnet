@@ -126,6 +126,19 @@ local Module(name, block) = {
   },
 };
 
+local Each = {
+  key: {
+    _: {
+      ref: 'each.key',
+    },
+  },
+  value: {
+    _: {
+      ref: 'each.value',
+    },
+  },
+};
+
 local func(name, parameters=[]) = {
   local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
   _: {
@@ -305,6 +318,7 @@ local terraform = functions {
   Output: Output,
   Module: Module,
   Cfg: Cfg,
+  Each: Each,
 };
 
 terraform
