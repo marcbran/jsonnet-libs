@@ -177,18 +177,19 @@ local resourceBlock(provider, type, name, resource) =
         j.Id('block'),
         j.Object(std.flattenArrays([
           local attribute = resource.block.attributes[attributeName];
-          if std.get(attribute, 'computed', false) then [] else
-            [
-              j.Field(
-                j.String(attributeName),
-                j.Call(j.Member(j.Id('build'), 'template'), [
-                  if std.get(attribute, 'required', false)
-                  then j.Member(j.Id('block'), attributeName)
-                  else j.Std.get(j.Id('block'), j.String(attributeName)).default(j.Null),
-                ])
-              ),
-              j.Newline,
-            ]
+          // TODO there are some providers with schemas where the computed property is actually required in resources
+          //          if std.get(attribute, 'computed', false) then [] else
+          [
+            j.Field(
+              j.String(attributeName),
+              j.Call(j.Member(j.Id('build'), 'template'), [
+                if std.get(attribute, 'required', false)
+                then j.Member(j.Id('block'), attributeName)
+                else j.Std.get(j.Id('block'), j.String(attributeName)).default(j.Null),
+              ])
+            ),
+            j.Newline,
+          ]
           for attributeName in std.objectFields(resource.block.attributes)
         ]), newlines=1),
       ])),

@@ -69,6 +69,7 @@ local provider(configuration) = {
         api_version: build.template(block.api_version),
         field_manager: build.template(std.get(block, 'field_manager', null)),
         force: build.template(std.get(block, 'force', null)),
+        id: build.template(std.get(block, 'id', null)),
         kind: build.template(block.kind),
         template_annotations: build.template(std.get(block, 'template_annotations', null)),
       }),
@@ -83,12 +84,14 @@ local provider(configuration) = {
     api_service(name, block): {
       local resource = blockType.resource('kubernetes_api_service', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     api_service_v1(name, block): {
       local resource = blockType.resource('kubernetes_api_service_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
@@ -96,6 +99,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_certificate_signing_request', name),
       _: resource._(block, {
         auto_approve: build.template(std.get(block, 'auto_approve', null)),
+        certificate: build.template(std.get(block, 'certificate', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       auto_approve: resource.field('auto_approve'),
       certificate: resource.field('certificate'),
@@ -105,6 +110,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_certificate_signing_request_v1', name),
       _: resource._(block, {
         auto_approve: build.template(std.get(block, 'auto_approve', null)),
+        certificate: build.template(std.get(block, 'certificate', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       auto_approve: resource.field('auto_approve'),
       certificate: resource.field('certificate'),
@@ -113,24 +120,28 @@ local provider(configuration) = {
     cluster_role(name, block): {
       local resource = blockType.resource('kubernetes_cluster_role', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     cluster_role_binding(name, block): {
       local resource = blockType.resource('kubernetes_cluster_role_binding', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     cluster_role_binding_v1(name, block): {
       local resource = blockType.resource('kubernetes_cluster_role_binding_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     cluster_role_v1(name, block): {
       local resource = blockType.resource('kubernetes_cluster_role_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
@@ -139,6 +150,7 @@ local provider(configuration) = {
       _: resource._(block, {
         binary_data: build.template(std.get(block, 'binary_data', null)),
         data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
         immutable: build.template(std.get(block, 'immutable', null)),
       }),
       binary_data: resource.field('binary_data'),
@@ -151,6 +163,7 @@ local provider(configuration) = {
       _: resource._(block, {
         binary_data: build.template(std.get(block, 'binary_data', null)),
         data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
         immutable: build.template(std.get(block, 'immutable', null)),
       }),
       binary_data: resource.field('binary_data'),
@@ -164,6 +177,7 @@ local provider(configuration) = {
         data: build.template(block.data),
         field_manager: build.template(std.get(block, 'field_manager', null)),
         force: build.template(std.get(block, 'force', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       data: resource.field('data'),
       field_manager: resource.field('field_manager'),
@@ -173,30 +187,35 @@ local provider(configuration) = {
     cron_job(name, block): {
       local resource = blockType.resource('kubernetes_cron_job', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     cron_job_v1(name, block): {
       local resource = blockType.resource('kubernetes_cron_job_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     csi_driver(name, block): {
       local resource = blockType.resource('kubernetes_csi_driver', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     csi_driver_v1(name, block): {
       local resource = blockType.resource('kubernetes_csi_driver_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     daemon_set_v1(name, block): {
       local resource = blockType.resource('kubernetes_daemon_set_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_rollout: build.template(std.get(block, 'wait_for_rollout', null)),
       }),
       id: resource.field('id'),
@@ -205,6 +224,7 @@ local provider(configuration) = {
     daemonset(name, block): {
       local resource = blockType.resource('kubernetes_daemonset', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_rollout: build.template(std.get(block, 'wait_for_rollout', null)),
       }),
       id: resource.field('id'),
@@ -214,6 +234,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_default_service_account', name),
       _: resource._(block, {
         automount_service_account_token: build.template(std.get(block, 'automount_service_account_token', null)),
+        default_secret_name: build.template(std.get(block, 'default_secret_name', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       automount_service_account_token: resource.field('automount_service_account_token'),
       default_secret_name: resource.field('default_secret_name'),
@@ -223,6 +245,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_default_service_account_v1', name),
       _: resource._(block, {
         automount_service_account_token: build.template(std.get(block, 'automount_service_account_token', null)),
+        default_secret_name: build.template(std.get(block, 'default_secret_name', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       automount_service_account_token: resource.field('automount_service_account_token'),
       default_secret_name: resource.field('default_secret_name'),
@@ -231,6 +255,7 @@ local provider(configuration) = {
     deployment(name, block): {
       local resource = blockType.resource('kubernetes_deployment', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_rollout: build.template(std.get(block, 'wait_for_rollout', null)),
       }),
       id: resource.field('id'),
@@ -239,6 +264,7 @@ local provider(configuration) = {
     deployment_v1(name, block): {
       local resource = blockType.resource('kubernetes_deployment_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_rollout: build.template(std.get(block, 'wait_for_rollout', null)),
       }),
       id: resource.field('id'),
@@ -248,6 +274,7 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_endpoint_slice_v1', name),
       _: resource._(block, {
         address_type: build.template(block.address_type),
+        id: build.template(std.get(block, 'id', null)),
       }),
       address_type: resource.field('address_type'),
       id: resource.field('id'),
@@ -255,12 +282,14 @@ local provider(configuration) = {
     endpoints(name, block): {
       local resource = blockType.resource('kubernetes_endpoints', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     endpoints_v1(name, block): {
       local resource = blockType.resource('kubernetes_endpoints_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
@@ -271,6 +300,7 @@ local provider(configuration) = {
         container: build.template(std.get(block, 'container', null)),
         field_manager: build.template(std.get(block, 'field_manager', null)),
         force: build.template(std.get(block, 'force', null)),
+        id: build.template(std.get(block, 'id', null)),
         init_container: build.template(std.get(block, 'init_container', null)),
         kind: build.template(block.kind),
       }),
@@ -285,30 +315,36 @@ local provider(configuration) = {
     horizontal_pod_autoscaler(name, block): {
       local resource = blockType.resource('kubernetes_horizontal_pod_autoscaler', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     horizontal_pod_autoscaler_v1(name, block): {
       local resource = blockType.resource('kubernetes_horizontal_pod_autoscaler_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     horizontal_pod_autoscaler_v2(name, block): {
       local resource = blockType.resource('kubernetes_horizontal_pod_autoscaler_v2', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     horizontal_pod_autoscaler_v2beta2(name, block): {
       local resource = blockType.resource('kubernetes_horizontal_pod_autoscaler_v2beta2', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     ingress(name, block): {
       local resource = blockType.resource('kubernetes_ingress', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        status: build.template(std.get(block, 'status', null)),
         wait_for_load_balancer: build.template(std.get(block, 'wait_for_load_balancer', null)),
       }),
       id: resource.field('id'),
@@ -318,18 +354,22 @@ local provider(configuration) = {
     ingress_class(name, block): {
       local resource = blockType.resource('kubernetes_ingress_class', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     ingress_class_v1(name, block): {
       local resource = blockType.resource('kubernetes_ingress_class_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     ingress_v1(name, block): {
       local resource = blockType.resource('kubernetes_ingress_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        status: build.template(std.get(block, 'status', null)),
         wait_for_load_balancer: build.template(std.get(block, 'wait_for_load_balancer', null)),
       }),
       id: resource.field('id'),
@@ -339,6 +379,7 @@ local provider(configuration) = {
     job(name, block): {
       local resource = blockType.resource('kubernetes_job', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_completion: build.template(std.get(block, 'wait_for_completion', null)),
       }),
       id: resource.field('id'),
@@ -347,6 +388,7 @@ local provider(configuration) = {
     job_v1(name, block): {
       local resource = blockType.resource('kubernetes_job_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_completion: build.template(std.get(block, 'wait_for_completion', null)),
       }),
       id: resource.field('id'),
@@ -358,6 +400,7 @@ local provider(configuration) = {
         api_version: build.template(block.api_version),
         field_manager: build.template(std.get(block, 'field_manager', null)),
         force: build.template(std.get(block, 'force', null)),
+        id: build.template(std.get(block, 'id', null)),
         kind: build.template(block.kind),
         labels: build.template(block.labels),
       }),
@@ -371,12 +414,14 @@ local provider(configuration) = {
     limit_range(name, block): {
       local resource = blockType.resource('kubernetes_limit_range', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     limit_range_v1(name, block): {
       local resource = blockType.resource('kubernetes_limit_range_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
@@ -385,6 +430,7 @@ local provider(configuration) = {
       _: resource._(block, {
         computed_fields: build.template(std.get(block, 'computed_fields', null)),
         manifest: build.template(block.manifest),
+        object: build.template(std.get(block, 'object', null)),
         wait_for: build.template(std.get(block, 'wait_for', null)),
       }),
       computed_fields: resource.field('computed_fields'),
@@ -395,18 +441,21 @@ local provider(configuration) = {
     mutating_webhook_configuration(name, block): {
       local resource = blockType.resource('kubernetes_mutating_webhook_configuration', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     mutating_webhook_configuration_v1(name, block): {
       local resource = blockType.resource('kubernetes_mutating_webhook_configuration_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     namespace(name, block): {
       local resource = blockType.resource('kubernetes_namespace', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_default_service_account: build.template(std.get(block, 'wait_for_default_service_account', null)),
       }),
       id: resource.field('id'),
@@ -415,6 +464,7 @@ local provider(configuration) = {
     namespace_v1(name, block): {
       local resource = blockType.resource('kubernetes_namespace_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_default_service_account: build.template(std.get(block, 'wait_for_default_service_account', null)),
       }),
       id: resource.field('id'),
@@ -423,12 +473,14 @@ local provider(configuration) = {
     network_policy(name, block): {
       local resource = blockType.resource('kubernetes_network_policy', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     network_policy_v1(name, block): {
       local resource = blockType.resource('kubernetes_network_policy_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
@@ -437,6 +489,7 @@ local provider(configuration) = {
       _: resource._(block, {
         field_manager: build.template(std.get(block, 'field_manager', null)),
         force: build.template(std.get(block, 'force', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       field_manager: resource.field('field_manager'),
       force: resource.field('force'),
@@ -445,12 +498,14 @@ local provider(configuration) = {
     persistent_volume(name, block): {
       local resource = blockType.resource('kubernetes_persistent_volume', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     persistent_volume_claim(name, block): {
       local resource = blockType.resource('kubernetes_persistent_volume_claim', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_until_bound: build.template(std.get(block, 'wait_until_bound', null)),
       }),
       id: resource.field('id'),
@@ -459,6 +514,7 @@ local provider(configuration) = {
     persistent_volume_claim_v1(name, block): {
       local resource = blockType.resource('kubernetes_persistent_volume_claim_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_until_bound: build.template(std.get(block, 'wait_until_bound', null)),
       }),
       id: resource.field('id'),
@@ -467,12 +523,14 @@ local provider(configuration) = {
     persistent_volume_v1(name, block): {
       local resource = blockType.resource('kubernetes_persistent_volume_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     pod(name, block): {
       local resource = blockType.resource('kubernetes_pod', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         target_state: build.template(std.get(block, 'target_state', null)),
       }),
       id: resource.field('id'),
@@ -481,30 +539,35 @@ local provider(configuration) = {
     pod_disruption_budget(name, block): {
       local resource = blockType.resource('kubernetes_pod_disruption_budget', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     pod_disruption_budget_v1(name, block): {
       local resource = blockType.resource('kubernetes_pod_disruption_budget_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     pod_security_policy(name, block): {
       local resource = blockType.resource('kubernetes_pod_security_policy', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     pod_security_policy_v1beta1(name, block): {
       local resource = blockType.resource('kubernetes_pod_security_policy_v1beta1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     pod_v1(name, block): {
       local resource = blockType.resource('kubernetes_pod_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         target_state: build.template(std.get(block, 'target_state', null)),
       }),
       id: resource.field('id'),
@@ -515,6 +578,7 @@ local provider(configuration) = {
       _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         global_default: build.template(std.get(block, 'global_default', null)),
+        id: build.template(std.get(block, 'id', null)),
         preemption_policy: build.template(std.get(block, 'preemption_policy', null)),
         value: build.template(block.value),
       }),
@@ -529,6 +593,7 @@ local provider(configuration) = {
       _: resource._(block, {
         description: build.template(std.get(block, 'description', null)),
         global_default: build.template(std.get(block, 'global_default', null)),
+        id: build.template(std.get(block, 'id', null)),
         preemption_policy: build.template(std.get(block, 'preemption_policy', null)),
         value: build.template(block.value),
       }),
@@ -541,48 +606,56 @@ local provider(configuration) = {
     replication_controller(name, block): {
       local resource = blockType.resource('kubernetes_replication_controller', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     replication_controller_v1(name, block): {
       local resource = blockType.resource('kubernetes_replication_controller_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     resource_quota(name, block): {
       local resource = blockType.resource('kubernetes_resource_quota', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     resource_quota_v1(name, block): {
       local resource = blockType.resource('kubernetes_resource_quota_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     role(name, block): {
       local resource = blockType.resource('kubernetes_role', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     role_binding(name, block): {
       local resource = blockType.resource('kubernetes_role_binding', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     role_binding_v1(name, block): {
       local resource = blockType.resource('kubernetes_role_binding_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     role_v1(name, block): {
       local resource = blockType.resource('kubernetes_role_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
@@ -590,6 +663,7 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_runtime_class_v1', name),
       _: resource._(block, {
         handler: build.template(block.handler),
+        id: build.template(std.get(block, 'id', null)),
       }),
       handler: resource.field('handler'),
       id: resource.field('id'),
@@ -598,6 +672,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_secret', name),
       _: resource._(block, {
         binary_data: build.template(std.get(block, 'binary_data', null)),
+        data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
         immutable: build.template(std.get(block, 'immutable', null)),
         type: build.template(std.get(block, 'type', null)),
         wait_for_service_account_token: build.template(std.get(block, 'wait_for_service_account_token', null)),
@@ -613,6 +689,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_secret_v1', name),
       _: resource._(block, {
         binary_data: build.template(std.get(block, 'binary_data', null)),
+        data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
         immutable: build.template(std.get(block, 'immutable', null)),
         type: build.template(std.get(block, 'type', null)),
         wait_for_service_account_token: build.template(std.get(block, 'wait_for_service_account_token', null)),
@@ -627,6 +705,8 @@ local provider(configuration) = {
     service(name, block): {
       local resource = blockType.resource('kubernetes_service', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        status: build.template(std.get(block, 'status', null)),
         wait_for_load_balancer: build.template(std.get(block, 'wait_for_load_balancer', null)),
       }),
       id: resource.field('id'),
@@ -637,6 +717,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_service_account', name),
       _: resource._(block, {
         automount_service_account_token: build.template(std.get(block, 'automount_service_account_token', null)),
+        default_secret_name: build.template(std.get(block, 'default_secret_name', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       automount_service_account_token: resource.field('automount_service_account_token'),
       default_secret_name: resource.field('default_secret_name'),
@@ -646,6 +728,8 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_service_account_v1', name),
       _: resource._(block, {
         automount_service_account_token: build.template(std.get(block, 'automount_service_account_token', null)),
+        default_secret_name: build.template(std.get(block, 'default_secret_name', null)),
+        id: build.template(std.get(block, 'id', null)),
       }),
       automount_service_account_token: resource.field('automount_service_account_token'),
       default_secret_name: resource.field('default_secret_name'),
@@ -654,6 +738,8 @@ local provider(configuration) = {
     service_v1(name, block): {
       local resource = blockType.resource('kubernetes_service_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        status: build.template(std.get(block, 'status', null)),
         wait_for_load_balancer: build.template(std.get(block, 'wait_for_load_balancer', null)),
       }),
       id: resource.field('id'),
@@ -663,6 +749,7 @@ local provider(configuration) = {
     stateful_set(name, block): {
       local resource = blockType.resource('kubernetes_stateful_set', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_rollout: build.template(std.get(block, 'wait_for_rollout', null)),
       }),
       id: resource.field('id'),
@@ -671,6 +758,7 @@ local provider(configuration) = {
     stateful_set_v1(name, block): {
       local resource = blockType.resource('kubernetes_stateful_set_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
         wait_for_rollout: build.template(std.get(block, 'wait_for_rollout', null)),
       }),
       id: resource.field('id'),
@@ -680,6 +768,7 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_storage_class', name),
       _: resource._(block, {
         allow_volume_expansion: build.template(std.get(block, 'allow_volume_expansion', null)),
+        id: build.template(std.get(block, 'id', null)),
         mount_options: build.template(std.get(block, 'mount_options', null)),
         parameters: build.template(std.get(block, 'parameters', null)),
         reclaim_policy: build.template(std.get(block, 'reclaim_policy', null)),
@@ -698,6 +787,7 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_storage_class_v1', name),
       _: resource._(block, {
         allow_volume_expansion: build.template(std.get(block, 'allow_volume_expansion', null)),
+        id: build.template(std.get(block, 'id', null)),
         mount_options: build.template(std.get(block, 'mount_options', null)),
         parameters: build.template(std.get(block, 'parameters', null)),
         reclaim_policy: build.template(std.get(block, 'reclaim_policy', null)),
@@ -715,6 +805,8 @@ local provider(configuration) = {
     token_request_v1(name, block): {
       local resource = blockType.resource('kubernetes_token_request_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        token: build.template(std.get(block, 'token', null)),
       }),
       id: resource.field('id'),
       token: resource.field('token'),
@@ -722,12 +814,14 @@ local provider(configuration) = {
     validating_webhook_configuration(name, block): {
       local resource = blockType.resource('kubernetes_validating_webhook_configuration', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     validating_webhook_configuration_v1(name, block): {
       local resource = blockType.resource('kubernetes_validating_webhook_configuration_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
@@ -737,6 +831,8 @@ local provider(configuration) = {
     all_namespaces(name, block): {
       local resource = blockType.resource('kubernetes_all_namespaces', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        namespaces: build.template(std.get(block, 'namespaces', null)),
       }),
       id: resource.field('id'),
       namespaces: resource.field('namespaces'),
@@ -744,6 +840,9 @@ local provider(configuration) = {
     config_map(name, block): {
       local resource = blockType.resource('kubernetes_config_map', name),
       _: resource._(block, {
+        binary_data: build.template(std.get(block, 'binary_data', null)),
+        data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
         immutable: build.template(std.get(block, 'immutable', null)),
       }),
       binary_data: resource.field('binary_data'),
@@ -754,6 +853,9 @@ local provider(configuration) = {
     config_map_v1(name, block): {
       local resource = blockType.resource('kubernetes_config_map_v1', name),
       _: resource._(block, {
+        binary_data: build.template(std.get(block, 'binary_data', null)),
+        data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
         immutable: build.template(std.get(block, 'immutable', null)),
       }),
       binary_data: resource.field('binary_data'),
@@ -764,12 +866,16 @@ local provider(configuration) = {
     endpoints_v1(name, block): {
       local resource = blockType.resource('kubernetes_endpoints_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     ingress(name, block): {
       local resource = blockType.resource('kubernetes_ingress', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
+        status: build.template(std.get(block, 'status', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -778,6 +884,9 @@ local provider(configuration) = {
     ingress_v1(name, block): {
       local resource = blockType.resource('kubernetes_ingress_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
+        status: build.template(std.get(block, 'status', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -786,6 +895,8 @@ local provider(configuration) = {
     mutating_webhook_configuration_v1(name, block): {
       local resource = blockType.resource('kubernetes_mutating_webhook_configuration_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        webhook: build.template(std.get(block, 'webhook', null)),
       }),
       id: resource.field('id'),
       webhook: resource.field('webhook'),
@@ -793,6 +904,8 @@ local provider(configuration) = {
     namespace(name, block): {
       local resource = blockType.resource('kubernetes_namespace', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -800,6 +913,8 @@ local provider(configuration) = {
     namespace_v1(name, block): {
       local resource = blockType.resource('kubernetes_namespace_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -807,6 +922,8 @@ local provider(configuration) = {
     nodes(name, block): {
       local resource = blockType.resource('kubernetes_nodes', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        nodes: build.template(std.get(block, 'nodes', null)),
       }),
       id: resource.field('id'),
       nodes: resource.field('nodes'),
@@ -814,24 +931,30 @@ local provider(configuration) = {
     persistent_volume_claim(name, block): {
       local resource = blockType.resource('kubernetes_persistent_volume_claim', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     persistent_volume_claim_v1(name, block): {
       local resource = blockType.resource('kubernetes_persistent_volume_claim_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     persistent_volume_v1(name, block): {
       local resource = blockType.resource('kubernetes_persistent_volume_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
       }),
       id: resource.field('id'),
     },
     pod(name, block): {
       local resource = blockType.resource('kubernetes_pod', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
+        status: build.template(std.get(block, 'status', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -840,6 +963,9 @@ local provider(configuration) = {
     pod_v1(name, block): {
       local resource = blockType.resource('kubernetes_pod_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
+        status: build.template(std.get(block, 'status', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -850,6 +976,7 @@ local provider(configuration) = {
       _: resource._(block, {
         api_version: build.template(block.api_version),
         kind: build.template(block.kind),
+        object: build.template(std.get(block, 'object', null)),
       }),
       api_version: resource.field('api_version'),
       kind: resource.field('kind'),
@@ -864,6 +991,7 @@ local provider(configuration) = {
         label_selector: build.template(std.get(block, 'label_selector', null)),
         limit: build.template(std.get(block, 'limit', null)),
         namespace: build.template(std.get(block, 'namespace', null)),
+        objects: build.template(std.get(block, 'objects', null)),
       }),
       api_version: resource.field('api_version'),
       field_selector: resource.field('field_selector'),
@@ -877,6 +1005,10 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_secret', name),
       _: resource._(block, {
         binary_data: build.template(std.get(block, 'binary_data', null)),
+        data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
+        immutable: build.template(std.get(block, 'immutable', null)),
+        type: build.template(std.get(block, 'type', null)),
       }),
       binary_data: resource.field('binary_data'),
       data: resource.field('data'),
@@ -888,6 +1020,10 @@ local provider(configuration) = {
       local resource = blockType.resource('kubernetes_secret_v1', name),
       _: resource._(block, {
         binary_data: build.template(std.get(block, 'binary_data', null)),
+        data: build.template(std.get(block, 'data', null)),
+        id: build.template(std.get(block, 'id', null)),
+        immutable: build.template(std.get(block, 'immutable', null)),
+        type: build.template(std.get(block, 'type', null)),
       }),
       binary_data: resource.field('binary_data'),
       data: resource.field('data'),
@@ -898,6 +1034,17 @@ local provider(configuration) = {
     server_version(name, block): {
       local resource = blockType.resource('kubernetes_server_version', name),
       _: resource._(block, {
+        build_date: build.template(std.get(block, 'build_date', null)),
+        compiler: build.template(std.get(block, 'compiler', null)),
+        git_commit: build.template(std.get(block, 'git_commit', null)),
+        git_tree_state: build.template(std.get(block, 'git_tree_state', null)),
+        git_version: build.template(std.get(block, 'git_version', null)),
+        go_version: build.template(std.get(block, 'go_version', null)),
+        id: build.template(std.get(block, 'id', null)),
+        major: build.template(std.get(block, 'major', null)),
+        minor: build.template(std.get(block, 'minor', null)),
+        platform: build.template(std.get(block, 'platform', null)),
+        version: build.template(std.get(block, 'version', null)),
       }),
       build_date: resource.field('build_date'),
       compiler: resource.field('compiler'),
@@ -914,6 +1061,9 @@ local provider(configuration) = {
     service(name, block): {
       local resource = blockType.resource('kubernetes_service', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
+        status: build.template(std.get(block, 'status', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -922,6 +1072,11 @@ local provider(configuration) = {
     service_account(name, block): {
       local resource = blockType.resource('kubernetes_service_account', name),
       _: resource._(block, {
+        automount_service_account_token: build.template(std.get(block, 'automount_service_account_token', null)),
+        default_secret_name: build.template(std.get(block, 'default_secret_name', null)),
+        id: build.template(std.get(block, 'id', null)),
+        image_pull_secret: build.template(std.get(block, 'image_pull_secret', null)),
+        secret: build.template(std.get(block, 'secret', null)),
       }),
       automount_service_account_token: resource.field('automount_service_account_token'),
       default_secret_name: resource.field('default_secret_name'),
@@ -932,6 +1087,11 @@ local provider(configuration) = {
     service_account_v1(name, block): {
       local resource = blockType.resource('kubernetes_service_account_v1', name),
       _: resource._(block, {
+        automount_service_account_token: build.template(std.get(block, 'automount_service_account_token', null)),
+        default_secret_name: build.template(std.get(block, 'default_secret_name', null)),
+        id: build.template(std.get(block, 'id', null)),
+        image_pull_secret: build.template(std.get(block, 'image_pull_secret', null)),
+        secret: build.template(std.get(block, 'secret', null)),
       }),
       automount_service_account_token: resource.field('automount_service_account_token'),
       default_secret_name: resource.field('default_secret_name'),
@@ -942,6 +1102,9 @@ local provider(configuration) = {
     service_v1(name, block): {
       local resource = blockType.resource('kubernetes_service_v1', name),
       _: resource._(block, {
+        id: build.template(std.get(block, 'id', null)),
+        spec: build.template(std.get(block, 'spec', null)),
+        status: build.template(std.get(block, 'status', null)),
       }),
       id: resource.field('id'),
       spec: resource.field('spec'),
@@ -950,6 +1113,13 @@ local provider(configuration) = {
     storage_class(name, block): {
       local resource = blockType.resource('kubernetes_storage_class', name),
       _: resource._(block, {
+        allow_volume_expansion: build.template(std.get(block, 'allow_volume_expansion', null)),
+        id: build.template(std.get(block, 'id', null)),
+        mount_options: build.template(std.get(block, 'mount_options', null)),
+        parameters: build.template(std.get(block, 'parameters', null)),
+        reclaim_policy: build.template(std.get(block, 'reclaim_policy', null)),
+        storage_provisioner: build.template(std.get(block, 'storage_provisioner', null)),
+        volume_binding_mode: build.template(std.get(block, 'volume_binding_mode', null)),
       }),
       allow_volume_expansion: resource.field('allow_volume_expansion'),
       id: resource.field('id'),
@@ -962,6 +1132,13 @@ local provider(configuration) = {
     storage_class_v1(name, block): {
       local resource = blockType.resource('kubernetes_storage_class_v1', name),
       _: resource._(block, {
+        allow_volume_expansion: build.template(std.get(block, 'allow_volume_expansion', null)),
+        id: build.template(std.get(block, 'id', null)),
+        mount_options: build.template(std.get(block, 'mount_options', null)),
+        parameters: build.template(std.get(block, 'parameters', null)),
+        reclaim_policy: build.template(std.get(block, 'reclaim_policy', null)),
+        storage_provisioner: build.template(std.get(block, 'storage_provisioner', null)),
+        volume_binding_mode: build.template(std.get(block, 'volume_binding_mode', null)),
       }),
       allow_volume_expansion: resource.field('allow_volume_expansion'),
       id: resource.field('id'),
