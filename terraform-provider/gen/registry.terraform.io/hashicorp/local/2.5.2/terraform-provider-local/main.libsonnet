@@ -21,7 +21,7 @@ local providerTemplate(provider, requirements, configuration) = {
           count: build.template(std.get(rawBlock, 'count', null)),
           for_each: build.template(std.get(rawBlock, 'for_each', null)),
         },
-        providerRequirements: build.providerRequirements(block + providerRequirements),
+        providerRequirements: build.providerRequirements([block] + [providerRequirements]),
         providerConfiguration: providerConfiguration,
         provider: provider,
         providerAlias: providerAlias,
@@ -47,7 +47,7 @@ local providerTemplate(provider, requirements, configuration) = {
   func(name, parameters=[]): {
     local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
     _: {
-      providerRequirements: build.providerRequirements(parameters + providerRequirements),
+      providerRequirements: build.providerRequirements(parameters + [providerRequirements]),
       providerConfiguration: providerConfiguration,
       ref: 'provider::%s::%s(%s)' % [provider, name, parameterString],
     },
