@@ -1,4 +1,5 @@
 local tf = import '../main.libsonnet';
+local jsonnet = import './terraform-provider-jsonnet/main.libsonnet';
 local Local = import './terraform-provider-local/main.libsonnet';
 
 local cfg(blocks) = [
@@ -31,6 +32,17 @@ local localAliasCfg(blocks) = [
     provider: {
       'local': {
         alias: 'test',
+      },
+    },
+  },
+] + blocks;
+
+local localJsonnetCfg(blocks) = [
+  {
+    terraform: {
+      required_providers: {
+        jsonnet: { source: 'registry.terraform.io/marcbran/jsonnet', version: '0.0.1' },
+        'local': { source: 'registry.terraform.io/hashicorp/local', version: '2.5.2' },
       },
     },
   },
@@ -391,6 +403,28 @@ local providerTests = {
               example_txt: {
                 provider: 'local.test',
                 content: 'hello',
+                filename: 'example.txt',
+              },
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'provider function',
+      input::
+        [
+          Local.resource.file('example_txt', {
+            filename: 'example.txt',
+            content: jsonnet.func.evaluate('{}'),
+          }),
+        ],
+      expected: localJsonnetCfg([
+        {
+          resource: {
+            local_file: {
+              example_txt: {
+                content: '${provider::jsonnet::evaluate("{}")}',
                 filename: 'example.txt',
               },
             },

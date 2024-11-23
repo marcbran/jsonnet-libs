@@ -1,7 +1,7 @@
 local build = {
   expression(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then if std.objectHas(val._, 'ref') then val._.ref else '"%s"' % [std.strReplace(val._.str, '\n', '\\n')] else std.mapWithKey(function(key, value) self.expression(value), val) else if std.type(val) == 'array' then std.map(function(element) self.expression(element), val) else if std.type(val) == 'string' then '"%s"' % [std.strReplace(val, '\n', '\\n')] else val,
   template(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then if std.objectHas(val._, 'ref') then '${%s}' % [val._.ref] else val._.str else std.mapWithKey(function(key, value) self.template(value), val) else if std.type(val) == 'array' then std.map(function(element) self.template(element), val) else if std.type(val) == 'string' then val else val,
-  providerRequirements(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.providerRequirements else std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.providerRequirements(val[key]), std.objectFields(val)), {}) else if std.type(val) == 'array' then std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.providerRequirements(val[key]), val), {}) else {},
+  providerRequirements(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then std.get(val._, 'providerRequirements', {}) else std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.providerRequirements(val[key]), std.objectFields(val)), {}) else if std.type(val) == 'array' then std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(element) build.providerRequirements(element), val), {}) else {},
 };
 
 local providerTemplate(provider, requirements, configuration) = {
@@ -21,7 +21,7 @@ local providerTemplate(provider, requirements, configuration) = {
           count: build.template(std.get(rawBlock, 'count', null)),
           for_each: build.template(std.get(rawBlock, 'for_each', null)),
         },
-        providerRequirements: build.providerRequirements([block] + [providerRequirements]),
+        providerRequirements: build.providerRequirements(rawBlock) + providerRequirements,
         providerConfiguration: providerConfiguration,
         provider: provider,
         providerAlias: providerAlias,
@@ -47,7 +47,7 @@ local providerTemplate(provider, requirements, configuration) = {
   func(name, parameters=[]): {
     local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
     _: {
-      providerRequirements: build.providerRequirements(parameters + [providerRequirements]),
+      providerRequirements: build.providerRequirements(parameters) + providerRequirements,
       providerConfiguration: providerConfiguration,
       ref: 'provider::%s::%s(%s)' % [provider, name, parameterString],
     },

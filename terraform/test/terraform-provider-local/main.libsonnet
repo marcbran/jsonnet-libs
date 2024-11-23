@@ -1,26 +1,37 @@
 local build = {
   expression(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then if std.objectHas(val._, 'ref') then val._.ref else '"%s"' % [std.strReplace(val._.str, '\n', '\\n')] else std.mapWithKey(function(key, value) self.expression(value), val) else if std.type(val) == 'array' then std.map(function(element) self.expression(element), val) else if std.type(val) == 'string' then '"%s"' % [std.strReplace(val, '\n', '\\n')] else val,
   template(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then if std.objectHas(val._, 'ref') then '${%s}' % [val._.ref] else val._.str else std.mapWithKey(function(key, value) self.template(value), val) else if std.type(val) == 'array' then std.map(function(element) self.template(element), val) else if std.type(val) == 'string' then val else val,
-  providerRequirements(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then val._.providerRequirements else std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.providerRequirements(val[key]), std.objectFields(val)), {}) else if std.type(val) == 'array' then std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.providerRequirements(val[key]), val), {}) else {},
+  providerRequirements(val): if std.type(val) == 'object' then if std.objectHas(val, '_') then std.get(val._, 'providerRequirements', {}) else std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(key) build.providerRequirements(val[key]), std.objectFields(val)), {}) else if std.type(val) == 'array' then std.foldl(function(acc, val) std.mergePatch(acc, val), std.map(function(element) build.providerRequirements(element), val), {}) else {},
 };
 
 local providerTemplate(provider, requirements, configuration) = {
   local providerRequirements = { [provider]: requirements },
-  local providerAlias = if configuration == null then null else '%s.%s' % [provider, configuration.alias],
-  local providerConfiguration = if configuration == null then {} else { [providerAlias]: { provider: { [provider]: configuration } } },
-  local providerReference = if configuration == null then {} else { provider: providerAlias },
+  local providerAlias = if configuration == null then null else configuration.alias,
+  local providerWithAlias = if configuration == null then null else '%s.%s' % [provider, providerAlias],
+  local providerConfiguration = if configuration == null then {} else { [providerWithAlias]: { provider: { [provider]: configuration } } },
+  local providerReference = if configuration == null then {} else { provider: providerWithAlias },
   blockType(blockType): {
     local blockTypePath = if blockType == 'resource' then [] else ['data'],
     resource(type, name): {
+      local resourceType = std.substr(type, std.length(provider) + 1, std.length(type)),
       local resourcePath = blockTypePath + [type, name],
-      _(block): {
-        providerRequirements: providerRequirements,
+      _(rawBlock, block): {
+        local metaBlock = {
+          depends_on: build.template(std.get(rawBlock, 'depends_on', null)),
+          count: build.template(std.get(rawBlock, 'count', null)),
+          for_each: build.template(std.get(rawBlock, 'for_each', null)),
+        },
+        providerRequirements: build.providerRequirements(rawBlock) + providerRequirements,
         providerConfiguration: providerConfiguration,
+        provider: provider,
+        providerAlias: providerAlias,
+        resourceType: resourceType,
+        name: name,
         ref: std.join('.', resourcePath),
         block: {
           [blockType]: {
             [type]: {
-              [name]: std.prune(block + providerReference),
+              [name]: std.prune(metaBlock + block + providerReference),
             },
           },
         },
@@ -36,7 +47,7 @@ local providerTemplate(provider, requirements, configuration) = {
   func(name, parameters=[]): {
     local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
     _: {
-      providerRequirements: providerRequirements,
+      providerRequirements: build.providerRequirements(parameters) + providerRequirements,
       providerConfiguration: providerConfiguration,
       ref: 'provider::%s::%s(%s)' % [provider, name, parameterString],
     },
@@ -53,10 +64,19 @@ local provider(configuration) = {
     local blockType = provider.blockType('resource'),
     file(name, block): {
       local resource = blockType.resource('local_file', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(std.get(block, 'content', null)),
         content_base64: build.template(std.get(block, 'content_base64', null)),
+        content_base64sha256: build.template(std.get(block, 'content_base64sha256', null)),
+        content_base64sha512: build.template(std.get(block, 'content_base64sha512', null)),
+        content_md5: build.template(std.get(block, 'content_md5', null)),
+        content_sha1: build.template(std.get(block, 'content_sha1', null)),
+        content_sha256: build.template(std.get(block, 'content_sha256', null)),
+        content_sha512: build.template(std.get(block, 'content_sha512', null)),
+        directory_permission: build.template(std.get(block, 'directory_permission', null)),
+        file_permission: build.template(std.get(block, 'file_permission', null)),
         filename: build.template(block.filename),
+        id: build.template(std.get(block, 'id', null)),
         sensitive_content: build.template(std.get(block, 'sensitive_content', null)),
         source: build.template(std.get(block, 'source', null)),
       }),
@@ -77,10 +97,19 @@ local provider(configuration) = {
     },
     sensitive_file(name, block): {
       local resource = blockType.resource('local_sensitive_file', name),
-      _: resource._({
+      _: resource._(block, {
         content: build.template(std.get(block, 'content', null)),
         content_base64: build.template(std.get(block, 'content_base64', null)),
+        content_base64sha256: build.template(std.get(block, 'content_base64sha256', null)),
+        content_base64sha512: build.template(std.get(block, 'content_base64sha512', null)),
+        content_md5: build.template(std.get(block, 'content_md5', null)),
+        content_sha1: build.template(std.get(block, 'content_sha1', null)),
+        content_sha256: build.template(std.get(block, 'content_sha256', null)),
+        content_sha512: build.template(std.get(block, 'content_sha512', null)),
+        directory_permission: build.template(std.get(block, 'directory_permission', null)),
+        file_permission: build.template(std.get(block, 'file_permission', null)),
         filename: build.template(block.filename),
+        id: build.template(std.get(block, 'id', null)),
         source: build.template(std.get(block, 'source', null)),
       }),
       content: resource.field('content'),
@@ -102,8 +131,17 @@ local provider(configuration) = {
     local blockType = provider.blockType('data'),
     file(name, block): {
       local resource = blockType.resource('local_file', name),
-      _: resource._({
+      _: resource._(block, {
+        content: build.template(std.get(block, 'content', null)),
+        content_base64: build.template(std.get(block, 'content_base64', null)),
+        content_base64sha256: build.template(std.get(block, 'content_base64sha256', null)),
+        content_base64sha512: build.template(std.get(block, 'content_base64sha512', null)),
+        content_md5: build.template(std.get(block, 'content_md5', null)),
+        content_sha1: build.template(std.get(block, 'content_sha1', null)),
+        content_sha256: build.template(std.get(block, 'content_sha256', null)),
+        content_sha512: build.template(std.get(block, 'content_sha512', null)),
         filename: build.template(block.filename),
+        id: build.template(std.get(block, 'id', null)),
       }),
       content: resource.field('content'),
       content_base64: resource.field('content_base64'),
@@ -118,8 +156,17 @@ local provider(configuration) = {
     },
     sensitive_file(name, block): {
       local resource = blockType.resource('local_sensitive_file', name),
-      _: resource._({
+      _: resource._(block, {
+        content: build.template(std.get(block, 'content', null)),
+        content_base64: build.template(std.get(block, 'content_base64', null)),
+        content_base64sha256: build.template(std.get(block, 'content_base64sha256', null)),
+        content_base64sha512: build.template(std.get(block, 'content_base64sha512', null)),
+        content_md5: build.template(std.get(block, 'content_md5', null)),
+        content_sha1: build.template(std.get(block, 'content_sha1', null)),
+        content_sha256: build.template(std.get(block, 'content_sha256', null)),
+        content_sha512: build.template(std.get(block, 'content_sha512', null)),
         filename: build.template(block.filename),
+        id: build.template(std.get(block, 'id', null)),
       }),
       content: resource.field('content'),
       content_base64: resource.field('content_base64'),

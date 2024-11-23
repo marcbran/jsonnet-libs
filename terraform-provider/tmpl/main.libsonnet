@@ -53,7 +53,7 @@ local build = j.Local('build', j.Object([
     j.If(j.Eq(j.Std.type(j.Id('val')), j.String('object')))
     .Then(
       j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
-      .Then(j.Member(j.Member(j.Id('val'), '_'), 'providerRequirements'))
+      .Then(j.Std.get(j.Member(j.Id('val'), '_'), j.String('providerRequirements')).default(j.Object([])))
       .Else(j.Std.foldl(
         j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
         j.Std.map(
@@ -68,7 +68,7 @@ local build = j.Local('build', j.Object([
       .Then(j.Std.foldl(
         j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
         j.Std.map(
-          j.Func([j.Id('key')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Index(j.Id('val'), j.Id('key'))])),
+          j.Func([j.Id('element')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Id('element')])),
           j.Id('val')
         ),
         j.Object([])
@@ -130,7 +130,10 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
           )
           for attributeName in ['depends_on', 'count', 'for_each']
         ], newlines=1)),
-        j.Field(j.Id('providerRequirements'), j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Add(j.Array([j.Id('block')]), j.Array([j.Id('providerRequirements')]))])),
+        j.Field(j.Id('providerRequirements'), j.Add(
+          j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Id('rawBlock')]),
+          j.Id('providerRequirements'),
+        )),
         j.Field(j.Id('providerConfiguration'), j.Id('providerConfiguration')),
         j.Field(j.Id('provider'), j.Id('provider')),
         j.Field(j.Id('providerAlias'), j.Id('providerAlias')),
@@ -160,7 +163,10 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
       .For('parameter', j.Id('parameters'))
     )),
     j.Field(j.String('_'), j.Object([
-      j.Field(j.Id('providerRequirements'), j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Add(j.Id('parameters'), j.Array([j.Id('providerRequirements')]))])),
+      j.Field(j.Id('providerRequirements'), j.Add(
+        j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Id('parameters')]),
+        j.Id('providerRequirements')
+      )),
       j.Field(j.Id('providerConfiguration'), j.Id('providerConfiguration')),
       j.Field(j.Id('ref'), j.String('provider::%s::%s(%s)', [j.Id('provider'), j.Id('name'), j.Id('parameterString')])),
     ], newlines=1)),
