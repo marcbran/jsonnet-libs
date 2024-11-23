@@ -153,8 +153,8 @@ local functions = {
   ceil(number): func('ceil', [number]),
   floor(number): func('floor', [number]),
   log(number, base): func('log', [number, base]),
-  // TODO max
-  // TODO min
+  max(values): func('max', values),
+  min(values): func('min', values),
   parseint(string, base): func('parseint', [string, base]),
   pow(base, exponent): func('pow', [base, exponent]),
   signum(number): func('signum', [number]),
@@ -162,8 +162,8 @@ local functions = {
   // String Functions
   chomp(string): func('chomp', [string]),
   endswith(string, suffix): func('endswith', [string, suffix]),
-  // TODO format
-  // TODO formatlist
+  format(spec, values): func('format', [spec] + values),
+  formatlist(spec, values): func('formatlist', [spec] + values),
   indent(num_spaces, string): func('indent', [num_spaces, string]),
   join(separator, list): func('join', [separator, list]),
   lower(string): func('lower', [string]),
@@ -187,10 +187,10 @@ local functions = {
   alltrue(list): func('alltrue', [list]),
   anytrue(list): func('anytrue', [list]),
   chunklist(list, chunk_size): func('chunklist', [list, chunk_size]),
-  // TODO coalesce
-  // TODO coalescelist
+  coalesce(values): func('coalesce', values),
+  coalescelist(values): func('coalescelist', values),
   compact(list): func('compact', [list]),
-  // TODO concat
+  concat(lists): func('concat', lists),
   contains(list, value): func('contains', [list, value]),
   distinct(list): func('distinct', [list]),
   element(list, index): func('element', [list, index]),
@@ -200,14 +200,14 @@ local functions = {
   length(list): func('length', [list]),
   lookup(map, key, default): func('lookup', [map, key, default]),
   matchkeys(valueslist, keyslist, searchset): func('matchkeys', [valueslist, keyslist, searchset]),
-  // TODO merge
+  merge(maps): func('merge', maps),
   one(val): func('one', [val]),
   // TODO range
   reverse(list): func('reverse', [list]),
-  // TODO setintersection
-  // TODO setproduct
+  setintersection(sets): func('setintersection', sets),
+  setproduct(sets): func('setproduct', sets),
   setsubtract(a, b): func('setsubtract', [a, b]),
-  // TODO setunion
+  setunion(sets): func('setunion', sets),
   slice(list, startindex, endindex): func('slice', [list, startindex, endindex]),
   sort(list): func('sort', [list]),
   sum(list): func('sum', [list]),
@@ -268,7 +268,7 @@ local functions = {
   cidrhost(prefix, hostnum): func('cidrhost', [prefix, hostnum]),
   cidrnetmask(prefix): func('cidrnetmask', [prefix]),
   cidrsubnet(prefix, newbits, netnum): func('cidrsubnet', [prefix, newbits, netnum]),
-  // TODO cidrsubnets
+  cidrsubnets(prefix, newbits): func('cidrsubnets', [prefix] + newbits),
 
   // Type Conversion Functions
   can(val): func('can', [val]),

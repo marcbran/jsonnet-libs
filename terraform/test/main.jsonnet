@@ -340,6 +340,23 @@ local functionTests = {
         },
       ]),
     },
+    {
+      name: 'rest parameters',
+      input:: [
+        tf.Output('example', {
+          value: tf.concat([['a', 'b'], ['c', 'd']]),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${concat(["a","b"], ["c","d"])}',
+            },
+          },
+        },
+      ]),
+    },
   ],
 };
 
