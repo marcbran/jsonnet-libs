@@ -130,6 +130,16 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
           )
           for attributeName in ['depends_on', 'count', 'for_each']
         ], newlines=1)),
+        j.Field(
+          j.Id('type'),
+          j.If(j.Std.objectHas(j.Id('rawBlock'), j.String('for_each'))).
+            Then(j.String('map')).
+            Else(
+            j.If(j.Std.objectHas(j.Id('rawBlock'), j.String('count'))).
+              Then(j.String('list')).
+              Else(j.String('object'))
+          )
+        ),
         j.Field(j.Id('providerRequirements'), j.Add(
           j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Id('rawBlock')]),
           j.Id('providerRequirements'),

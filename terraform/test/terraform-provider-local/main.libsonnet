@@ -21,6 +21,7 @@ local providerTemplate(provider, requirements, configuration) = {
           count: build.template(std.get(rawBlock, 'count', null)),
           for_each: build.template(std.get(rawBlock, 'for_each', null)),
         },
+        type: if std.objectHas(rawBlock, 'for_each') then 'map' else if std.objectHas(rawBlock, 'count') then 'list' else 'object',
         providerRequirements: build.providerRequirements(rawBlock) + providerRequirements,
         providerConfiguration: providerConfiguration,
         provider: provider,
