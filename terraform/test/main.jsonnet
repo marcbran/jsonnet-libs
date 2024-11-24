@@ -732,6 +732,97 @@ local dataTests = {
   ],
 };
 
+local forTests = {
+  name: 'for',
+  tests: [
+    {
+      name: 'list',
+      input:: [
+        tf.Output('example', {
+          value: tf.For('s').In(['a', 'b', 'c']).List(function(s) s),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${[for s in ["a", "b", "c"]: s]}',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'list function',
+      input:: [
+        tf.Output('example', {
+          value: tf.For('s').In(['a', 'b', 'c']).List(function(s) tf.upper(s)),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${[for s in ["a", "b", "c"]: upper(s)]}',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'list index',
+      input:: [
+        tf.Output('example', {
+          value: tf.For('i', 's').In([1, 2, 3]).List(function(i, s) { index: i, value: s }),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${[for i, s in [1, 2, 3]: {"index":"${i}","value":"${s}"}]}',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'map',
+      input:: [
+        tf.Output('example', {
+          value: tf.For('s').In(['a', 'b', 'c']).Map(function(s) [s, s]),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${{for s in ["a", "b", "c"]: s => s }}',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'map to map',
+      input:: [
+        tf.Output('example', {
+          value: tf.For('k', 'v').In({ foo: 'a', bar: 'b' }).Map(function(k, v) [v, k]),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${{for k, v in {"bar": "b", "foo": "a"}: v => k }}',
+            },
+          },
+        },
+      ]),
+    },
+  ],
+};
+
 local testGroups = [
   variableTests,
   outputTests,
@@ -742,6 +833,7 @@ local testGroups = [
   providerTests,
   resourceTests,
   dataTests,
+  forTests,
 ];
 
 std.flattenArrays([

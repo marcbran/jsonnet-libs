@@ -139,6 +139,33 @@ local Each = {
   },
 };
 
+local For(keyIdVal, val=null) = {
+  local parameters = [{ _: { ref: parameter } } for parameter in std.prune([keyIdVal, val])],
+  local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
+  In(collection): {
+    List(valueProvider): {
+      local value =
+        if std.length(parameters) == 1
+        then valueProvider(parameters[0])
+        else valueProvider(parameters[0], parameters[1]),
+      local valueString = build.expression(value),
+      _: {
+        ref: '[for %s in %s: %s]' % [parameterString, collection, valueString],
+      },
+    },
+    Map(keyValueProvider): {
+      local keyValue =
+        if std.length(parameters) == 1
+        then keyValueProvider(parameters[0])
+        else keyValueProvider(parameters[0], parameters[1]),
+      local keyValueString = '%s => %s' % [build.expression(keyValue[0]), build.expression(keyValue[1])],
+      _: {
+        ref: '{for %s in %s: %s }' % [parameterString, collection, keyValueString],
+      },
+    },
+  },
+};
+
 local func(name, parameters=[]) = {
   local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
   _: {
@@ -319,6 +346,7 @@ local terraform = functions {
   Module: Module,
   Cfg: Cfg,
   Each: Each,
+  For: For,
 };
 
 terraform
