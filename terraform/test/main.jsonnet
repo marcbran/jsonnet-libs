@@ -746,7 +746,32 @@ local forTests = {
         {
           output: {
             example: {
-              value: '${[for s in ["a", "b", "c"]: s]}',
+              value: '${[for s in ["a","b","c"]: s]}',
+            },
+          },
+        },
+      ]),
+    },
+    {
+      name: 'list variable',
+      input::
+        local var = tf.Local('var', [1, 2, 3]);
+        [
+          var,
+          tf.Output('example', {
+            value: tf.For('s').In(var).List(function(s) s),
+          }),
+        ],
+      expected: cfg([
+        {
+          locals: {
+            var: [1, 2, 3],
+          },
+        },
+        {
+          output: {
+            example: {
+              value: '${[for s in local.var: s]}',
             },
           },
         },
@@ -763,7 +788,7 @@ local forTests = {
         {
           output: {
             example: {
-              value: '${[for s in ["a", "b", "c"]: upper(s)]}',
+              value: '${[for s in ["a","b","c"]: upper(s)]}',
             },
           },
         },
@@ -780,7 +805,7 @@ local forTests = {
         {
           output: {
             example: {
-              value: '${[for i, s in [1, 2, 3]: {"index":"${i}","value":"${s}"}]}',
+              value: '${[for i, s in [1,2,3]: {"index":"${i}","value":"${s}"}]}',
             },
           },
         },
@@ -797,7 +822,7 @@ local forTests = {
         {
           output: {
             example: {
-              value: '${{for s in ["a", "b", "c"]: s => s }}',
+              value: '${{for s in ["a","b","c"]: s => s }}',
             },
           },
         },
@@ -814,7 +839,7 @@ local forTests = {
         {
           output: {
             example: {
-              value: '${{for k, v in {"bar": "b", "foo": "a"}: v => k }}',
+              value: '${{for k, v in {"bar":"b","foo":"a"}: v => k }}',
             },
           },
         },

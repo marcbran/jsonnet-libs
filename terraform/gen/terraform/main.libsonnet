@@ -143,6 +143,7 @@ local For(keyIdVal, val=null) = {
   local parameters = [{ _: { ref: parameter } } for parameter in std.prune([keyIdVal, val])],
   local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
   In(collection): {
+    local collectionString = build.expression(collection),
     List(valueProvider): {
       local value =
         if std.length(parameters) == 1
@@ -150,7 +151,7 @@ local For(keyIdVal, val=null) = {
         else valueProvider(parameters[0], parameters[1]),
       local valueString = build.expression(value),
       _: {
-        ref: '[for %s in %s: %s]' % [parameterString, collection, valueString],
+        ref: '[for %s in %s: %s]' % [parameterString, collectionString, valueString],
       },
     },
     Map(keyValueProvider): {
@@ -160,7 +161,7 @@ local For(keyIdVal, val=null) = {
         else keyValueProvider(parameters[0], parameters[1]),
       local keyValueString = '%s => %s' % [build.expression(keyValue[0]), build.expression(keyValue[1])],
       _: {
-        ref: '{for %s in %s: %s }' % [parameterString, collection, keyValueString],
+        ref: '{for %s in %s: %s }' % [parameterString, collectionString, keyValueString],
       },
     },
   },
