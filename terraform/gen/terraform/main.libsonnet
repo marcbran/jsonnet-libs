@@ -5,22 +5,34 @@ local build = {
       then
         if std.objectHas(val._, 'ref')
         then val._.ref
-        else '"%s"' % std.strReplace(val._.str, '\n', '\\n')
-      else std.manifestJsonMinified(std.mapWithKey(function(key, value) self.template(value), val))
-    else if std.type(val) == 'array' then std.manifestJsonMinified(std.map(function(element) self.template(element), val))
-    else if std.type(val) == 'string' then '"%s"' % std.strReplace(val, '\n', '\\n')
-    else val,
+        else '"%s"' % val._.str
+      else '{' + std.join(',', std.map(function(key) self.expression(key) + ':' + self.expression(val[key]), std.objectFields(val))) + '}'
+    else if std.type(val) == 'array' then '[' + std.join(',', std.map(function(element) self.expression(element), val)) + ']'
+    else if std.type(val) == 'string' then '"%s"' % val
+    else '%s' % val,
 
   template(val):
     if std.type(val) == 'object' then
       if std.objectHas(val, '_')
       then
         if std.objectHas(val._, 'ref')
-        then '${%s}' % val._.ref
+        then std.strReplace(self.string(val), '\n', '\\n')
         else val._.str
       else std.mapWithKey(function(key, value) self.template(value), val)
     else if std.type(val) == 'array' then std.map(function(element) self.template(element), val)
-    else if std.type(val) == 'string' then '%s' % val
+    else if std.type(val) == 'string' then std.strReplace(self.string(val), '\n', '\\n')
+    else val,
+
+  string(val):
+    if std.type(val) == 'object' then
+      if std.objectHas(val, '_')
+      then
+        if std.objectHas(val._, 'ref')
+        then '${%s}' % val._.ref
+        else val._.str
+      else '${' + self.expression(val) + '}'
+    else if std.type(val) == 'array' then '${' + self.expression(val) + '}'
+    else if std.type(val) == 'string' then val
     else val,
 
   providerRequirements(val):
@@ -340,6 +352,7 @@ local Cfg(resources) =
   preamble + extractBlocks(resources);
 
 local terraform = functions {
+  build: build,
   Format: Format,
   Variable: Variable,
   Local: Local,
