@@ -805,7 +805,7 @@ local forTests = {
         {
           output: {
             example: {
-              value: '${[for i, s in [1,2,3]: {"index":"${i}","value":"${s}"}]}',
+              value: '${[for i, s in [1,2,3]: {"index":i,"value":s}]}',
             },
           },
         },
