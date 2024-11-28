@@ -732,6 +732,29 @@ local dataTests = {
   ],
 };
 
+local conditionTests = {
+  name: 'condition',
+  tests: [
+    {
+      name: 'simple',
+      input:: [
+        tf.Output('example', {
+          value: tf.If(tf.eq(true, false)).Then('a').Else('b'),
+        }),
+      ],
+      expected: cfg([
+        {
+          output: {
+            example: {
+              value: '${true == false ? "a" : "b"}',
+            },
+          },
+        },
+      ]),
+    },
+  ],
+};
+
 local forTests = {
   name: 'for',
   tests: [
@@ -858,6 +881,7 @@ local testGroups = [
   providerTests,
   resourceTests,
   dataTests,
+  conditionTests,
   forTests,
 ];
 

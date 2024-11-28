@@ -151,6 +151,46 @@ local Each = {
   },
 };
 
+local operators = {
+  local binaryOp(a, op, b) = {
+    _: {
+      ref: '%s %s %s' % [build.expression(a), op, build.expression(b)],
+    },
+  },
+  mul(a, b): binaryOp(a, '*', b),
+  div(a, b): binaryOp(a, '/', b),
+  mod(a, b): binaryOp(a, '%', b),
+  add(a, b): binaryOp(a, '+', b),
+  sub(a, b): binaryOp(a, '-', b),
+  lt(a, b): binaryOp(a, '<', b),
+  lte(a, b): binaryOp(a, '<=', b),
+  gt(a, b): binaryOp(a, '>', b),
+  gte(a, b): binaryOp(a, '>=', b),
+  eq(a, b): binaryOp(a, '==', b),
+  neq(a, b): binaryOp(a, '!=', b),
+  logicalAnd(a, b): binaryOp(a, '&&', b),
+  logicalOr(a, b): binaryOp(a, '||', b),
+  local unaryOp(a, op) = {
+    _: {
+      ref: '%s%s' % [op, build.expression(a)],
+    },
+  },
+  neg(a): unaryOp(a, '-'),
+};
+
+local If(condition) = {
+  local conditionString = build.expression(condition),
+  Then(trueVal): {
+    local trueValString = build.expression(trueVal),
+    Else(falseVal): {
+      local falseValString = build.expression(falseVal),
+      _: {
+        ref: '%s ? %s : %s' % [conditionString, trueValString, falseValString],
+      },
+    },
+  },
+};
+
 local For(keyIdVal, val=null) = {
   local parameters = [{ _: { ref: parameter } } for parameter in std.prune([keyIdVal, val])],
   local parameterString = std.join(', ', [build.expression(parameter) for parameter in parameters]),
@@ -351,7 +391,7 @@ local Cfg(resources) =
   }] + std.objectValues(build.providerConfiguration(resources));
   preamble + extractBlocks(resources);
 
-local terraform = functions {
+local terraform = functions + operators + {
   build: build,
   Format: Format,
   Variable: Variable,
@@ -360,6 +400,7 @@ local terraform = functions {
   Module: Module,
   Cfg: Cfg,
   Each: Each,
+  If: If,
   For: For,
 };
 
