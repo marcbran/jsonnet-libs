@@ -1,4 +1,4 @@
-local j = import '../main.libsonnet';
+local j = import './main.libsonnet';
 
 local nullTests = {
   name: 'null',

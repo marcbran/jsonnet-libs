@@ -1,0 +1,33 @@
+set fallback
+
+default:
+    @just --list
+
+release: test
+    @just jsonnet-release jsonnet
+
+test:
+    @just jsonnet-test
+
+it:
+    #!/usr/bin/env bash
+    exit_code=0
+    while read -r raw_query; do
+      query="$(echo "${raw_query}" | sed 's/\\n/\n/g')"
+      echo "${query}"
+
+      set +e
+      response="$(jsonnet -e "${query}")"
+      if ! jsonnet -e "${query}" >/dev/null 2>&1; then
+        exit_code=1
+      fi
+      set -e
+      echo "${response}"
+    done < <(jsonnet './tests.jsonnet' | jq -r 'map(.actual) | .[]')
+
+    if [ "${exit_code}" -eq 0 ]; then
+      echo "All tests passed!"
+    else
+      echo "Some tests failed!"
+    fi
+    exit "${exit_code}"

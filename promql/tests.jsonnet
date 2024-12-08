@@ -1,5 +1,5 @@
-local p = import '../main.libsonnet';
-local prometheus = import 'prometheus.libsonnet';
+local prometheus = import './it/prometheus.libsonnet';
+local p = import './main.libsonnet';
 
 local metricTests = {
   name: 'metric',

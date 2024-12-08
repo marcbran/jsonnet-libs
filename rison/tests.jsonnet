@@ -1,4 +1,4 @@
-local rison = import '../main.libsonnet';
+local rison = import './main.libsonnet';
 
 local objectTests = {
   name: 'object',

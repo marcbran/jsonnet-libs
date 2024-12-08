@@ -1,4 +1,4 @@
-local lt = import '../main.libsonnet';
+local lt = import './main.libsonnet';
 
 local randomPanel(title) = {
   title: title,

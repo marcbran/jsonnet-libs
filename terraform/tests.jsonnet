@@ -1,6 +1,6 @@
-local tf = import '../main.libsonnet';
-local jsonnet = import './terraform-provider-jsonnet/main.libsonnet';
-local Local = import './terraform-provider-local/main.libsonnet';
+local jsonnet = import './it/terraform-provider-jsonnet/main.libsonnet';
+local Local = import './it/terraform-provider-local/main.libsonnet';
+local tf = import './main.libsonnet';
 
 local cfg(blocks) = [
   {

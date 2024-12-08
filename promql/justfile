@@ -1,0 +1,48 @@
+set fallback := true
+
+default:
+    @just --list
+
+release: test it
+    @just jsonnet-release promql
+
+test:
+    @just jsonnet-test
+
+it:
+    #!/usr/bin/env bash
+    echo "Running integration tests..."
+    pushd it
+
+    echo "Starting Docker Compose..."
+    docker-compose up -d
+
+    echo "Waiting for Prometheus to start..."
+    while ! curl -s -o /dev/null http://localhost:9090/metrics; do
+      sleep 1
+    done
+
+    echo "Querying Prometheus..."
+    exit_code=0
+    while read -r query; do
+      echo "${query}"
+
+      response="$(curl -sG --data-urlencode "query=${query}" "http://localhost:9090/api/v1/query")"
+      status="$(echo "${response}" | jq -r '.status')"
+
+      if [ "${status}" != "success" ]; then
+        error="$(echo "${response}" | jq -r '.error')"
+        echo "${error}"
+        echo ""
+        exit_code=1
+      fi
+    done < <(jsonnet '../tests.jsonnet' | jq -r 'map(.actual) | .[]')
+
+    docker-compose down
+
+    if [ "${exit_code}" -eq 0 ]; then
+      echo "All tests passed!"
+    else
+      echo "Some tests failed!"
+    fi
+    exit "${exit_code}"

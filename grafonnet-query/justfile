@@ -1,0 +1,10 @@
+set fallback := true
+
+default:
+    @just --list
+
+release: it
+    @just jsonnet-release grafonnet-query
+
+it:
+    @just grafana-it
