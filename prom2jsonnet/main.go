@@ -23,7 +23,7 @@ var mainLibsonnet string
 var jsonnetLibsonnet string
 
 func main() {
-	url := flag.String("url", "http://localhost:9090/metrics", "The URL to fetch metrics from")
+	url := flag.String("url", "http://localhost:8080/metrics", "The URL to fetch metrics from")
 	output := flag.String("output", "./", "The output directory for the files")
 
 	flag.Parse()
@@ -107,12 +107,12 @@ func formatJsonnet(prefix string, data []*prom2json.Family) (string, error) {
 		return "", err
 	}
 	jsonStr = jsonStr[1 : len(jsonStr)-2]
-	jsonStr = strings.ReplaceAll(jsonStr, "\\\\n", "\n")
-	format, err := formatter.Format("main.jsonnet", jsonStr, formatter.DefaultOptions())
+	jsonStr = strings.ReplaceAll(jsonStr, "\\n", "\n")
+	jsonStr, err = formatter.Format("main.jsonnet", jsonStr, formatter.DefaultOptions())
 	if err != nil {
 		return "", err
 	}
-	return format, nil
+	return jsonStr, nil
 }
 
 func writeJsonnet(prefix string, output string, jsonnet string) error {
