@@ -1,4 +1,16 @@
 local withQuery = {
+  dashboard+: {
+    variable+: {
+      query+: {
+        queryTypes+: {
+          withLabelValues(label, metric=''):
+            if std.type(metric) == 'object'
+            then super.withLabelValues(label, metric.expr)
+            else super.withLabelValues(label, metric),
+        },
+      },
+    },
+  },
   query+: {
     prometheus+: {
       new(datasource, expr):

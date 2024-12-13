@@ -9,6 +9,15 @@
         }
       },
       "version": "main"
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/marcbran/jsonnet.git",
+          "subdir": "promql"
+        }
+      },
+      "version": "promql"
     }
   ],
   "legacyImports": true

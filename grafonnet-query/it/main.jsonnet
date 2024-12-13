@@ -1,7 +1,7 @@
-local p = import '../../promql/gen/promql/main.libsonnet';
 local q = import '../main.libsonnet';
 local prometheus = import './prometheus.libsonnet';
 local grafonnet = import 'github.com/grafana/grafonnet/gen/grafonnet-latest/main.libsonnet';
+local p = import 'promql/main.libsonnet';
 
 local g = grafonnet + q.withQuery;
 
