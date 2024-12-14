@@ -1,29 +1,3 @@
-local rangeSelector(vector, range) = {
-  expr: '%s[%s]' % [vector.expr, range],
-};
-
-local offsetModifier(vector, offset) = {
-  expr: '%s offset %s' % [vector.expr, offset],
-};
-
-local atModifier(vector, time) = {
-  expr: '%s @ %s' % [vector.expr, time],
-};
-
-local subquery(vector, range, resolution=null) = {
-  expr:
-    if (resolution == null)
-    then '%s[%s]' % [vector.expr, range]
-    else '%s[%s:%s]' % [vector.expr, range, resolution],
-};
-
-local selectors = {
-  range: rangeSelector,
-  offset: offsetModifier,
-  at: atModifier,
-  subquery: subquery,
-};
-
 local matcher(value, operator) = {
   expr(field): '%s%s"%s"' % [field, operator, value],
 };
@@ -35,13 +9,50 @@ local matchers = {
   regexNot(value): matcher(value, '!~'),
 };
 
+local rangeSelector(vector, range) = {
+  _: {
+    kind: 'rangeSelector',
+    expr: '%s[%s]' % [vector._.expr, range],
+  },
+};
+
+local offsetModifier(vector, offset) = {
+  _: {
+    kind: 'offsetModifier',
+    expr: '%s offset %s' % [vector._.expr, offset],
+  },
+};
+
+local atModifier(vector, time) = {
+  _: {
+    kind: 'atModifier',
+    expr: '%s @ %s' % [vector._.expr, time],
+  },
+};
+
+local subquery(vector, range, resolution=null) = {
+  _: {
+    kind: 'subquery',
+    expr:
+      if (resolution == null)
+      then '%s[%s]' % [vector._.expr, range]
+      else '%s[%s:%s]' % [vector._.expr, range, resolution],
+  },
+};
+
+local selectors = {
+  range: rangeSelector,
+  offset: offsetModifier,
+  at: atModifier,
+  subquery: subquery,
+};
+
 local resolveOperand(value) =
   if std.type(value) == 'object' then
-    if std.objectHas(value, 'type') && value.type == 'operator'
-    then '(%s)' % value.expr
-    else value.expr
-  else if std.type(value) == 'number' then value + ''
-  else value;
+    if std.objectHas(value, '_') && std.objectHas(value._, 'kind') && value._.kind == 'operator'
+    then '(%s)' % value._.expr
+    else value._.expr
+  else std.manifestJson(value);
 
 local operator(left, operator, right, by, ignoring, group_left, group_right) = {
   local leftString = resolveOperand(left),
@@ -51,8 +62,10 @@ local operator(left, operator, right, by, ignoring, group_left, group_right) = {
   local groupRightString = if (std.length(group_right) > 0) then 'group_right(%s)' % std.join(', ', group_right) else '',
   local rightString = resolveOperand(right),
   local parts = [leftString, operator, byString, ignoringString, groupLeftString, groupRightString, rightString],
-  type: 'operator',
-  expr: std.join(' ', [part for part in parts if part != '']),
+  _: {
+    kind: 'operator',
+    expr: std.join(' ', [part for part in parts if part != '']),
+  },
 };
 
 local arithmeticOperators = {
@@ -88,9 +101,12 @@ local comparisonOperators = {
 local aggregationOperator(operator, parameter, expression, by, without) = {
   local byString = if (std.length(by) > 0) then 'by (%s)' % std.join(', ', by) else '',
   local withoutString = if (std.length(without) > 0) then 'without (%s)' % std.join(', ', without) else '',
-  local expressionString = if (parameter == '') then '(%s)' % expression.expr else '(%s, %s)' % [std.manifestJson(parameter), expression.expr],
+  local expressionString = if (parameter == '') then '(%s)' % expression._.expr else '(%s, %s)' % [std.manifestJson(parameter), expression._.expr],
   local parts = [operator, byString, withoutString, expressionString],
-  expr: std.join(' ', [part for part in parts if part != '']),
+  _: {
+    kind: 'aggregationOperator',
+    expr: std.join(' ', [part for part in parts if part != '']),
+  },
 };
 
 local aggregationOperators = {
@@ -117,10 +133,13 @@ local func(name, parameters=[]) = {
       then parameters[:std.length(parameters) - 1] + parameters[std.length(parameters) - 1]
       else parameters,
   local parameterString = if (std.length(params) > 0) then std.join(', ', [
-    if (std.type(parameter) == 'object') then parameter.expr else std.manifestJson(parameter)
+    if (std.type(parameter) == 'object') then parameter._.expr else std.manifestJson(parameter)
     for parameter in params
   ]) else '',
-  expr: '%s(%s)' % [name, parameterString],
+  _: {
+    kind: 'function',
+    expr: '%s(%s)' % [name, parameterString],
+  },
 };
 
 local functions = {

@@ -12,6 +12,37 @@ local metricTests = {
   ],
 };
 
+local matcherTests = {
+  name: 'matchers',
+  tests: [
+    {
+      name: 'default',
+      input:: prometheus.http_requests_total { code: '$code' },
+      expected: 'prometheus_http_requests_total{code="$code"}',
+    },
+    {
+      name: 'eq',
+      input:: prometheus.http_requests_total { code: p.eq('$code') },
+      expected: 'prometheus_http_requests_total{code="$code"}',
+    },
+    {
+      name: 'regex',
+      input:: prometheus.http_requests_total { code: p.regex('$code') },
+      expected: 'prometheus_http_requests_total{code=~"$code"}',
+    },
+    {
+      name: 'regexNot',
+      input:: prometheus.http_requests_total { code: p.regexNot('$code') },
+      expected: 'prometheus_http_requests_total{code!~"$code"}',
+    },
+    {
+      name: 'multiple',
+      input:: prometheus.http_requests_total { code: '$code', handler: '$handler' },
+      expected: 'prometheus_http_requests_total{code="$code", handler="$handler"}',
+    },
+  ],
+};
+
 local selectorTests = {
   name: 'selectors',
   tests: [
@@ -44,37 +75,6 @@ local selectorTests = {
       name: 'subquery with resolution',
       input:: p.subquery(prometheus.http_requests_total, '5m', '1m'),
       expected: 'prometheus_http_requests_total[5m:1m]',
-    },
-  ],
-};
-
-local matcherTests = {
-  name: 'matchers',
-  tests: [
-    {
-      name: 'default',
-      input:: prometheus.http_requests_total { code: '$code' },
-      expected: 'prometheus_http_requests_total{code="$code"}',
-    },
-    {
-      name: 'eq',
-      input:: prometheus.http_requests_total { code: p.eq('$code') },
-      expected: 'prometheus_http_requests_total{code="$code"}',
-    },
-    {
-      name: 'regex',
-      input:: prometheus.http_requests_total { code: p.regex('$code') },
-      expected: 'prometheus_http_requests_total{code=~"$code"}',
-    },
-    {
-      name: 'regexNot',
-      input:: prometheus.http_requests_total { code: p.regexNot('$code') },
-      expected: 'prometheus_http_requests_total{code!~"$code"}',
-    },
-    {
-      name: 'multiple',
-      input:: prometheus.http_requests_total { code: '$code', handler: '$handler' },
-      expected: 'prometheus_http_requests_total{code="$code", handler="$handler"}',
     },
   ],
 };
@@ -630,8 +630,8 @@ local funcTests = {
 
 local testGroups = [
   metricTests,
-  selectorTests,
   matcherTests,
+  selectorTests,
   arithmeticOperatorTests,
   comparisonOperatorTests,
   aggregationOperatorTests,
@@ -642,7 +642,7 @@ std.flattenArrays([
   [
     {
       name: '%s/%s' % [group.name, test.name],
-      actual: test.input.expr,
+      actual: test.input._.expr,
       expected: test.expected,
     }
     for test in group.tests

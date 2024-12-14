@@ -5,6 +5,10 @@ default:
 jsonnet-test:
     #!/usr/bin/env bash
     exit_code=0
+    if ! jsonnet ./tests.jsonnet > /dev/null; then
+      echo 'Cannot execute jsonnet!'
+      exit 1
+    fi
     while IFS=$'\t' read -r name actual expected; do
       if [ "${actual}" != "${expected}" ]; then
         echo "${name} failed!"
