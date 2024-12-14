@@ -86,8 +86,8 @@ local comparisonOperators = {
 };
 
 local aggregationOperator(operator, parameter, expression, by, without) = {
-  local byString = if (std.length(by) > 0) then 'by(%s)' % std.join(', ', by) else '',
-  local withoutString = if (std.length(without) > 0) then 'without(%s)' % std.join(', ', without) else '',
+  local byString = if (std.length(by) > 0) then 'by (%s)' % std.join(', ', by) else '',
+  local withoutString = if (std.length(without) > 0) then 'without (%s)' % std.join(', ', without) else '',
   local expressionString = if (parameter == '') then '(%s)' % expression.expr else '(%s, %s)' % [std.manifestJson(parameter), expression.expr],
   local parts = [operator, byString, withoutString, expressionString],
   expr: std.join(' ', [part for part in parts if part != '']),
