@@ -93,6 +93,16 @@ local arithmeticOperatorTests = {
       expected: 'prometheus_http_requests_total - prometheus_http_requests_total',
     },
     {
+      name: 'sub int',
+      input:: p.sub(1, prometheus.http_requests_total),
+      expected: '1 - prometheus_http_requests_total',
+    },
+    {
+      name: 'sub float',
+      input:: p.sub(1.5, prometheus.http_requests_total),
+      expected: '1.5 - prometheus_http_requests_total',
+    },
+    {
       name: 'mul',
       input:: p.mul(prometheus.http_requests_total, prometheus.http_requests_total),
       expected: 'prometheus_http_requests_total * prometheus_http_requests_total',
@@ -111,6 +121,11 @@ local arithmeticOperatorTests = {
       name: 'pow',
       input:: p.pow(prometheus.http_requests_total, prometheus.http_requests_total),
       expected: 'prometheus_http_requests_total ^ prometheus_http_requests_total',
+    },
+    {
+      name: 'precedence',
+      input:: p.mul(p.add(prometheus.http_request_duration_seconds, prometheus.http_requests_total), prometheus.http_response_size_bytes),
+      expected: '(prometheus_http_request_duration_seconds + prometheus_http_requests_total) * prometheus_http_response_size_bytes',
     },
   ],
 };

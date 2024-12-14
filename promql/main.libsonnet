@@ -35,12 +35,23 @@ local matchers = {
   regexNot(value): matcher(value, '!~'),
 };
 
+local resolveOperand(value) =
+  if std.type(value) == 'object' then
+    if std.objectHas(value, 'type') && value.type == 'operator'
+    then '(%s)' % value.expr
+    else value.expr
+  else if std.type(value) == 'number' then value + ''
+  else value;
+
 local operator(left, operator, right, by, ignoring, group_left, group_right) = {
+  local leftString = resolveOperand(left),
   local byString = if (std.length(by) > 0) then 'by(%s)' % std.join(', ', by) else '',
   local ignoringString = if (std.length(ignoring) > 0) then 'ignoring(%s)' % std.join(', ', ignoring) else '',
   local groupLeftString = if (std.length(group_left) > 0) then 'group_left(%s)' % std.join(', ', group_left) else '',
   local groupRightString = if (std.length(group_right) > 0) then 'group_right(%s)' % std.join(', ', group_right) else '',
-  local parts = [left.expr, operator, byString, ignoringString, groupLeftString, groupRightString, right.expr],
+  local rightString = resolveOperand(right),
+  local parts = [leftString, operator, byString, ignoringString, groupLeftString, groupRightString, rightString],
+  type: 'operator',
   expr: std.join(' ', [part for part in parts if part != '']),
 };
 
