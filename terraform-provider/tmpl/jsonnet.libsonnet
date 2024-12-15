@@ -161,9 +161,10 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
     output: '',
     sep: '\n',
   },
-  Exprs(exprs, newlines=0): {
+  Exprs(exprs, newlines=0, prefixNewlines=0): {
     local newlinesString = if newlines == 0 then '' else std.join('', ['\n' for _ in std.range(1, newlines)]),
-    output: std.join(
+    local prefixNewlinesString = if prefixNewlines == 0 then '' else std.join('', ['\n' for _ in std.range(1, prefixNewlines)]),
+    output: prefixNewlinesString + std.join(
       '',
       std.mapWithIndex(
         function(i, expr)
