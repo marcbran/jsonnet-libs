@@ -1,14 +1,19 @@
 local metric(name, type, help) = {
+  local metric = self,
   local eq(value) = { expr(field): '%s%s"%s"' % [field, '=', value] },
-  local labels = [[field, self[field]] for field in std.sort(std.objectFields(self)) if field != '_'],
-  local operators = [[label[0], if std.type(label[1]) == 'object' then label[1] else eq(label[1])] for label in labels],
-  local matchers = [operator[1].expr(operator[0]) for operator in operators],
-  local matcherString = std.join(', ', matchers),
   _: {
+    kind: 'metric',
     metric: name,
     type: type,
     help: help,
-    expr: if std.length(matcherString) > 0 then '%s{%s}' % [name, matcherString] else name,
+    rawMatchers: { [field]: metric[field] for field in std.objectFields(metric) if field != '_' },
+    match(matchers): metric { _+: { rawMatchers+: matchers } },
+    expr:
+      local labels = [[field, self.rawMatchers[field]] for field in std.sort(std.objectFields(self.rawMatchers))];
+      local operators = [[label[0], if std.type(label[1]) == 'object' then label[1] else eq(label[1])] for label in labels];
+      local matchers = [operator[1].expr(operator[0]) for operator in operators];
+      local matcherString = std.join(', ', matchers);
+      if std.length(matcherString) > 0 then '%s{%s}' % [name, matcherString] else name,
   },
 };
 

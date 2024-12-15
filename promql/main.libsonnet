@@ -9,62 +9,82 @@ local matchers = {
   regexNot(value): matcher(value, '!~'),
 };
 
+local resolveExpr(value) =
+  if std.type(value) == 'object' then value._.expr
+  else if std.type(value) == 'array' then [resolveExpr(element) for element in value]
+  else std.manifestJson(value);
+
 local rangeSelector(vector, range) = {
   _: {
     kind: 'rangeSelector',
-    expr: '%s[%s]' % [vector._.expr, range],
+    vector: vector,
+    match(matchers): $ {
+      _+: {
+        vector: super.vector._.match(matchers),
+      },
+    },
+    expr: '%s[%s]' % [resolveExpr(self.vector), range],
   },
 };
 
-local offsetModifier(vector, offset) = {
+local subquery(vector, range, resolution=null) =
+  local rangeString = if resolution == null then range else '%s:%s' % [range, resolution];
+  rangeSelector(vector, rangeString);
+
+local modifier(vector, operator, modification) = {
   _: {
-    kind: 'offsetModifier',
-    expr: '%s offset %s' % [vector._.expr, offset],
+    kind: 'modifier',
+    vector: vector,
+    match(matchers): $ {
+      _+: {
+        vector: super.vector._.match(matchers),
+      },
+    },
+    expr: '%s %s %s' % [resolveExpr(self.vector), operator, modification],
   },
 };
 
-local atModifier(vector, time) = {
-  _: {
-    kind: 'atModifier',
-    expr: '%s @ %s' % [vector._.expr, time],
-  },
-};
+local offsetModifier(vector, offset) = modifier(vector, 'offset', offset);
 
-local subquery(vector, range, resolution=null) = {
-  _: {
-    kind: 'subquery',
-    expr:
-      if (resolution == null)
-      then '%s[%s]' % [vector._.expr, range]
-      else '%s[%s:%s]' % [vector._.expr, range, resolution],
-  },
-};
+local atModifier(vector, time) = modifier(vector, '@', time);
 
 local selectors = {
   range: rangeSelector,
+  subquery: subquery,
   offset: offsetModifier,
   at: atModifier,
-  subquery: subquery,
 };
 
 local resolveOperand(value) =
-  if std.type(value) == 'object' then
-    if std.objectHas(value, '_') && std.objectHas(value._, 'kind') && value._.kind == 'operator'
-    then '(%s)' % value._.expr
-    else value._.expr
-  else std.manifestJson(value);
+  if std.type(value) == 'object' && std.objectHas(value, '_') && std.objectHas(value._, 'kind') && value._.kind == 'operator'
+  then '(%s)' % value._.expr
+  else resolveExpr(value);
 
 local operator(left, operator, right, by, ignoring, group_left, group_right) = {
-  local leftString = resolveOperand(left),
-  local byString = if (std.length(by) > 0) then 'by(%s)' % std.join(', ', by) else '',
-  local ignoringString = if (std.length(ignoring) > 0) then 'ignoring(%s)' % std.join(', ', ignoring) else '',
-  local groupLeftString = if (std.length(group_left) > 0) then 'group_left(%s)' % std.join(', ', group_left) else '',
-  local groupRightString = if (std.length(group_right) > 0) then 'group_right(%s)' % std.join(', ', group_right) else '',
-  local rightString = resolveOperand(right),
-  local parts = [leftString, operator, byString, ignoringString, groupLeftString, groupRightString, rightString],
   _: {
     kind: 'operator',
-    expr: std.join(' ', [part for part in parts if part != '']),
+    left: left,
+    operator: operator,
+    right: right,
+    by: by,
+    ignoring: ignoring,
+    group_left: group_left,
+    group_right: group_right,
+    match(matchers): $ {
+      _+: {
+        left: super.left._.match(matchers),
+        right: super.right._.match(matchers),
+      },
+    },
+    expr:
+      local leftString = resolveOperand(self.left);
+      local byString = if (std.length(self.by) > 0) then 'by(%s)' % std.join(', ', self.by) else '';
+      local ignoringString = if (std.length(self.ignoring) > 0) then 'ignoring(%s)' % std.join(', ', self.ignoring) else '';
+      local groupLeftString = if (std.length(self.group_left) > 0) then 'group_left(%s)' % std.join(', ', self.group_left) else '';
+      local groupRightString = if (std.length(self.group_right) > 0) then 'group_right(%s)' % std.join(', ', self.group_right) else '';
+      local rightString = resolveOperand(self.right);
+      local parts = [leftString, operator, byString, ignoringString, groupLeftString, groupRightString, rightString];
+      std.join(' ', [part for part in parts if part != '']),
   },
 };
 
@@ -99,13 +119,24 @@ local comparisonOperators = {
 };
 
 local aggregationOperator(operator, parameter, expression, by, without) = {
-  local byString = if (std.length(by) > 0) then 'by (%s)' % std.join(', ', by) else '',
-  local withoutString = if (std.length(without) > 0) then 'without (%s)' % std.join(', ', without) else '',
-  local expressionString = if (parameter == '') then '(%s)' % expression._.expr else '(%s, %s)' % [std.manifestJson(parameter), expression._.expr],
-  local parts = [operator, byString, withoutString, expressionString],
   _: {
     kind: 'aggregationOperator',
-    expr: std.join(' ', [part for part in parts if part != '']),
+    operator: operator,
+    parameter: parameter,
+    expression: expression,
+    by: by,
+    without: without,
+    match(matchers): $ {
+      _+: {
+        expression: super.expression._.match(matchers),
+      },
+    },
+    expr:
+      local byString = if (std.length(self.by) > 0) then 'by (%s)' % std.join(', ', self.by) else '';
+      local withoutString = if (std.length(without) > 0) then 'without (%s)' % std.join(', ', self.without) else '';
+      local expressionString = if (self.parameter == '') then '(%s)' % self.expression._.expr else '(%s, %s)' % [std.manifestJson(self.parameter), self.expression._.expr];
+      local parts = [operator, byString, withoutString, expressionString];
+      std.join(' ', [part for part in parts if part != '']),
   },
 };
 
@@ -125,20 +156,25 @@ local aggregationOperators = {
 };
 
 local func(name, parameters=[]) = {
-  local params =
-    if std.length(parameters) == 0
-    then []
-    else
-      if std.type(parameters[std.length(parameters) - 1]) == 'array'
-      then parameters[:std.length(parameters) - 1] + parameters[std.length(parameters) - 1]
-      else parameters,
-  local parameterString = if (std.length(params) > 0) then std.join(', ', [
-    if (std.type(parameter) == 'object') then parameter._.expr else std.manifestJson(parameter)
-    for parameter in params
-  ]) else '',
   _: {
     kind: 'function',
-    expr: '%s(%s)' % [name, parameterString],
+    name: name,
+    parameters: parameters,
+    match(matchers): $ {
+      _+: {
+        parameters: [
+          if std.type(parameter) == 'object' then parameter._.match(matchers) else parameter
+          for parameter in super.parameters
+        ],
+      },
+    },
+    expr:
+      local params = if std.length(self.parameters) == 0 then [] else
+        if std.type(self.parameters[std.length(self.parameters) - 1]) == 'array'
+        then self.parameters[:std.length(self.parameters) - 1] + self.parameters[std.length(self.parameters) - 1]
+        else self.parameters;
+      local parameterString = if (std.length(params) > 0) then std.join(', ', resolveExpr(params)) else '';
+      '%s(%s)' % [self.name, parameterString],
   },
 };
 

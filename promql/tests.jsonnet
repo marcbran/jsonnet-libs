@@ -628,6 +628,47 @@ local funcTests = {
   ],
 };
 
+local matchTests = {
+  name: 'match',
+  tests: [
+    {
+      name: 'metric',
+      input:: prometheus.http_requests_total._.match({ instance: '$instance' }),
+      expected: 'prometheus_http_requests_total{instance="$instance"}',
+    },
+    {
+      name: 'selector',
+      input:: p.range(prometheus.http_requests_total, '5m')._.match({ instance: '$instance' }),
+      expected: 'prometheus_http_requests_total{instance="$instance"}[5m]',
+    },
+    {
+      name: 'modifier',
+      input:: p.offset(prometheus.http_requests_total, '5m')._.match({ instance: '$instance' }),
+      expected: 'prometheus_http_requests_total{instance="$instance"} offset 5m',
+    },
+    {
+      name: 'arithmeticOperator',
+      input:: p.add(prometheus.http_requests_total, prometheus.http_requests_total)._.match({ instance: '$instance' }),
+      expected: 'prometheus_http_requests_total{instance="$instance"} + prometheus_http_requests_total{instance="$instance"}',
+    },
+    {
+      name: 'comparisonOperator',
+      input:: p.equal(prometheus.http_requests_total, prometheus.http_requests_total)._.match({ instance: '$instance' }),
+      expected: 'prometheus_http_requests_total{instance="$instance"} == prometheus_http_requests_total{instance="$instance"}',
+    },
+    {
+      name: 'aggregationOperator',
+      input:: p.sum(prometheus.http_requests_total, by=['instance'])._.match({ instance: '$instance' }),
+      expected: 'sum by (instance) (prometheus_http_requests_total{instance="$instance"})',
+    },
+    {
+      name: 'func',
+      input:: p.abs(prometheus.http_requests_total)._.match({ instance: '$instance' }),
+      expected: 'abs(prometheus_http_requests_total{instance="$instance"})',
+    },
+  ],
+};
+
 local testGroups = [
   metricTests,
   matcherTests,
@@ -636,6 +677,7 @@ local testGroups = [
   comparisonOperatorTests,
   aggregationOperatorTests,
   funcTests,
+  matchTests,
 ];
 
 std.flattenArrays([
