@@ -3,7 +3,7 @@ set fallback
 default:
     @just --list
 
-release: test
+release: test it
     @just jsonnet-release grafonnet-layout
 
 test:

@@ -20,6 +20,12 @@ local mixin = {
   },
 };
 
+local randomRow = {
+  layout: lt.row(8, [
+    lt.panel(8, randomPanel('layout')),
+  ]),
+};
+
 local rowTests = {
   name: 'row',
   tests: [
@@ -97,6 +103,15 @@ local rowTests = {
           type: 'timeseries',
         },
       ],
+    },
+    {
+      name: 'provider',
+      input:: lt.row(8, [randomRow]),
+      expected: [{
+        gridPos: { h: 8, w: 8, x: 0, y: 0 },
+        title: 'layout',
+        type: 'timeseries',
+      }],
     },
   ],
 };
@@ -178,6 +193,15 @@ local columnTests = {
           type: 'timeseries',
         },
       ],
+    },
+    {
+      name: 'provider',
+      input:: lt.column(8, [randomRow]),
+      expected: [{
+        gridPos: { h: 8, w: 8, x: 0, y: 0 },
+        title: 'layout',
+        type: 'timeseries',
+      }],
     },
   ],
 };
@@ -307,6 +331,16 @@ local mixinTests = {
           type: 'timeseries',
         },
       ],
+    },
+    {
+      name: 'provider',
+      input:: lt.mixin(mixin, randomRow),
+      expected: [{
+        datasource: { default: true, type: 'prometheus' },
+        gridPos: { h: 8, w: 8, x: 0, y: 0 },
+        title: 'layout',
+        type: 'timeseries',
+      }],
     },
   ],
 };

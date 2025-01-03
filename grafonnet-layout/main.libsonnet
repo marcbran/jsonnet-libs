@@ -101,13 +101,13 @@ local layout(elem) = render.dispatch(elem).panels;
 local row(height, children) = {
   type: 'layout-row',
   height: height,
-  children: children,
+  children: [std.get(child, 'layout', child) for child in children],
 };
 
 local column(width, children) = {
   type: 'layout-column',
   width: width,
-  children: children,
+  children: [std.get(child, 'layout', child) for child in children],
 };
 
 local panel(size, panel) = {
@@ -124,7 +124,7 @@ local space(size) = {
 local mixin(mixin, child) = {
   type: 'layout-mixin',
   mixin: mixin,
-  child: child,
+  child: std.get(child, 'layout', child),
 };
 
 local withLayout = {
