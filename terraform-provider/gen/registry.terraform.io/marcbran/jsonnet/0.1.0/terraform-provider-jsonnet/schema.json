@@ -1,0 +1,27 @@
+{
+  "format_version": "1.0",
+  "provider_schemas": {
+    "registry.terraform.io/marcbran/jsonnet": {
+      "functions": {
+        "evaluate": {
+          "description": "Evaluates the provided string as Jsonnet",
+          "parameters": [
+            {
+              "description": "The Jsonnet value to be evaluated",
+              "name": "jsonnet",
+              "type": "string"
+            }
+          ],
+          "return_type": "string",
+          "summary": "evaluate"
+        }
+      },
+      "provider": {
+        "block": {
+          "description_kind": "plain"
+        },
+        "version": 0
+      }
+    }
+  }
+}
