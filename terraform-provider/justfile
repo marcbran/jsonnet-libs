@@ -1,0 +1,26 @@
+set fallback := true
+
+default:
+    @just --list
+
+release-provider provider source:
+    #!/usr/bin/env bash
+    provider="{{provider}}"
+    source="{{source}}"
+    branch="terraform-provider/${source}"
+    path="terraform-provider-${provider}"
+
+    mkdir -p gen
+    go run main.go -provider "${provider}" -source "${source}" -output gen
+    gen="$(find gen -name "${path}")"
+    just jsonnet-release "${branch}" "${path}" "${gen}"
+
+release:
+    @just release-provider "local" "registry.terraform.io/hashicorp/local"
+    @just release-provider "aws" "registry.terraform.io/hashicorp/aws"
+    @just release-provider "azurerm" "registry.terraform.io/hashicorp/azurerm"
+    @just release-provider "google" "registry.terraform.io/hashicorp/google"
+    @just release-provider "kubernetes" "registry.terraform.io/hashicorp/kubernetes"
+    @just release-provider "github" "registry.terraform.io/integrations/github"
+    @just release-provider "dolt" "registry.terraform.io/marcbran/dolt"
+    @just release-provider "jsonnet" "registry.terraform.io/marcbran/jsonnet"
