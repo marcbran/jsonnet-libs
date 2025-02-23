@@ -9,20 +9,52 @@ local build = j.Local('build', j.Object([
       j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
       .Then(
         j.If(j.Std.objectHas(j.Member(j.Id('val'), '_'), j.String('ref')))
-        .Then(j.Member(j.Member(j.Id('val'), '_'), 'ref'))
-        .Else(j.String('"%s"', [j.Std.strReplace(j.Member(j.Member(j.Id('val'), '_'), 'str'), j.String('\n'), j.String('\\\n'))]))
+        .Then(j.Member(j.Member(j.Id('val'), '_'), 'ref'), newlineBefore=true)
+        .Else(j.String('"%s"', [j.Member(j.Member(j.Id('val'), '_'), 'str')]), newlineBefore=true),
+        newlineBefore=true,
+        newlineAfter=true,
       )
-      .Else(j.Std.mapWithKey(j.Func([j.Id('key'), j.Id('value')], j.Call(j.Member(j.Self, 'expression'), [j.Id('value')])), j.Id('val')))
+      .Else(
+        j.String(
+          '{%s}',
+          [j.Std.join(
+            j.String(','),
+            j.Std.map(
+              j.Func([j.Id('key')], j.String('%s:%s', [
+                j.Call(j.Member(j.Self, 'expression'), [j.Id('key')]),
+                j.Call(j.Member(j.Self, 'expression'), [j.Index(j.Id('val'), j.Id('key'))]),
+              ])),
+              j.Std.objectFields(j.Id('val'))
+            )
+          )]
+        ),
+        newlineBefore=true
+      ),
+      newlineAfter=true
     )
     .Else(
       j.If(j.Eq(j.Std.type(j.Id('val')), j.String('array')))
-      .Then(j.Std.map(j.Func([j.Id('element')], j.Call(j.Member(j.Self, 'expression'), [j.Id('element')])), j.Id('val')))
+      .Then(
+        j.String(
+          '[%s]',
+          [j.Std.join(
+            j.String(','),
+            j.Std.map(
+              j.Func([j.Id('element')], j.Call(j.Member(j.Self, 'expression'), [j.Id('element')])),
+              j.Id('val')
+            )
+          )]
+        )
+      )
       .Else(
         j.If(j.Eq(j.Std.type(j.Id('val')), j.String('string')))
-        .Then(j.String('"%s"', [j.Std.strReplace(j.Id('val'), j.String('\n'), j.String('\\\n'))]))
-        .Else(j.Id('val'))
-      )
-    )
+        .Then(j.String('"%s"', [j.Id('val')]))
+        .Else(j.String('"%s"', [j.Id('val')]), newlineBefore=true),
+        newlineBefore=true
+      ),
+      newlineBefore=true
+    ),
+    newline=true
   ),
   j.FieldFunc(
     j.String('template'),
@@ -32,20 +64,55 @@ local build = j.Local('build', j.Object([
       j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
       .Then(
         j.If(j.Std.objectHas(j.Member(j.Id('val'), '_'), j.String('ref')))
-        .Then(j.String('${%s}', [j.Member(j.Member(j.Id('val'), '_'), 'ref')]))
-        .Else(j.Member(j.Member(j.Id('val'), '_'), 'str'))
+        .Then(j.Std.strReplace(j.Call(j.Member(j.Self, 'string'), [j.Id('val')]), j.String('\n'), j.String('\\\n')), newlineBefore=true)
+        .Else(j.Member(j.Member(j.Id('val'), '_'), 'str'), newlineBefore=true),
+        newlineBefore=true,
+        newlineAfter=true,
       )
-      .Else(j.Std.mapWithKey(j.Func([j.Id('key'), j.Id('value')], j.Call(j.Member(j.Self, 'template'), [j.Id('value')])), j.Id('val')))
+      .Else(j.Std.mapWithKey(j.Func([j.Id('key'), j.Id('value')], j.Call(j.Member(j.Self, 'template'), [j.Id('value')])), j.Id('val')), newlineBefore=true),
+      newlineAfter=true
     )
     .Else(
       j.If(j.Eq(j.Std.type(j.Id('val')), j.String('array')))
       .Then(j.Std.map(j.Func([j.Id('element')], j.Call(j.Member(j.Self, 'template'), [j.Id('element')])), j.Id('val')))
       .Else(
         j.If(j.Eq(j.Std.type(j.Id('val')), j.String('string')))
-        .Then(j.Id('val'))
-        .Else(j.Id('val'))
+        .Then(j.Std.strReplace(j.Call(j.Member(j.Self, 'string'), [j.Id('val')]), j.String('\n'), j.String('\\\n')))
+        .Else(j.Id('val'), newlineBefore=true),
+        newlineBefore=true
+      ),
+      newlineBefore=true
+    ),
+    newline=true
+  ),
+  j.FieldFunc(
+    j.String('string'),
+    [j.Id('val')],
+    j.If(j.Eq(j.Std.type(j.Id('val')), j.String('object')))
+    .Then(
+      j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
+      .Then(
+        j.If(j.Std.objectHas(j.Member(j.Id('val'), '_'), j.String('ref')))
+        .Then(j.String('${%s}', [j.Member(j.Member(j.Id('val'), '_'), 'ref')]), newlineBefore=true)
+        .Else(j.Member(j.Member(j.Id('val'), '_'), 'str'), newlineBefore=true),
+        newlineBefore=true,
+        newlineAfter=true,
       )
+      .Else(j.String('${%s}', [j.Call(j.Member(j.Self, 'expression'), [j.Id('val')])]), newlineBefore=true),
+      newlineAfter=true
     )
+    .Else(
+      j.If(j.Eq(j.Std.type(j.Id('val')), j.String('array')))
+      .Then(j.String('${%s}', [j.Call(j.Member(j.Self, 'expression'), [j.Id('val')])]))
+      .Else(
+        j.If(j.Eq(j.Std.type(j.Id('val')), j.String('string')))
+        .Then(j.Id('val'))
+        .Else(j.Id('val'), newlineBefore=true),
+        newlineBefore=true
+      ),
+      newlineBefore=true
+    ),
+    newline=true
   ),
   j.FieldFunc(
     j.String('providerRequirements'),
@@ -53,28 +120,38 @@ local build = j.Local('build', j.Object([
     j.If(j.Eq(j.Std.type(j.Id('val')), j.String('object')))
     .Then(
       j.If(j.Std.objectHas(j.Id('val'), j.String('_')))
-      .Then(j.Std.get(j.Member(j.Id('val'), '_'), j.String('providerRequirements')).default(j.Object([])))
-      .Else(j.Std.foldl(
-        j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
-        j.Std.map(
-          j.Func([j.Id('key')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Index(j.Id('val'), j.Id('key'))])),
-          j.Std.objectFields(j.Id('val'))
+      .Then(j.Std.get(j.Member(j.Id('val'), '_'), j.String('providerRequirements')).default(j.Object([])), newlineBefore=true)
+      .Else(
+        j.Std.foldl(
+          j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
+          j.Std.map(
+            j.Func([j.Id('key')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Index(j.Id('val'), j.Id('key'))])),
+            j.Std.objectFields(j.Id('val'))
+          ),
+          j.Object([])
         ),
-        j.Object([])
-      ))
+        newlineBefore=true
+      ),
+      newlineBefore=true,
+      newlineAfter=true,
     )
     .Else(
       j.If(j.Eq(j.Std.type(j.Id('val')), j.String('array')))
-      .Then(j.Std.foldl(
-        j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
-        j.Std.map(
-          j.Func([j.Id('element')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Id('element')])),
-          j.Id('val')
+      .Then(
+        j.Std.foldl(
+          j.Func([j.Id('acc'), j.Id('val')], j.Std.mergePatch(j.Id('acc'), j.Id('val'))),
+          j.Std.map(
+            j.Func([j.Id('element')], j.Call(j.Member(j.Id('build'), 'providerRequirements'), [j.Id('element')])),
+            j.Id('val')
+          ),
+          j.Object([])
         ),
-        j.Object([])
-      ))
-      .Else(j.Object([]))
-    )
+        newlineBefore=true
+      )
+      .Else(j.Object([]), newlineBefore=true),
+      newlineBefore=true,
+    ),
+    newline=true
   ),
 ], newlines=1));
 
