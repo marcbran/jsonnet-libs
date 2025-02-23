@@ -3,6 +3,16 @@ set fallback := true
 default:
     @just --list
 
+gen-provider provider source:
+    #!/usr/bin/env bash
+    provider="{{provider}}"
+    source="{{source}}"
+    branch="terraform-provider/${source}"
+    path="terraform-provider-${provider}"
+
+    mkdir -p gen
+    go run main.go -provider "${provider}" -source "${source}" -output gen
+
 release-provider provider source:
     #!/usr/bin/env bash
     provider="{{provider}}"

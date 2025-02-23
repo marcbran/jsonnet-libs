@@ -302,10 +302,11 @@ local resourceBlocks(provider, type, resourceSchemas) = if std.length(std.object
 ];
 
 local functionBlock(name, func) =
+  local parameters = func.parameters + [func.variadic_parameter];
   j.FieldFunc(
     j.String(name),
-    [j.Id(parameter.name) for parameter in func.parameters],
-    j.Call(j.Member(j.Id('provider'), 'func'), [j.String(name), j.Array([j.Id(parameter.name) for parameter in func.parameters])]),
+    [j.Id(parameter.name) for parameter in parameters],
+    j.Call(j.Member(j.Id('provider'), 'func'), [j.String(name), j.Array([j.Id(parameter.name) for parameter in parameters])]),
   );
 
 local functionBlocks(functions) = if std.length(std.objectFields(functions)) == 0 then [] else [
