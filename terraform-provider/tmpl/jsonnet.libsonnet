@@ -1,3 +1,5 @@
+local printNewline(newline) = if (newline) then '\n' else ' ';
+
 local printNewlines(newlines) = std.join('', std.map(function(index) '\n', std.range(1, newlines)));
 
 local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
@@ -63,11 +65,11 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
       )
     )],
   },
-  Field(name, expr, override='', hidden=':'): {
-    output: '%s%s%s %s' % [name.output, override, hidden, expr.output],
+  Field(name, expr, override='', hidden=':', newline=false): {
+    output: '%s%s%s%s%s' % [name.output, override, hidden, printNewline(newline), expr.output],
   },
-  FieldFunc(name, params, expr, hidden=':'): {
-    output: '%s(%s)%s %s' % [name.output, joinExpr(', ', params), hidden, expr.output],
+  FieldFunc(name, params, expr, hidden=':', newline=false): {
+    output: '%s(%s)%s%s%s' % [name.output, joinExpr(', ', params), hidden, printNewline(newline), expr.output],
   },
   FieldNameExpr(expr): {
     output: '[%s]' % [expr.output],
@@ -118,20 +120,26 @@ local joinExpr(sep, exprs) = std.join(sep, [expr.output for expr in exprs]);
     For(id, expr): compspec([forSpec(id, expr)]),
   },
   Local(id, expr, newline=false): {
-    output: 'local %s =%s%s' % [id, if (newline) then '\n' else ' ', expr.output],
+    output: 'local %s =%s%s' % [id, printNewline(newline), expr.output],
     arraySep: '; ',
   },
   LocalFunc(id, params, expr, newline=false): {
-    output: 'local %s(%s) =%s%s' % [id, joinExpr(', ', params), if (newline) then '\n' else ' ', expr.output],
+    output: 'local %s(%s) =%s%s' % [id, joinExpr(', ', params), printNewline(newline), expr.output],
     arraySep: '; ',
   },
-  If(expr): {
+  If(expr, newlineAfter=false): {
     local ifExpr = expr,
-    Then(expr): {
+    local ifNewlineAfter = printNewline(newlineAfter),
+    Then(expr, newlineBefore=false, newlineAfter=false): {
       local thenExpr = expr,
-      output: 'if %s then %s' % [ifExpr.output, expr.output],
-      Else(expr): {
-        output: 'if %s then %s else %s' % [ifExpr.output, thenExpr.output, expr.output],
+      local thenNewlineBefore = printNewline(newlineBefore),
+      local thenNewlineAfter = printNewline(newlineAfter),
+      output: std.join('', ['if', ifNewlineAfter, ifExpr.output, thenNewlineBefore, 'then', thenNewlineAfter, thenExpr.output]),
+      Else(expr, newlineBefore=false, newlineAfter=false): {
+        local elseExpr = expr,
+        local elseNewlineBefore = printNewline(newlineBefore),
+        local elseNewlineAfter = printNewline(newlineAfter),
+        output: std.join('', ['if', ifNewlineAfter, ifExpr.output, thenNewlineBefore, 'then', thenNewlineAfter, thenExpr.output, elseNewlineBefore, 'else', elseNewlineAfter, elseExpr.output]),
       },
     },
   },
