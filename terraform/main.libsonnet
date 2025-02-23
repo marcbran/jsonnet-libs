@@ -6,8 +6,8 @@ local build = {
         if std.objectHas(val._, 'ref')
         then val._.ref
         else '"%s"' % val._.str
-      else '{' + std.join(',', std.map(function(key) self.expression(key) + ':' + self.expression(val[key]), std.objectFields(val))) + '}'
-    else if std.type(val) == 'array' then '[' + std.join(',', std.map(function(element) self.expression(element), val)) + ']'
+      else '{%s}' % std.join(',', std.map(function(key) '%s:%s' % [self.expression(key), self.expression(val[key])], std.objectFields(val)))
+    else if std.type(val) == 'array' then '[%s]' % std.join(',', std.map(function(element) self.expression(element), val))
     else if std.type(val) == 'string' then '"%s"' % val
     else '%s' % val,
 
@@ -30,8 +30,8 @@ local build = {
         if std.objectHas(val._, 'ref')
         then '${%s}' % val._.ref
         else val._.str
-      else '${' + self.expression(val) + '}'
-    else if std.type(val) == 'array' then '${' + self.expression(val) + '}'
+      else '${%s}' % self.expression(val)
+    else if std.type(val) == 'array' then '${%s}' % self.expression(val)
     else if std.type(val) == 'string' then val
     else val,
 
