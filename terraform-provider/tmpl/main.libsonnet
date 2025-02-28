@@ -302,7 +302,7 @@ local resourceBlocks(provider, type, resourceSchemas) = if std.length(std.object
 ];
 
 local functionBlock(name, func) =
-  local parameters = func.parameters + [func.variadic_parameter];
+  local parameters = func.parameters + if std.objectHas(func, 'variadic_parameter') then [func.variadic_parameter] else [];
   j.FieldFunc(
     j.String(name),
     [j.Id(parameter.name) for parameter in parameters],
