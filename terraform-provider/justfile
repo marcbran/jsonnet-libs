@@ -20,17 +20,41 @@ release-provider provider source:
     branch="terraform-provider/${source}"
     path="terraform-provider-${provider}"
 
+    rm -rf gen
     mkdir -p gen
     go run main.go -provider "${provider}" -source "${source}" -output gen
     gen="$(find gen -name "${path}")"
     just jsonnet-release "${branch}" "${path}" "${gen}"
 
 release:
-    @just release-provider "local" "registry.terraform.io/hashicorp/local"
+    # Cloud Automation
     @just release-provider "aws" "registry.terraform.io/hashicorp/aws"
     @just release-provider "azurerm" "registry.terraform.io/hashicorp/azurerm"
     @just release-provider "google" "registry.terraform.io/hashicorp/google"
+    # Container Orchestration
     @just release-provider "kubernetes" "registry.terraform.io/hashicorp/kubernetes"
+    @just release-provider "docker" "registry.terraform.io/kreuzwerker/docker"
+    # Logging & Monitoring
+    @just release-provider "datadog" "registry.terraform.io/DataDog/datadog"
+    @just release-provider "grafana" "registry.terraform.io/grafana/grafana"
+    @just release-provider "logzio" "registry.terraform.io/logzio/logzio"
+    @just release-provider "newrelic" "registry.terraform.io/newrelic/newrelic"
+    @just release-provider "pagerduty" "registry.terraform.io/PagerDuty/pagerduty"
+    # Utility
+    @just release-provider "archive" "registry.terraform.io/hashicorp/archive"
+    @just release-provider "assert" "registry.terraform.io/hashicorp/assert"
+    @just release-provider "cloudinit" "registry.terraform.io/hashicorp/cloudinit"
+    @just release-provider "dns" "registry.terraform.io/hashicorp/dns"
+    @just release-provider "external" "registry.terraform.io/hashicorp/external"
+    @just release-provider "local" "registry.terraform.io/hashicorp/local"
+    @just release-provider "http" "registry.terraform.io/hashicorp/http"
+    @just release-provider "null" "registry.terraform.io/hashicorp/null"
+    @just release-provider "random" "registry.terraform.io/hashicorp/random"
+    @just release-provider "tfmigrate" "registry.terraform.io/hashicorp/tfmigrate"
+    @just release-provider "time" "registry.terraform.io/hashicorp/time"
+    @just release-provider "tls" "registry.terraform.io/hashicorp/tls"
+    # VCS
     @just release-provider "github" "registry.terraform.io/integrations/github"
+    # self
     @just release-provider "dolt" "registry.terraform.io/marcbran/dolt"
     @just release-provider "jsonnet" "registry.terraform.io/marcbran/jsonnet"
