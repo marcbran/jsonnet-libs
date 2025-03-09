@@ -205,6 +205,7 @@ local providerTemplate = j.LocalFunc('providerTemplate', [j.Id('provider'), j.Id
               j.Std.get(j.Id('rawBlock'), j.String(attributeName)).default(j.Null),
             ])
           )
+          // TODO depends_on needs to be a static list expression
           for attributeName in ['depends_on', 'count', 'for_each']
         ], newlines=1)),
         j.Field(
