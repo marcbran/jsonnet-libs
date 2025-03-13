@@ -871,29 +871,19 @@ local forTests = {
   ],
 };
 
-local testGroups = [
-  variableTests,
-  outputTests,
-  localTests,
-  moduleTests,
-  functionTests,
-  formatTests,
-  providerTests,
-  resourceTests,
-  dataTests,
-  conditionTests,
-  forTests,
-];
-
-std.flattenArrays([
-  [
-    {
-      name: '%s/%s' % [group.name, test.name],
-      actual: tf.Cfg(test.input),
-      expected: test.expected,
-      it: std.get(test, 'it', true),
-    }
-    for test in group.tests
-  ]
-  for group in testGroups
-])
+{
+  output(input): tf.Cfg(input),
+  tests: [
+    variableTests,
+    outputTests,
+    localTests,
+    moduleTests,
+    functionTests,
+    formatTests,
+    providerTests,
+    resourceTests,
+    dataTests,
+    conditionTests,
+    forTests,
+  ],
+}

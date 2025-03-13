@@ -425,36 +425,27 @@ local commentTests = {
   ],
 };
 
-local testGroups = [
-  nullTests,
-  trueTests,
-  falseTests,
-  selfTests,
-  outerTests,
-  superTests,
-  stringTests,
-  numberTests,
-  idTests,
-  memberTests,
-  indexTests,
-  funcTests,
-  callTests,
-  objectTests,
-  objectCompTests,
-  arrayTests,
-  arrayCompTests,
-  ifTests,
-  commentTests,
-];
-
-std.flattenArrays([
-  [
-    {
-      name: '%s/%s' % [group.name, test.name],
-      actual: test.input.output,
-      expected: test.expected,
-    }
-    for test in group.tests
-  ]
-  for group in testGroups
-])
+{
+  output(input): input.output,
+  tests: [
+    nullTests,
+    trueTests,
+    falseTests,
+    selfTests,
+    outerTests,
+    superTests,
+    stringTests,
+    numberTests,
+    idTests,
+    memberTests,
+    indexTests,
+    funcTests,
+    callTests,
+    objectTests,
+    objectCompTests,
+    arrayTests,
+    arrayCompTests,
+    ifTests,
+    commentTests,
+  ],
+}

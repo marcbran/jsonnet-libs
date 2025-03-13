@@ -7,7 +7,7 @@ release: test it
     @just jsonnet-release grafonnet-layout
 
 test:
-    @just jsonnet-test
+    @jsonnet-kit test
 
 it:
     @just grafana-it

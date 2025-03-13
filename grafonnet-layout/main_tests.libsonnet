@@ -345,22 +345,13 @@ local mixinTests = {
   ],
 };
 
-local testGroups = [
-  rowTests,
-  columnTests,
-  panelTests,
-  spaceTests,
-  mixinTests,
-];
-
-std.flattenArrays([
-  [
-    {
-      name: '%s/%s' % [group.name, test.name],
-      actual: lt.layout(test.input),
-      expected: test.expected,
-    }
-    for test in group.tests
-  ]
-  for group in testGroups
-])
+{
+  output(input): lt.layout(input),
+  tests: [
+    rowTests,
+    columnTests,
+    panelTests,
+    spaceTests,
+    mixinTests,
+  ],
+}
