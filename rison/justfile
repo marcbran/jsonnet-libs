@@ -7,4 +7,4 @@ release: test
     @just jsonnet-release rison
 
 test:
-    @just jsonnet-test
+    @jsonnet-kit test

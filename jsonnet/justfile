@@ -7,7 +7,7 @@ release: test
     @just jsonnet-release jsonnet
 
 test:
-    @just jsonnet-test
+    @jsonnet-kit test
 
 it:
     #!/usr/bin/env bash

@@ -7,7 +7,7 @@ release: test it
     @just jsonnet-release terraform
 
 test:
-    @just jsonnet-test
+    @jsonnet-kit test
 
 it:
     #!/usr/bin/env bash

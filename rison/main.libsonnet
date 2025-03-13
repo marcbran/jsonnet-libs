@@ -13,7 +13,7 @@ local rison(val) =
     else
       val
   else if std.type(val) == 'number' then
-    val
+    std.manifestJson(val)
   else if val == true then
     '!t'
   else if val == false then

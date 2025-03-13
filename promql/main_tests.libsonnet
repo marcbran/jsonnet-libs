@@ -227,7 +227,7 @@ local aggregationOperatorTests = {
     {
       name: 'quantile',
       input:: p.quantile(0.9, prometheus.http_requests_total, by=['instance']),
-      expected: 'quantile by (instance) (0.90000000000000002, prometheus_http_requests_total)',
+      expected: 'quantile by (instance) (0.9, prometheus_http_requests_total)',
     },
     {
       name: 'without',
@@ -338,12 +338,12 @@ local funcTests = {
     {
       name: 'histogram_fraction',
       input:: p.histogram_fraction(0, 0.2, prometheus.http_requests_total),
-      expected: 'histogram_fraction(0, 0.20000000000000001, prometheus_http_requests_total)',
+      expected: 'histogram_fraction(0, 0.2, prometheus_http_requests_total)',
     },
     {
       name: 'histogram_quantile',
       input:: p.histogram_quantile(0.9, prometheus.http_requests_total),
-      expected: 'histogram_quantile(0.90000000000000002, prometheus_http_requests_total)',
+      expected: 'histogram_quantile(0.9, prometheus_http_requests_total)',
     },
     {
       name: 'histogram_stddev',
@@ -523,7 +523,7 @@ local funcTests = {
     {
       name: 'quantile_over_time',
       input:: p.quantile_over_time(0.9, prometheus.http_requests_total, '5m'),
-      expected: 'quantile_over_time(0.90000000000000002, prometheus_http_requests_total[5m])',
+      expected: 'quantile_over_time(0.9, prometheus_http_requests_total[5m])',
     },
     {
       name: 'stddev_over_time',
@@ -669,25 +669,16 @@ local matchTests = {
   ],
 };
 
-local testGroups = [
-  metricTests,
-  matcherTests,
-  selectorTests,
-  arithmeticOperatorTests,
-  comparisonOperatorTests,
-  aggregationOperatorTests,
-  funcTests,
-  matchTests,
-];
-
-std.flattenArrays([
-  [
-    {
-      name: '%s/%s' % [group.name, test.name],
-      actual: test.input._.expr,
-      expected: test.expected,
-    }
-    for test in group.tests
-  ]
-  for group in testGroups
-])
+{
+  output(input): input._.expr,
+  tests: [
+    metricTests,
+    matcherTests,
+    selectorTests,
+    arithmeticOperatorTests,
+    comparisonOperatorTests,
+    aggregationOperatorTests,
+    funcTests,
+    matchTests,
+  ],
+}

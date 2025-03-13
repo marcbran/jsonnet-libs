@@ -324,21 +324,12 @@ local exampleTests = {
   ],
 };
 
-local testGroups = [
-  objectTests,
-  arrayTests,
-  primitiveTests,
-  exampleTests,
-];
-
-std.flattenArrays([
-  [
-    {
-      name: '%s/%s' % [group.name, test.name],
-      actual: rison(test.input),
-      expected: test.expected,
-    }
-    for test in group.tests
-  ]
-  for group in testGroups
-])
+{
+  output(input): rison(input),
+  tests: [
+    objectTests,
+    arrayTests,
+    primitiveTests,
+    exampleTests,
+  ],
+}
