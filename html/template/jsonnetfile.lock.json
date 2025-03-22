@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/marcbran/jsonnet.git",
+          "subdir": "jsonnet"
+        }
+      },
+      "version": "8969e2572fdfbb6c0efc4d5744e90b6590c0af44",
+      "sum": "haZd3fw52iTA7AY0MqlBH66xwuESZg66VVPK/wEz40g="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/marcbran/jsonnet.git",
+          "subdir": "jsonnet-manifest"
+        }
+      },
+      "version": "27a5ae7b2b2211da6de473e3ba084157f2a560e0",
+      "sum": "t4ytDJknTbTp0ivOqen2k7c9cKakpV5gpra9KLpWrX0="
+    }
+  ],
+  "legacyImports": false
+}

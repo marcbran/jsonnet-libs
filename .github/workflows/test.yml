@@ -22,4 +22,8 @@ jobs:
         with:
           repo: marcbran/jsonnet-kit
       - name: Run Jsonnet tests
-        run: jsonnet-kit test .
+        run: |
+          jsonnet-kit test ./grafonnet-layout
+          jsonnet-kit test ./jsonnet
+          jsonnet-kit test ./promql
+          jsonnet-kit test ./rison
