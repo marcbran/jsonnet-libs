@@ -13,7 +13,7 @@ local html(elements) = j.Exprs([
     j.Std.prune(j.Add(j.Array([j.Id('name'), j.Id('actualAttr')]), j.Id('arrayChildren'))),
   ], newlines=1, prefixNewlines=1)),
 
-  j.Local('h', j.Object([
+  j.Local('elements', j.Object([
     j.FieldFunc(j.String(element), [
       j.DefaultParam('attrOrChildren', j.Array([])),
       j.DefaultParam('childrenOrNull', j.Null),
@@ -21,7 +21,16 @@ local html(elements) = j.Exprs([
     for element in elements
   ], newlines=1)),
 
-  j.Id('h'),
+  j.Local('manifest', j.Object([
+    j.FieldFunc(j.String('manifestElement'), [
+      j.Id('elem'),
+    ], j.Std.manifestXmlJsonml(j.Id('elem'))),
+    j.FieldFunc(j.String('manifestPage'), [
+      j.Id('elem'),
+    ], j.Add(j.String('<!doctype html>'), j.Std.manifestXmlJsonml(j.Id('elem')))),
+  ], newlines=1)),
+
+  j.Add(j.Id('elements'), j.Id('manifest')),
 ], newlines=2).output;
 
 local htmlManifest(elements) = {
