@@ -12,6 +12,10 @@ gen: pull
     #!/usr/bin/env bash
     jsonnet-kit -J ./template/vendor manifest "."
 
-release: gen
+test: gen
+    #!/usr/bin/env bash
+    jsonnet-kit test
+
+release: test
     #!/usr/bin/env bash
     jsonnet-kit release -r https://github.com/marcbran/jsonnet.git -b "html" -p "html" "./gen"
