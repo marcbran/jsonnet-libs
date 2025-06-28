@@ -51,6 +51,7 @@ func pullElements() ([]string, error) {
 		elemText := s.Find("td").First().Text()
 		elems := strings.Split(elemText, ",")
 		for _, e := range elems {
+			e = strings.TrimSpace(e)
 			if !strings.HasPrefix(e, "<") {
 				continue
 			}
@@ -64,6 +65,10 @@ func pullElements() ([]string, error) {
 }
 
 func writeJson(elem []string, dir string) error {
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
 	file, err := os.Create(filepath.Join(dir, "elements.json"))
 	if err != nil {
 		return err
