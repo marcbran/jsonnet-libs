@@ -5,6 +5,13 @@ local span = h.span;
 local table = h.table;
 local tr = h.tr;
 local td = h.td;
+local html = h.html;
+local body = h.body;
+local h1 = h.h1;
+local div = h.div;
+local form = h.form;
+local input = h.input;
+local textarea = h.textarea;
 
 local jsonmlTests = {
   name: 'jsonml',
@@ -121,6 +128,26 @@ local jsonmlTests = {
         ]),
       output(input): h.manifestPage(input),
       expected: '<!doctype html><ul><li style="color:red">First Item</li><li style="color:green" title="Some hover text.">Second Item</li><li><span class="code-example-third">Third</span> Item</li></ul>',
+    },
+    {
+      name: 'article',
+      input::
+        html([
+          body([
+            h1('title'),
+            div('content'),
+          ]),
+        ]),
+      expected: '<html><body><h1>title</h1><div>content</div></body></html>',
+    },
+    {
+      name: 'form',
+      input::
+        form([
+          input({ type: 'text', name: 'title', value: 'title' }),
+          textarea({ name: 'content' }, 'content'),
+        ]),
+      expected: '<form><input name="title" type="text" value="title"></input><textarea name="content">content</textarea></form>',
     },
   ],
 };
